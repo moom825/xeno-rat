@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Version>2.1.0</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Mark Heath</Authors>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\NAudioStrongNameKey.snk</AssemblyOriginatorKeyFile>
+    <PackageProjectUrl>https://github.com/naudio/NAudio</PackageProjectUrl>
+    <PackageTags>C# .NET audio sound</PackageTags>
+    <RepositoryUrl>https://github.com/naudio/NAudio</RepositoryUrl>
+    <Copyright>© Mark Heath 2022</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>naudio-icon.png</PackageIcon>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\NAudio.WinMM\NAudio.WinMM.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Update="Gui\Fader.Designer.cs">
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="Gui\PanSlider.Designer.cs">
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="Gui\Pot.Designer.cs">
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="Gui\ProgressLog.Designer.cs">
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="Gui\VolumeSlider.Designer.cs">
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="Gui\WaveViewer.Designer.cs">
+      <DesignTime>True</DesignTime>
+    </Compile>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="..\naudio-icon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+
+</Project>
