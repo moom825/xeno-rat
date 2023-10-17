@@ -101,3 +101,9 @@ To get started with Xeno-RAT, follow these simple steps:
 3. **Unzip the Downloaded File**: After downloading, unzip the downloaded zip file to extract the contents. You can use your operating system's built-in tools or a third-party archive utility.
 
 4. **Run the Executable**: Inside the extracted folder, you will find the executable file. Double-click on this file to run Xeno-RAT.
+
+## Contact
+
+**Contact the Developer:**
+- **Telegram:** [moom825](https://t.me/moom825)
+- **Discord:** moom825
