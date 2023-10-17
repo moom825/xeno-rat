@@ -229,34 +229,6 @@ namespace xeno_rat_server.Forms
         {
 
         }
-
-        private async void button10_Click(object sender, EventArgs e)
-        {
-            int WM_KEYDOWN = 0x0100;  // Keydown event
-            int WM_KEYUP = 0x101;
-            int VK_CONTROL = 0x11;    // Ctrl key code
-            int VK_A = 0x41;         // A key code
-
-            await client.SendAsync(new byte[] { 3 });
-            await client.SendAsync(client.sock.IntToBytes(WM_KEYDOWN));
-            await client.SendAsync(client.sock.IntToBytes(VK_CONTROL));
-            await client.SendAsync(client.sock.IntToBytes(0));
-            await Task.Delay(100);
-            await client.SendAsync(new byte[] { 3 });
-            await client.SendAsync(client.sock.IntToBytes(WM_KEYDOWN));
-            await client.SendAsync(client.sock.IntToBytes(VK_A));
-            await client.SendAsync(client.sock.IntToBytes(0));
-            await Task.Delay(100);
-            await client.SendAsync(new byte[] { 3 });
-            await client.SendAsync(client.sock.IntToBytes(WM_KEYUP));
-            await client.SendAsync(client.sock.IntToBytes(VK_A));
-            await client.SendAsync(client.sock.IntToBytes(0));
-            await Task.Delay(100);
-            await client.SendAsync(new byte[] { 3 });
-            await client.SendAsync(client.sock.IntToBytes(WM_KEYUP));
-            await client.SendAsync(client.sock.IntToBytes(VK_CONTROL));
-            await client.SendAsync(client.sock.IntToBytes(0));
-        }
     }
 
 

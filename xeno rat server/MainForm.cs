@@ -42,103 +42,6 @@ namespace xeno_rat_server
         private string LastConfig = "";
 
 
-        private string SerializeControlsToJson()
-        {
-            Dictionary<string, object> controlData = new Dictionary<string, object>();
-
-            controlData["textBox15"] = textBox15.Text;
-            controlData["textBox13"] = textBox13.Text;
-            controlData["textBox14"] = textBox14.Text;
-            controlData["textBox2"] = textBox2.Text;
-            controlData["textBox16"] = textBox16.Text;
-            controlData["textBox12"] = textBox12.Text;
-            controlData["textBox6"] = textBox6.Text;
-            controlData["textBox8"] = textBox8.Text;
-            controlData["textBox4"] = textBox4.Text;
-            controlData["textBox9"] = textBox9.Text;
-            controlData["textBox3"] = textBox3.Text;
-            controlData["textBox11"] = textBox11.Text;
-            controlData["textBox10"] = textBox10.Text;
-            controlData["textBox7"] = textBox7.Text;
-            controlData["label16"] = label16.Text;
-            controlData["checkBox1"] = checkBox1.Checked;
-            controlData["checkBox2"] = checkBox2.Checked;
-            controlData["checkBox3"] = checkBox3.Checked;
-            controlData["OnConnectTasks"] = OnConnectTasks;
-            controlData["string_key"] = string_key;
-            List<int> ports = new List<int>();
-            if (ListeningHandler != null) 
-            {
-                foreach (int i in ListeningHandler.listeners.Keys)
-                {
-                    if (ListeningHandler.listeners[i].listening)
-                    {
-                        ports.Add(i);
-                    }
-                }
-            }
-            controlData["ports"] = ports.ToArray();
-            string jsonData = JsonConvert.SerializeObject(controlData);
-            return jsonData;
-        }
-
-
-        private void DeserializeControlsFromJson(string jsonData)
-        {
-            try
-            {
-                Dictionary<string, object> controlData = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonData);
-                textBox15.Text = controlData["textBox15"].ToString();
-                textBox13.Text = controlData["textBox13"].ToString();
-                textBox14.Text = controlData["textBox14"].ToString();
-                textBox2.Text = controlData["textBox2"].ToString();
-                textBox16.Text = controlData["textBox16"].ToString();
-                textBox12.Text = controlData["textBox12"].ToString();
-                textBox6.Text = controlData["textBox6"].ToString();
-                textBox8.Text = controlData["textBox8"].ToString();
-                textBox4.Text = controlData["textBox4"].ToString();
-                textBox9.Text = controlData["textBox9"].ToString();
-                textBox3.Text = controlData["textBox3"].ToString();
-                textBox11.Text = controlData["textBox11"].ToString();
-                textBox10.Text = controlData["textBox10"].ToString();
-                textBox7.Text = controlData["textBox7"].ToString();
-                label16.Text = controlData["label16"].ToString();
-                checkBox1.Checked = Convert.ToBoolean(controlData["checkBox1"]);
-                checkBox2.Checked = Convert.ToBoolean(controlData["checkBox2"]);
-                checkBox3.Checked = Convert.ToBoolean(controlData["checkBox3"]);
-                OnConnectTasks = ((JArray)controlData["OnConnectTasks"]).ToObject<List<string>>();
-                foreach (string i in OnConnectTasks) 
-                {
-                    listView4.Items.Add(i);
-                }
-                string_key = controlData["string_key"].ToString();
-                label17.Text = "Current Password: " + string_key;
-                key = Utils.CalculateSha256Bytes(string_key);
-                int[] ports = ((JArray)controlData["ports"]).ToObject<int[]>();
-                foreach (int i in ports) 
-                {
-                    string string_port = i.ToString();
-                    if (ListeningHandler.PortInUse(i)) 
-                    {
-                        MessageBox.Show($"The port {string_port} is currently in use! Press ok to skip.");
-                        continue;
-                    }
-                    string[] row = { string_port };
-                    var listViewItem = new ListViewItem(row);
-                    listView1.Items.Add(listViewItem);
-                    AddLog($"Listener on port {string_port} started!", Color.Green);
-                    new Thread(() => ListeningHandler.CreateListener(i)).Start();
-                }
-
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error loading config: " + ex.Message, "Error");
-            }
-        }
-
-
-
         public MainForm()
         {
             
@@ -193,6 +96,7 @@ namespace xeno_rat_server
             Commands["Client"] = Client;
             Commands["Power"] = Power;
         }
+
         private async Task OnConnect(Socket socket)
         {
             Node client = await Utils.ConnectAndSetupAsync(socket, key, currentCount, OnDisconnect);
@@ -441,6 +345,102 @@ namespace xeno_rat_server
             ConfigUpdateTimer.Start();
             AddLog("Started!", Color.Green);
         }
+
+        private string SerializeControlsToJson()
+        {
+            Dictionary<string, object> controlData = new Dictionary<string, object>();
+
+            controlData["textBox15"] = textBox15.Text;
+            controlData["textBox13"] = textBox13.Text;
+            controlData["textBox14"] = textBox14.Text;
+            controlData["textBox2"] = textBox2.Text;
+            controlData["textBox16"] = textBox16.Text;
+            controlData["textBox12"] = textBox12.Text;
+            controlData["textBox6"] = textBox6.Text;
+            controlData["textBox8"] = textBox8.Text;
+            controlData["textBox4"] = textBox4.Text;
+            controlData["textBox9"] = textBox9.Text;
+            controlData["textBox3"] = textBox3.Text;
+            controlData["textBox11"] = textBox11.Text;
+            controlData["textBox10"] = textBox10.Text;
+            controlData["textBox7"] = textBox7.Text;
+            controlData["label16"] = label16.Text;
+            controlData["checkBox1"] = checkBox1.Checked;
+            controlData["checkBox2"] = checkBox2.Checked;
+            controlData["checkBox3"] = checkBox3.Checked;
+            controlData["OnConnectTasks"] = OnConnectTasks;
+            controlData["string_key"] = string_key;
+            List<int> ports = new List<int>();
+            if (ListeningHandler != null)
+            {
+                foreach (int i in ListeningHandler.listeners.Keys)
+                {
+                    if (ListeningHandler.listeners[i].listening)
+                    {
+                        ports.Add(i);
+                    }
+                }
+            }
+            controlData["ports"] = ports.ToArray();
+            string jsonData = JsonConvert.SerializeObject(controlData);
+            return jsonData;
+        }
+
+
+        private void DeserializeControlsFromJson(string jsonData)
+        {
+            try
+            {
+                Dictionary<string, object> controlData = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonData);
+                textBox15.Text = controlData["textBox15"].ToString();
+                textBox13.Text = controlData["textBox13"].ToString();
+                textBox14.Text = controlData["textBox14"].ToString();
+                textBox2.Text = controlData["textBox2"].ToString();
+                textBox16.Text = controlData["textBox16"].ToString();
+                textBox12.Text = controlData["textBox12"].ToString();
+                textBox6.Text = controlData["textBox6"].ToString();
+                textBox8.Text = controlData["textBox8"].ToString();
+                textBox4.Text = controlData["textBox4"].ToString();
+                textBox9.Text = controlData["textBox9"].ToString();
+                textBox3.Text = controlData["textBox3"].ToString();
+                textBox11.Text = controlData["textBox11"].ToString();
+                textBox10.Text = controlData["textBox10"].ToString();
+                textBox7.Text = controlData["textBox7"].ToString();
+                label16.Text = controlData["label16"].ToString();
+                checkBox1.Checked = Convert.ToBoolean(controlData["checkBox1"]);
+                checkBox2.Checked = Convert.ToBoolean(controlData["checkBox2"]);
+                checkBox3.Checked = Convert.ToBoolean(controlData["checkBox3"]);
+                OnConnectTasks = ((JArray)controlData["OnConnectTasks"]).ToObject<List<string>>();
+                foreach (string i in OnConnectTasks)
+                {
+                    listView4.Items.Add(i);
+                }
+                string_key = controlData["string_key"].ToString();
+                label17.Text = "Current Password: " + string_key;
+                key = Utils.CalculateSha256Bytes(string_key);
+                int[] ports = ((JArray)controlData["ports"]).ToObject<int[]>();
+                foreach (int i in ports)
+                {
+                    string string_port = i.ToString();
+                    if (ListeningHandler.PortInUse(i))
+                    {
+                        MessageBox.Show($"The port {string_port} is currently in use! Press ok to skip.");
+                        continue;
+                    }
+                    string[] row = { string_port };
+                    var listViewItem = new ListViewItem(row);
+                    listView1.Items.Add(listViewItem);
+                    AddLog($"Listener on port {string_port} started!", Color.Green);
+                    new Thread(() => ListeningHandler.CreateListener(i)).Start();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading config: " + ex.Message, "Error");
+            }
+        }
+
 
         private void ConfigUpdateTimer_Tick(object sender, EventArgs e)
         {

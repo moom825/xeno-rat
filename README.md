@@ -2,7 +2,7 @@
 # Xeno Rat
 
 <p align='center'>
-<img src="./logo.png" width=512 alt="Xeno-RAT Logo"/>
+<img src="./logo.png" width=200 alt="Xeno-RAT Logo"/>
 </p>
 
 Xeno Rat is a remote access tool (RAT) that is used to control a computer remotely. It is written in C# and is compatible with Windows 10, 11. It is meant to stable, completely open source, easy to use and has a lot of features.
@@ -19,8 +19,9 @@ Xeno Rat stands out from the crowd for several reasons:
 
 - **Socks5 Reverse Proxy**: Xeno Rat includes a Socks5 reverse proxy, allowing you to bypass network restrictions and access remote systems with ease.
 
--  **Regular Updates and Much More**: We are committed to keeping Xeno Rat up to date and continually improving its features and functionality to better meet your needs.
+- **Regular Updates and Much More**: We are committed to keeping Xeno Rat up to date and continually improving its features and functionality to better meet your needs.
 
+- **Built Completely from Scratch**: Xeno Rat is developed entirely from scratch, ensuring a unique and tailored approach to remote access tools.
 
 ## Xeno Rat Builder
 
@@ -101,3 +102,9 @@ To get started with Xeno-RAT, follow these simple steps:
 3. **Unzip the Downloaded File**: After downloading, unzip the downloaded zip file to extract the contents. You can use your operating system's built-in tools or a third-party archive utility.
 
 4. **Run the Executable**: Inside the extracted folder, you will find the executable file. Double-click on this file to run Xeno-RAT.
+
+## Contact
+
+**Contact the Developer:**
+- **Telegram:** [moom825](https://t.me/moom825)
+- **Discord:** moom825
