@@ -284,7 +284,7 @@ namespace xeno_rat_server.Forms
 
         private async void pictureBox1_MouseClick(object sender, MouseEventArgs e)
         {
-            if (pictureBox1.Image == null || !playing || !operation_pass) return;
+            if (pictureBox1.Image == null || !playing || !operation_pass || !checkBox1.Checked) return;
             operation_pass = false;
             Point coords = TranslateCoordinates(new Point(e.X, e.Y), (Size)current_mon_size, pictureBox1);
             if (e.Button == MouseButtons.Right)
@@ -307,7 +307,7 @@ namespace xeno_rat_server.Forms
 
         private async void pictureBox1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            if (current_mon_size==null|| pictureBox1.Image == null || !playing || e.Button == MouseButtons.Right || e.Button==MouseButtons.Middle || !operation_pass) return;
+            if (current_mon_size==null|| pictureBox1.Image == null || !playing || e.Button == MouseButtons.Right || e.Button==MouseButtons.Middle || !operation_pass || !checkBox1.Checked) return;
             operation_pass = false;
             Point coords = TranslateCoordinates(new Point(e.X, e.Y), (Size)current_mon_size, pictureBox1);
             await client.SendAsync(new byte[] { 6 });
@@ -319,7 +319,7 @@ namespace xeno_rat_server.Forms
         private async void pictureBox1_MouseUp(object sender, MouseEventArgs e)
         {
             //return;
-            if (current_mon_size == null || pictureBox1.Image == null || !playing || e.Button==MouseButtons.Right || e.Button == MouseButtons.Middle || !operation_pass) return;
+            if (current_mon_size == null || pictureBox1.Image == null || !playing || e.Button==MouseButtons.Right || e.Button == MouseButtons.Middle || !operation_pass || !checkBox1.Checked) return;
             operation_pass = false;
             Point coords = TranslateCoordinates(new Point(e.X, e.Y), (Size)current_mon_size, pictureBox1);
             await client.SendAsync(new byte[] { 7 });
@@ -330,7 +330,7 @@ namespace xeno_rat_server.Forms
 
         private async void pictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
-            if (current_mon_size == null || pictureBox1.Image == null || !playing || !operation_pass) return;
+            if (current_mon_size == null || pictureBox1.Image == null || !playing || !operation_pass || !checkBox1.Checked) return;
             //return;
             operation_pass = false;
             Point coords = TranslateCoordinates(new Point(e.X, e.Y), (Size)current_mon_size, pictureBox1);
@@ -343,7 +343,7 @@ namespace xeno_rat_server.Forms
         private async void pictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
             //return;
-            if (current_mon_size == null || pictureBox1.Image == null || !playing || e.Button == MouseButtons.Right || e.Button == MouseButtons.Middle || !operation_pass) return;
+            if (current_mon_size == null || pictureBox1.Image == null || !playing || e.Button == MouseButtons.Right || e.Button == MouseButtons.Middle || !operation_pass || !checkBox1.Checked) return;
             operation_pass = false;
             Point coords = TranslateCoordinates(new Point(e.X, e.Y), (Size)current_mon_size, pictureBox1);
             await client.SendAsync(new byte[] { 8 });
@@ -354,7 +354,7 @@ namespace xeno_rat_server.Forms
 
         private void pictureBox1_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
-            if (current_mon_size == null || pictureBox1.Image == null || !playing || !operation_pass) return;
+            if (current_mon_size == null || pictureBox1.Image == null || !playing || !operation_pass || !checkBox1.Checked) return;
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
@@ -374,11 +374,23 @@ namespace xeno_rat_server.Forms
 
         private async void ScreenControl_KeyUp(object sender, KeyEventArgs e)
         {
-            if (current_mon_size == null || pictureBox1.Image == null || !playing || !operation_pass) return;
+            if (current_mon_size == null || pictureBox1.Image == null || !playing || !operation_pass || !checkBox1.Checked) return;
             operation_pass = false;
             await client.SendAsync(new byte[] { 12 });
             await client.SendAsync(client.sock.IntToBytes(e.KeyValue));
             operation_pass = true;
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox1.Checked)
+            {
+                checkBox1.Text = "Enabled";
+            }
+            else 
+            {
+                checkBox1.Text = "Disabled";
+            }
         }
     }
 }

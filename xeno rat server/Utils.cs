@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO.Compression;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Security.Cryptography;
@@ -122,6 +124,18 @@ namespace xeno_rat_server
                 return hashBytes;
             }
         }
+
+        public static void AddTextToZip(ZipArchive archive, string entryName, string text)
+        {
+            ZipArchiveEntry entry = archive.CreateEntry(entryName, CompressionLevel.Optimal);
+
+            using (Stream stream = entry.Open())
+            using (StreamWriter writer = new StreamWriter(stream, Encoding.UTF8))
+            {
+                writer.Write(text);
+            }
+        }
+
         public static async Task<int> SetType2setIdAsync(Node subnode)
         {
             if (subnode.SockType == 2)
