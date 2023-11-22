@@ -20,6 +20,7 @@ namespace Plugin
         bool playing = false;
         int quality = 100;
         int moniter_index = -1;
+        double scale = 1;
         public async Task Run(Node node)
         {
             await node.SendAsync(new byte[] { 3 });//indicate that it has connected
@@ -115,7 +116,6 @@ namespace Plugin
                         }
                         else if (data[0] == 11)
                         {
-
                             int x = node.sock.BytesToInt(await node.ReceiveAsync());
                             int y = node.sock.BytesToInt(await node.ReceiveAsync());
                             Point coords = new Point(x + Screen.AllScreens[moniter_index].Bounds.X, y + Screen.AllScreens[moniter_index].Bounds.Y);
@@ -125,6 +125,10 @@ namespace Plugin
                         {
                             int keyCode = node.sock.BytesToInt(await node.ReceiveAsync());
                             InputHandler.SimulateKeyPress(keyCode);
+                        }
+                        else if (data[0] == 13) 
+                        { 
+                            scale=(double)node.sock.BytesToInt(await node.ReceiveAsync())/10000.0;
                         }
                     }
                     catch (Exception ex) 
@@ -158,7 +162,7 @@ namespace Plugin
 
                         byte[] data = await Task.Run(() =>
                         {
-                            return ScreenshotTaker.TakeScreenshot(quality, moniter_index, true);
+                            return ScreenshotTaker.TakeScreenshot(quality, moniter_index, true, scale);
                         });
                         await ImageNode.SendAsync(data);
                     }
@@ -328,7 +332,7 @@ namespace Plugin
 
         const Int32 CURSOR_SHOWING = 0x00000001;
 
-        public static byte[] TakeScreenshot(int quality, int screenIndex, bool captureCursor)
+        public static byte[] TakeScreenshot(int quality, int screenIndex, bool captureCursor, double scaleImageSize = 1)
         {
             Screen[] screens = Screen.AllScreens;
 
@@ -346,37 +350,41 @@ namespace Plugin
             int screenWidth = (int)(selectedScreen.Bounds.Width * scalingFactor);
             int screenHeight = (int)(selectedScreen.Bounds.Height * scalingFactor);
 
-            using (Bitmap bitmap = new Bitmap(screenWidth, screenHeight, PixelFormat.Format24bppRgb))
+            Bitmap bitmap = new Bitmap(screenWidth, screenHeight, PixelFormat.Format24bppRgb);
+            using (Graphics graphics = Graphics.FromImage(bitmap))
             {
-                using (Graphics graphics = Graphics.FromImage(bitmap))
+                graphics.CopyFromScreen(screenLeft, screenTop, 0, 0, bitmap.Size, CopyPixelOperation.SourceCopy);
+
+                if (captureCursor)
                 {
-                    graphics.CopyFromScreen(screenLeft, screenTop, 0, 0, bitmap.Size, CopyPixelOperation.SourceCopy);
+                    CURSORINFO pci;
+                    pci.cbSize = Marshal.SizeOf(typeof(CURSORINFO));
 
-                    if (captureCursor)
+                    if (GetCursorInfo(out pci))
                     {
-                        CURSORINFO pci;
-                        pci.cbSize = Marshal.SizeOf(typeof(CURSORINFO));
-
-                        if (GetCursorInfo(out pci))
+                        if (pci.flags == CURSOR_SHOWING)
                         {
-                            if (pci.flags == CURSOR_SHOWING)
-                            {
-                                DrawIcon(graphics.GetHdc(), pci.ptScreenPos.x - screenLeft, pci.ptScreenPos.y - screenTop, pci.hCursor);
-                                graphics.ReleaseHdc();
-                            }
+                            DrawIcon(graphics.GetHdc(), pci.ptScreenPos.x - screenLeft, pci.ptScreenPos.y - screenTop, pci.hCursor);
+                            graphics.ReleaseHdc();
                         }
                     }
+                }
 
-                    EncoderParameters encoderParams = new EncoderParameters(1);
-                    encoderParams.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, quality);
+                EncoderParameters encoderParams = new EncoderParameters(1);
+                encoderParams.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, quality);
 
-                    ImageCodecInfo codecInfo = GetEncoderInfo(ImageFormat.Jpeg);
-
-                    using (MemoryStream stream = new MemoryStream())
-                    {
-                        bitmap.Save(stream, codecInfo, encoderParams);
-                        return stream.ToArray();
-                    }
+                ImageCodecInfo codecInfo = GetEncoderInfo(ImageFormat.Jpeg);
+                if (scaleImageSize != 1) 
+                {
+                    Bitmap resized = new Bitmap(bitmap, new Size((int)(bitmap.Width*scaleImageSize), (int)(bitmap.Height * scaleImageSize)));
+                    bitmap.Dispose();
+                    bitmap = resized;
+                }
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    bitmap.Save(stream, codecInfo, encoderParams);
+                    bitmap.Dispose();
+                    return stream.ToArray();
                 }
             }
         }
