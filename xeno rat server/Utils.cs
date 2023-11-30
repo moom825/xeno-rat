@@ -102,9 +102,11 @@ namespace xeno_rat_server
             byte[] dllloadinfo = await clientsubsock.ReceiveAsync();
             if (dllloadinfo[0] != 3)
             {
+                byte[] errorMessage = await clientsubsock.ReceiveAsync();
                 if (Logcallback != null)
                 {
                     Logcallback($"Starting {dllname} dll failed !", Color.Red);
+                    Logcallback(Encoding.UTF8.GetString(errorMessage), Color.Red);
                 }
                 return false;
             }

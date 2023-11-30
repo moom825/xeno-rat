@@ -40,8 +40,8 @@ namespace xeno_rat_client
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
                 await subServer.SendAsync(fail);
+                await subServer.SendAsync(Encoding.UTF8.GetBytes(e.Message));
             }
         }
     }

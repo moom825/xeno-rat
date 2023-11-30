@@ -48,7 +48,7 @@ namespace xeno_rat_server
         {
             
             InitializeComponent();
-            this.Text = "Xeno-rat: Created by moom825 - version 1.3.0";
+            this.Text = "Xeno-rat: Created by moom825 - version 1.4.0";
             key = Utils.CalculateSha256Bytes(string_key);
 
             ListeningHandler =new Listener(OnConnect);
@@ -1587,6 +1587,26 @@ namespace xeno_rat_server
         private void richTextBox1_TextChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void listView3_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void listView3_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right && listView3.SelectedItems.Count > 0)
+            {
+                string selectedValue = listView3.SelectedItems[0].SubItems[0].Text+": "+ listView3.SelectedItems[0].SubItems[1].Text; 
+                
+                ContextMenu contextMenu = new ContextMenu();
+                MenuItem copyMenuItem = new MenuItem("Copy");
+                copyMenuItem.Click += (s, args) => Clipboard.SetText(selectedValue);
+                contextMenu.MenuItems.Add(copyMenuItem);
+
+                contextMenu.Show(listView3, e.Location);
+            }
         }
     }
     public static class IconInjector

