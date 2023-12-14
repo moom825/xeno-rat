@@ -58,18 +58,23 @@ namespace xeno_rat_server
             int IntType = sock.BytesToInt(type);
             return IntType;
         }
+
+
         public async void Disconnect()
         {
             //sock.Disconnect();
             try
             {
-                await Task.Factory.FromAsync(sock.sock.BeginDisconnect, sock.sock.EndDisconnect, true, null);
+                if (sock.sock != null)
+                {
+                    await Task.Factory.FromAsync(sock.sock.BeginDisconnect, sock.sock.EndDisconnect, true, null);
+                }
             }
-            catch 
+            catch
             {
-                sock.sock.Close(0);
+                sock.sock?.Close(0);
             }
-            sock.sock.Dispose();
+            sock.sock?.Dispose();
             if (SockType == 0)
             {
                 foreach (Node i in subNodes.ToList())

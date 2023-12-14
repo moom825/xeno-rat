@@ -26,6 +26,7 @@ namespace xeno_rat_client
         private static string startup_name = "nothingset";
         static async Task Main(string[] args)
         {
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             bool createdNew;
             if (Utils.IsAdmin()) 
             {
@@ -99,5 +100,13 @@ namespace xeno_rat_client
         {
             Console.WriteLine(MainNode.Connected());
         }
+
+        static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Exception exception = e.ExceptionObject as Exception;
+            Process.Start(System.Reflection.Assembly.GetEntryAssembly().Location);
+            Process.GetCurrentProcess().Kill();
+        }
+
     }
 }

