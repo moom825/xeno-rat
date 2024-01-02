@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AdminHelper.cs" />
+    <Compile Include="SystemUtility.cs" />
     <Compile Include="uacbypass.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

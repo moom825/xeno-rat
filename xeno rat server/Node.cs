@@ -83,7 +83,7 @@ namespace xeno_rat_server
                     {
                         if (i.SockType != 1)
                         {
-                            i.Disconnect();
+                            i?.Disconnect();
                         }
                     }
                     catch { }

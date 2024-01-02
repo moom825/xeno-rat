@@ -51,6 +51,7 @@ namespace xeno_rat_server
             this.listView4 = new System.Windows.Forms.ListView();
             this.columnHeader13 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.checkBox4 = new System.Windows.Forms.CheckBox();
             this.listView1 = new System.Windows.Forms.ListView();
             this.label2 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
@@ -122,19 +123,21 @@ namespace xeno_rat_server
             this.tabControl1.Controls.Add(this.tabPage7);
             this.tabControl1.Controls.Add(this.tabPage8);
             this.tabControl1.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tabControl1.Location = new System.Drawing.Point(1, 0);
+            this.tabControl1.Location = new System.Drawing.Point(2, 0);
+            this.tabControl1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(1140, 581);
+            this.tabControl1.Size = new System.Drawing.Size(1710, 898);
             this.tabControl1.TabIndex = 10;
             // 
             // tabPage2
             // 
             this.tabPage2.Controls.Add(this.listView2);
             this.tabPage2.Location = new System.Drawing.Point(4, 34);
+            this.tabPage2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(1132, 543);
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tabPage2.Size = new System.Drawing.Size(1702, 860);
             this.tabPage2.TabIndex = 0;
             this.tabPage2.Text = "📊 Clients";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -160,9 +163,10 @@ namespace xeno_rat_server
             this.listView2.GridLines = true;
             this.listView2.HideSelection = false;
             this.listView2.Location = new System.Drawing.Point(0, 0);
+            this.listView2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.listView2.MultiSelect = false;
             this.listView2.Name = "listView2";
-            this.listView2.Size = new System.Drawing.Size(1137, 547);
+            this.listView2.Size = new System.Drawing.Size(1706, 860);
             this.listView2.TabIndex = 0;
             this.listView2.UseCompatibleStateImageBehavior = false;
             this.listView2.View = System.Windows.Forms.View.Details;
@@ -219,9 +223,10 @@ namespace xeno_rat_server
             // 
             this.tabPage1.Controls.Add(this.listView3);
             this.tabPage1.Location = new System.Drawing.Point(4, 34);
+            this.tabPage1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(1132, 543);
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tabPage1.Size = new System.Drawing.Size(1703, 856);
             this.tabPage1.TabIndex = 4;
             this.tabPage1.Text = "📜Logs";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -234,9 +239,10 @@ namespace xeno_rat_server
             this.listView3.FullRowSelect = true;
             this.listView3.GridLines = true;
             this.listView3.HideSelection = false;
-            this.listView3.Location = new System.Drawing.Point(4, 0);
+            this.listView3.Location = new System.Drawing.Point(6, 0);
+            this.listView3.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.listView3.Name = "listView3";
-            this.listView3.Size = new System.Drawing.Size(1128, 540);
+            this.listView3.Size = new System.Drawing.Size(1690, 829);
             this.listView3.TabIndex = 0;
             this.listView3.UseCompatibleStateImageBehavior = false;
             this.listView3.View = System.Windows.Forms.View.Details;
@@ -257,10 +263,9 @@ namespace xeno_rat_server
             // 
             this.tabPage3.Controls.Add(this.listView4);
             this.tabPage3.Location = new System.Drawing.Point(4, 34);
-            this.tabPage3.Margin = new System.Windows.Forms.Padding(2);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(2);
-            this.tabPage3.Size = new System.Drawing.Size(1132, 543);
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage3.Size = new System.Drawing.Size(1703, 856);
             this.tabPage3.TabIndex = 5;
             this.tabPage3.Text = "💡 On connect";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -272,8 +277,9 @@ namespace xeno_rat_server
             this.listView4.GridLines = true;
             this.listView4.HideSelection = false;
             this.listView4.Location = new System.Drawing.Point(0, 0);
+            this.listView4.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.listView4.Name = "listView4";
-            this.listView4.Size = new System.Drawing.Size(1132, 543);
+            this.listView4.Size = new System.Drawing.Size(1696, 833);
             this.listView4.TabIndex = 0;
             this.listView4.UseCompatibleStateImageBehavior = false;
             this.listView4.View = System.Windows.Forms.View.Details;
@@ -286,6 +292,7 @@ namespace xeno_rat_server
             // 
             // tabPage4
             // 
+            this.tabPage4.Controls.Add(this.checkBox4);
             this.tabPage4.Controls.Add(this.listView1);
             this.tabPage4.Controls.Add(this.label2);
             this.tabPage4.Controls.Add(this.button1);
@@ -295,12 +302,26 @@ namespace xeno_rat_server
             this.tabPage4.Controls.Add(this.label17);
             this.tabPage4.Controls.Add(this.textBox1);
             this.tabPage4.Location = new System.Drawing.Point(4, 34);
+            this.tabPage4.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(1132, 543);
+            this.tabPage4.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tabPage4.Size = new System.Drawing.Size(1703, 856);
             this.tabPage4.TabIndex = 1;
             this.tabPage4.Text = "🔌 Listener";
             this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // checkBox4
+            // 
+            this.checkBox4.AutoSize = true;
+            this.checkBox4.Checked = true;
+            this.checkBox4.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox4.Location = new System.Drawing.Point(942, 285);
+            this.checkBox4.Name = "checkBox4";
+            this.checkBox4.Size = new System.Drawing.Size(219, 29);
+            this.checkBox4.TabIndex = 9;
+            this.checkBox4.Text = "Log crashing Errors";
+            this.checkBox4.UseVisualStyleBackColor = true;
+            this.checkBox4.CheckedChanged += new System.EventHandler(this.checkBox4_CheckedChanged);
             // 
             // listView1
             // 
@@ -310,10 +331,11 @@ namespace xeno_rat_server
             this.listView1.FullRowSelect = true;
             this.listView1.GridLines = true;
             this.listView1.HideSelection = false;
-            this.listView1.Location = new System.Drawing.Point(13, 82);
+            this.listView1.Location = new System.Drawing.Point(20, 126);
+            this.listView1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.listView1.MultiSelect = false;
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(162, 449);
+            this.listView1.Size = new System.Drawing.Size(241, 689);
             this.listView1.TabIndex = 1;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -323,7 +345,8 @@ namespace xeno_rat_server
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(240, 51);
+            this.label2.Location = new System.Drawing.Point(360, 78);
+            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(119, 31);
             this.label2.TabIndex = 8;
@@ -332,9 +355,10 @@ namespace xeno_rat_server
             // button1
             // 
             this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button1.Location = new System.Drawing.Point(236, 149);
+            this.button1.Location = new System.Drawing.Point(354, 229);
+            this.button1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(88, 41);
+            this.button1.Size = new System.Drawing.Size(132, 63);
             this.button1.TabIndex = 3;
             this.button1.Text = "Add";
             this.button1.UseVisualStyleBackColor = true;
@@ -343,10 +367,9 @@ namespace xeno_rat_server
             // button5
             // 
             this.button5.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button5.Location = new System.Drawing.Point(236, 324);
-            this.button5.Margin = new System.Windows.Forms.Padding(2);
+            this.button5.Location = new System.Drawing.Point(354, 498);
             this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(98, 41);
+            this.button5.Size = new System.Drawing.Size(147, 63);
             this.button5.TabIndex = 7;
             this.button5.Text = "Set Password";
             this.button5.UseVisualStyleBackColor = true;
@@ -356,7 +379,8 @@ namespace xeno_rat_server
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(7, 37);
+            this.label1.Location = new System.Drawing.Point(10, 57);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(185, 31);
             this.label1.TabIndex = 2;
@@ -365,10 +389,9 @@ namespace xeno_rat_server
             // textBox5
             // 
             this.textBox5.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox5.Location = new System.Drawing.Point(236, 260);
-            this.textBox5.Margin = new System.Windows.Forms.Padding(2);
+            this.textBox5.Location = new System.Drawing.Point(354, 400);
             this.textBox5.Name = "textBox5";
-            this.textBox5.Size = new System.Drawing.Size(305, 38);
+            this.textBox5.Size = new System.Drawing.Size(456, 38);
             this.textBox5.TabIndex = 6;
             this.textBox5.Text = "password here";
             // 
@@ -376,8 +399,7 @@ namespace xeno_rat_server
             // 
             this.label17.AutoSize = true;
             this.label17.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label17.Location = new System.Drawing.Point(240, 216);
-            this.label17.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label17.Location = new System.Drawing.Point(360, 332);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(307, 31);
             this.label17.TabIndex = 5;
@@ -386,9 +408,10 @@ namespace xeno_rat_server
             // textBox1
             // 
             this.textBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox1.Location = new System.Drawing.Point(234, 105);
+            this.textBox1.Location = new System.Drawing.Point(351, 162);
+            this.textBox1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(307, 38);
+            this.textBox1.Size = new System.Drawing.Size(458, 38);
             this.textBox1.TabIndex = 0;
             // 
             // tabPage7
@@ -430,9 +453,10 @@ namespace xeno_rat_server
             this.tabPage7.Controls.Add(this.label5);
             this.tabPage7.Controls.Add(this.label6);
             this.tabPage7.Location = new System.Drawing.Point(4, 34);
+            this.tabPage7.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tabPage7.Name = "tabPage7";
-            this.tabPage7.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage7.Size = new System.Drawing.Size(1132, 543);
+            this.tabPage7.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tabPage7.Size = new System.Drawing.Size(1703, 856);
             this.tabPage7.TabIndex = 2;
             this.tabPage7.Text = "🛠 Builder";
             this.tabPage7.UseVisualStyleBackColor = true;
@@ -441,7 +465,8 @@ namespace xeno_rat_server
             // 
             this.label19.AutoSize = true;
             this.label19.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label19.Location = new System.Drawing.Point(263, 275);
+            this.label19.Location = new System.Drawing.Point(394, 423);
+            this.label19.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(121, 24);
             this.label19.TabIndex = 72;
@@ -450,16 +475,18 @@ namespace xeno_rat_server
             // textBox16
             // 
             this.textBox16.Enabled = false;
-            this.textBox16.Location = new System.Drawing.Point(266, 309);
+            this.textBox16.Location = new System.Drawing.Point(399, 475);
+            this.textBox16.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox16.Name = "textBox16";
-            this.textBox16.Size = new System.Drawing.Size(120, 31);
+            this.textBox16.Size = new System.Drawing.Size(178, 31);
             this.textBox16.TabIndex = 71;
             // 
             // label18
             // 
             this.label18.AutoSize = true;
             this.label18.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label18.Location = new System.Drawing.Point(131, 259);
+            this.label18.Location = new System.Drawing.Point(196, 398);
+            this.label18.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(126, 24);
             this.label18.TabIndex = 70;
@@ -468,7 +495,8 @@ namespace xeno_rat_server
             // checkBox3
             // 
             this.checkBox3.AutoSize = true;
-            this.checkBox3.Location = new System.Drawing.Point(135, 321);
+            this.checkBox3.Location = new System.Drawing.Point(202, 494);
+            this.checkBox3.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.checkBox3.Name = "checkBox3";
             this.checkBox3.Size = new System.Drawing.Size(85, 29);
             this.checkBox3.TabIndex = 69;
@@ -479,7 +507,8 @@ namespace xeno_rat_server
             // checkBox2
             // 
             this.checkBox2.AutoSize = true;
-            this.checkBox2.Location = new System.Drawing.Point(135, 286);
+            this.checkBox2.Location = new System.Drawing.Point(202, 440);
+            this.checkBox2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.checkBox2.Name = "checkBox2";
             this.checkBox2.Size = new System.Drawing.Size(111, 29);
             this.checkBox2.TabIndex = 68;
@@ -491,7 +520,8 @@ namespace xeno_rat_server
             // 
             this.checkBox1.AutoSize = true;
             this.checkBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox1.Location = new System.Drawing.Point(266, 221);
+            this.checkBox1.Location = new System.Drawing.Point(399, 340);
+            this.checkBox1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(121, 35);
             this.checkBox1.TabIndex = 67;
@@ -502,9 +532,10 @@ namespace xeno_rat_server
             // button2
             // 
             this.button2.Font = new System.Drawing.Font("Microsoft Sans Serif", 26.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button2.Location = new System.Drawing.Point(148, 446);
+            this.button2.Location = new System.Drawing.Point(222, 686);
+            this.button2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(204, 66);
+            this.button2.Size = new System.Drawing.Size(306, 102);
             this.button2.TabIndex = 38;
             this.button2.Text = "Build";
             this.button2.UseVisualStyleBackColor = true;
@@ -513,9 +544,10 @@ namespace xeno_rat_server
             // button4
             // 
             this.button4.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button4.Location = new System.Drawing.Point(567, 361);
+            this.button4.Location = new System.Drawing.Point(850, 555);
+            this.button4.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(142, 28);
+            this.button4.Size = new System.Drawing.Size(213, 43);
             this.button4.TabIndex = 66;
             this.button4.Text = "Remove icon";
             this.button4.UseVisualStyleBackColor = true;
@@ -524,9 +556,10 @@ namespace xeno_rat_server
             // textBox2
             // 
             this.textBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox2.Location = new System.Drawing.Point(135, 218);
+            this.textBox2.Location = new System.Drawing.Point(202, 335);
+            this.textBox2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(110, 38);
+            this.textBox2.Size = new System.Drawing.Size(163, 38);
             this.textBox2.TabIndex = 37;
             this.textBox2.Text = "5000";
             // 
@@ -537,7 +570,8 @@ namespace xeno_rat_server
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label16.AutoSize = true;
             this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label16.Location = new System.Drawing.Point(735, 365);
+            this.label16.Location = new System.Drawing.Point(1102, 562);
+            this.label16.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(155, 24);
             this.label16.TabIndex = 65;
@@ -546,9 +580,10 @@ namespace xeno_rat_server
             // textBox6
             // 
             this.textBox6.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox6.Location = new System.Drawing.Point(500, 53);
+            this.textBox6.Location = new System.Drawing.Point(750, 82);
+            this.textBox6.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox6.Name = "textBox6";
-            this.textBox6.Size = new System.Drawing.Size(209, 38);
+            this.textBox6.Size = new System.Drawing.Size(312, 38);
             this.textBox6.TabIndex = 39;
             this.textBox6.Text = "Xeno-manager";
             // 
@@ -556,7 +591,8 @@ namespace xeno_rat_server
             // 
             this.label15.AutoSize = true;
             this.label15.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label15.Location = new System.Drawing.Point(496, 94);
+            this.label15.Location = new System.Drawing.Point(744, 145);
+            this.label15.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(111, 24);
             this.label15.TabIndex = 64;
@@ -565,9 +601,10 @@ namespace xeno_rat_server
             // textBox7
             // 
             this.textBox7.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox7.Location = new System.Drawing.Point(735, 303);
+            this.textBox7.Location = new System.Drawing.Point(1102, 466);
+            this.textBox7.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox7.Name = "textBox7";
-            this.textBox7.Size = new System.Drawing.Size(245, 38);
+            this.textBox7.Size = new System.Drawing.Size(366, 38);
             this.textBox7.TabIndex = 40;
             this.textBox7.Text = "Client";
             // 
@@ -575,7 +612,8 @@ namespace xeno_rat_server
             // 
             this.label14.AutoSize = true;
             this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label14.Location = new System.Drawing.Point(498, 190);
+            this.label14.Location = new System.Drawing.Point(747, 292);
+            this.label14.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(145, 24);
             this.label14.TabIndex = 63;
@@ -584,9 +622,10 @@ namespace xeno_rat_server
             // textBox8
             // 
             this.textBox8.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox8.Location = new System.Drawing.Point(735, 53);
+            this.textBox8.Location = new System.Drawing.Point(1102, 82);
+            this.textBox8.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox8.Name = "textBox8";
-            this.textBox8.Size = new System.Drawing.Size(245, 38);
+            this.textBox8.Size = new System.Drawing.Size(366, 38);
             this.textBox8.TabIndex = 41;
             this.textBox8.Text = "Xeno";
             this.textBox8.TextChanged += new System.EventHandler(this.textBox8_TextChanged);
@@ -595,7 +634,8 @@ namespace xeno_rat_server
             // 
             this.label13.AutoSize = true;
             this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label13.Location = new System.Drawing.Point(731, 185);
+            this.label13.Location = new System.Drawing.Point(1096, 285);
+            this.label13.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(159, 24);
             this.label13.TabIndex = 62;
@@ -604,9 +644,10 @@ namespace xeno_rat_server
             // textBox9
             // 
             this.textBox9.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox9.Location = new System.Drawing.Point(735, 134);
+            this.textBox9.Location = new System.Drawing.Point(1102, 206);
+            this.textBox9.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox9.Name = "textBox9";
-            this.textBox9.Size = new System.Drawing.Size(245, 38);
+            this.textBox9.Size = new System.Drawing.Size(366, 38);
             this.textBox9.TabIndex = 42;
             this.textBox9.Text = "Copyright ©  2023";
             // 
@@ -614,7 +655,8 @@ namespace xeno_rat_server
             // 
             this.label12.AutoSize = true;
             this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label12.Location = new System.Drawing.Point(498, 270);
+            this.label12.Location = new System.Drawing.Point(747, 415);
+            this.label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(101, 24);
             this.label12.TabIndex = 61;
@@ -623,9 +665,10 @@ namespace xeno_rat_server
             // textBox10
             // 
             this.textBox10.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox10.Location = new System.Drawing.Point(502, 303);
+            this.textBox10.Location = new System.Drawing.Point(753, 466);
+            this.textBox10.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox10.Name = "textBox10";
-            this.textBox10.Size = new System.Drawing.Size(209, 38);
+            this.textBox10.Size = new System.Drawing.Size(312, 38);
             this.textBox10.TabIndex = 43;
             this.textBox10.Text = "Xeno";
             // 
@@ -633,7 +676,8 @@ namespace xeno_rat_server
             // 
             this.label11.AutoSize = true;
             this.label11.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label11.Location = new System.Drawing.Point(731, 106);
+            this.label11.Location = new System.Drawing.Point(1096, 163);
+            this.label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(90, 24);
             this.label11.TabIndex = 60;
@@ -642,9 +686,10 @@ namespace xeno_rat_server
             // textBox11
             // 
             this.textBox11.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox11.Location = new System.Drawing.Point(735, 218);
+            this.textBox11.Location = new System.Drawing.Point(1102, 335);
+            this.textBox11.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox11.Name = "textBox11";
-            this.textBox11.Size = new System.Drawing.Size(245, 38);
+            this.textBox11.Size = new System.Drawing.Size(366, 38);
             this.textBox11.TabIndex = 44;
             this.textBox11.Text = "Xeno_manager.exe";
             // 
@@ -652,7 +697,8 @@ namespace xeno_rat_server
             // 
             this.label10.AutoSize = true;
             this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label10.Location = new System.Drawing.Point(731, 14);
+            this.label10.Location = new System.Drawing.Point(1096, 22);
+            this.label10.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(147, 24);
             this.label10.TabIndex = 59;
@@ -662,9 +708,10 @@ namespace xeno_rat_server
             // button3
             // 
             this.button3.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button3.Location = new System.Drawing.Point(500, 361);
+            this.button3.Location = new System.Drawing.Point(750, 555);
+            this.button3.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(55, 28);
+            this.button3.Size = new System.Drawing.Size(82, 43);
             this.button3.TabIndex = 45;
             this.button3.Text = "Icon";
             this.button3.UseVisualStyleBackColor = true;
@@ -674,7 +721,8 @@ namespace xeno_rat_server
             // 
             this.label9.AutoSize = true;
             this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label9.Location = new System.Drawing.Point(731, 275);
+            this.label9.Location = new System.Drawing.Point(1096, 423);
+            this.label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(104, 24);
             this.label9.TabIndex = 58;
@@ -683,9 +731,10 @@ namespace xeno_rat_server
             // textBox12
             // 
             this.textBox12.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox12.Location = new System.Drawing.Point(135, 386);
+            this.textBox12.Location = new System.Drawing.Point(202, 594);
+            this.textBox12.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox12.Name = "textBox12";
-            this.textBox12.Size = new System.Drawing.Size(252, 38);
+            this.textBox12.Size = new System.Drawing.Size(376, 38);
             this.textBox12.TabIndex = 46;
             this.textBox12.Text = "127.0.0.1";
             // 
@@ -693,7 +742,8 @@ namespace xeno_rat_server
             // 
             this.label8.AutoSize = true;
             this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label8.Location = new System.Drawing.Point(496, 14);
+            this.label8.Location = new System.Drawing.Point(744, 22);
+            this.label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(131, 24);
             this.label8.TabIndex = 57;
@@ -702,36 +752,40 @@ namespace xeno_rat_server
             // textBox13
             // 
             this.textBox13.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox13.Location = new System.Drawing.Point(135, 139);
+            this.textBox13.Location = new System.Drawing.Point(202, 214);
+            this.textBox13.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox13.Name = "textBox13";
-            this.textBox13.Size = new System.Drawing.Size(110, 38);
+            this.textBox13.Size = new System.Drawing.Size(163, 38);
             this.textBox13.TabIndex = 47;
             this.textBox13.Text = "4444";
             // 
             // textBox4
             // 
             this.textBox4.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox4.Location = new System.Drawing.Point(500, 134);
+            this.textBox4.Location = new System.Drawing.Point(750, 206);
+            this.textBox4.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox4.Name = "textBox4";
-            this.textBox4.Size = new System.Drawing.Size(209, 38);
+            this.textBox4.Size = new System.Drawing.Size(312, 38);
             this.textBox4.TabIndex = 56;
             this.textBox4.Text = "3.2.1";
             // 
             // textBox14
             // 
             this.textBox14.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox14.Location = new System.Drawing.Point(277, 139);
+            this.textBox14.Location = new System.Drawing.Point(416, 214);
+            this.textBox14.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox14.Name = "textBox14";
-            this.textBox14.Size = new System.Drawing.Size(110, 38);
+            this.textBox14.Size = new System.Drawing.Size(163, 38);
             this.textBox14.TabIndex = 48;
             this.textBox14.Text = "1234";
             // 
             // textBox3
             // 
             this.textBox3.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox3.Location = new System.Drawing.Point(501, 218);
+            this.textBox3.Location = new System.Drawing.Point(752, 335);
+            this.textBox3.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(209, 38);
+            this.textBox3.Size = new System.Drawing.Size(312, 38);
             this.textBox3.TabIndex = 55;
             this.textBox3.Text = "1.2.3";
             // 
@@ -739,7 +793,8 @@ namespace xeno_rat_server
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label3.Location = new System.Drawing.Point(144, 358);
+            this.label3.Location = new System.Drawing.Point(216, 551);
+            this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(26, 24);
             this.label3.TabIndex = 49;
@@ -749,7 +804,8 @@ namespace xeno_rat_server
             // 
             this.label7.AutoSize = true;
             this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.Location = new System.Drawing.Point(144, 191);
+            this.label7.Location = new System.Drawing.Point(216, 294);
+            this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(99, 24);
             this.label7.TabIndex = 54;
@@ -759,7 +815,8 @@ namespace xeno_rat_server
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(154, 106);
+            this.label4.Location = new System.Drawing.Point(231, 163);
+            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(43, 24);
             this.label4.TabIndex = 50;
@@ -768,9 +825,10 @@ namespace xeno_rat_server
             // textBox15
             // 
             this.textBox15.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox15.Location = new System.Drawing.Point(135, 53);
+            this.textBox15.Location = new System.Drawing.Point(202, 82);
+            this.textBox15.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox15.Name = "textBox15";
-            this.textBox15.Size = new System.Drawing.Size(251, 38);
+            this.textBox15.Size = new System.Drawing.Size(374, 38);
             this.textBox15.TabIndex = 53;
             this.textBox15.Text = "Xeno_rat_nd8912d";
             // 
@@ -778,7 +836,8 @@ namespace xeno_rat_server
             // 
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.Location = new System.Drawing.Point(282, 106);
+            this.label5.Location = new System.Drawing.Point(423, 163);
+            this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(92, 24);
             this.label5.TabIndex = 51;
@@ -788,7 +847,8 @@ namespace xeno_rat_server
             // 
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(144, 14);
+            this.label6.Location = new System.Drawing.Point(216, 22);
+            this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(62, 24);
             this.label6.TabIndex = 52;
@@ -798,9 +858,10 @@ namespace xeno_rat_server
             // 
             this.tabPage8.Controls.Add(this.richTextBox1);
             this.tabPage8.Location = new System.Drawing.Point(4, 34);
+            this.tabPage8.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tabPage8.Name = "tabPage8";
-            this.tabPage8.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage8.Size = new System.Drawing.Size(1132, 543);
+            this.tabPage8.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tabPage8.Size = new System.Drawing.Size(1703, 856);
             this.tabPage8.TabIndex = 3;
             this.tabPage8.Text = "👤 About";
             this.tabPage8.UseVisualStyleBackColor = true;
@@ -809,20 +870,22 @@ namespace xeno_rat_server
             // 
             this.richTextBox1.Enabled = false;
             this.richTextBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.richTextBox1.Location = new System.Drawing.Point(3, 3);
+            this.richTextBox1.Location = new System.Drawing.Point(4, 5);
+            this.richTextBox1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(1129, 552);
+            this.richTextBox1.Size = new System.Drawing.Size(1692, 847);
             this.richTextBox1.TabIndex = 0;
             this.richTextBox1.Text = resources.GetString("richTextBox1.Text");
             this.richTextBox1.TextChanged += new System.EventHandler(this.richTextBox1_TextChanged);
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1141, 584);
+            this.ClientSize = new System.Drawing.Size(1712, 898);
             this.Controls.Add(this.tabControl1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "MainForm";
             this.Text = "MainForm";
             this.Load += new System.EventHandler(this.MainForm_Load);
@@ -907,6 +970,7 @@ namespace xeno_rat_server
         private System.Windows.Forms.TabPage tabPage3;
         private System.Windows.Forms.ListView listView4;
         private System.Windows.Forms.ColumnHeader columnHeader13;
+        private System.Windows.Forms.CheckBox checkBox4;
     }
 }
 
