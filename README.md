@@ -61,6 +61,11 @@ Inside the Xeno-Rat Server, head over to the "Builder" tab, select your custom s
 - Windir + Disk Cleanup
 - Fodhelper
 
+### Uac Options
+
+- Request admin
+- De-escalate to user
+
 ### Client
 
 - Close
@@ -72,7 +77,7 @@ Inside the Xeno-Rat Server, head over to the "Builder" tab, select your custom s
 - Shutdown
 - Restart
 
-## Misc Features
+### Misc Features
 
 - Logs
 - Listen on multiple ports
