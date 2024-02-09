@@ -25,9 +25,14 @@ namespace xeno_rat_client
         private static string Install_path = "nothingset";
         private static string startup_name = "nothingset";
 
+        public static StringBuilder ProcessLog = new StringBuilder();
 
         static async Task Main(string[] args)
         {
+            CapturingConsoleWriter ConsoleCapture = new CapturingConsoleWriter(Console.Out);
+
+            Console.SetOut(ConsoleCapture);
+
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             bool createdNew;
             if (Utils.IsAdmin()) 
@@ -125,5 +130,41 @@ namespace xeno_rat_client
             Process.GetCurrentProcess().Kill();
         }
 
+    }
+
+    public class CapturingConsoleWriter : TextWriter
+    {
+        private readonly TextWriter originalOut;
+
+        public CapturingConsoleWriter(TextWriter originalOut)
+        {
+            this.originalOut = originalOut;
+        }
+
+        public override Encoding Encoding => originalOut.Encoding;
+
+        public override void Write(char value)
+        {
+            Program.ProcessLog.Append(value);  // Capture the output
+            originalOut.Write(value);  // Continue to write to the original output
+        }
+
+        public override void WriteLine(string value)
+        {
+            Program.ProcessLog.AppendLine(value);  // Capture the output with a new line
+            originalOut.WriteLine(value);  // Continue to write to the original output
+        }
+
+        // You can add other overrides if needed
+
+        public string GetCapturedOutput()
+        {
+            return Program.ProcessLog.ToString();
+        }
+
+        public void ClearCapturedOutput()
+        {
+            Program.ProcessLog.Clear();
+        }
     }
 }

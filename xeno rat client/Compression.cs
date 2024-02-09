@@ -43,6 +43,7 @@ namespace xeno_rat_client
             ret = RtlCompressBuffer(COMPRESSION_FORMAT_LZNT1 | COMPRESSION_ENGINE_MAXIMUM, buffer, buffer.Length, outBuf, outBuf.Length, 0, out dstSize, hWork);
             if (ret != 0)
             {
+                LocalFree(hWork);
                 return null;
             }
             LocalFree(hWork);

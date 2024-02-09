@@ -15,6 +15,8 @@ namespace xeno_rat_server
         [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int memcmp(byte[] b1, byte[] b2, long count);
 
+        private SemaphoreSlim OneRecieveAtATime = new SemaphoreSlim(1);
+        public bool isDisposed = false;
         private Action<Node> OnDisconnect;
         private List<Action<Node>> TempOnDisconnects = new List<Action<Node>>();
         public List<Node> subNodes;
@@ -62,7 +64,7 @@ namespace xeno_rat_server
 
         public async void Disconnect()
         {
-            //sock.Disconnect();
+            isDisposed = true;
             try
             {
                 if (sock.sock != null)
@@ -75,6 +77,7 @@ namespace xeno_rat_server
                 sock.sock?.Close(0);
             }
             sock.sock?.Dispose();
+            OneRecieveAtATime.Dispose();
             if (SockType == 0)
             {
                 foreach (Node i in subNodes.ToList())
@@ -123,13 +126,25 @@ namespace xeno_rat_server
         }
         public async Task<byte[]> ReceiveAsync() 
         {
-            byte[] data = await sock.ReceiveAsync();
-            if (data == null)
+            if (isDisposed) 
             {
-                Disconnect();
                 return null;
             }
-            return data;
+            await OneRecieveAtATime.WaitAsync();
+            try
+            {
+                byte[] data = await sock.ReceiveAsync();
+                if (data == null)
+                {
+                    Disconnect();
+                    return null;
+                }
+                return data;
+            }
+            finally
+            {
+                OneRecieveAtATime.Release();
+            }
         }
         public async Task<bool> SendAsync(byte[] data)
         {
@@ -146,7 +161,10 @@ namespace xeno_rat_server
             try 
             { 
                 ip= ((IPEndPoint)sock.sock.RemoteEndPoint).Address.ToString();
-            } catch { }
+            } 
+            catch 
+            { 
+            }
             return ip;
             
         }

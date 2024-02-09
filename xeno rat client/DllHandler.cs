@@ -16,7 +16,7 @@ namespace xeno_rat_client
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
         }
 
-        private Dictionary<string, Assembly> Assemblies = new Dictionary<string, Assembly>();
+        public Dictionary<string, Assembly> Assemblies = new Dictionary<string, Assembly>();
         public string classpath = "Plugin.Main";
         public async Task DllNodeHandler(Node subServer)
         {

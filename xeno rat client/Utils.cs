@@ -35,8 +35,20 @@ namespace xeno_rat_client
         [DllImport("user32.dll")]
         private static extern IntPtr GetWindowThreadProcessId(IntPtr hWnd, out uint ProcessId);
 
+        [DllImport("User32.dll")]
+        private static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
+
+
         [DllImport("user32.dll")]
         private static extern bool CloseHandle(IntPtr hObject);
+
+        internal struct LASTINPUTINFO
+        {
+            public uint cbSize;
+
+            public uint dwTime;
+        }
+
 
         public static string GetCaptionOfActiveWindow()
         {
@@ -340,5 +352,14 @@ namespace xeno_rat_client
 
             return false; 
         }
+
+        public static uint GetIdleTime()
+        {
+            LASTINPUTINFO lastInPut = new LASTINPUTINFO();
+            lastInPut.cbSize = (uint)Marshal.SizeOf(lastInPut);
+            GetLastInputInfo(ref lastInPut);
+            return ((uint)Environment.TickCount - lastInPut.dwTime);
+        }
+
     }
 }

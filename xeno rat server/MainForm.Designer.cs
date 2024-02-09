@@ -37,12 +37,14 @@ namespace xeno_rat_server
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader15 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader7 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader8 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader9 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader10 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader14 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.listView3 = new System.Windows.Forms.ListView();
             this.columnHeader11 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -152,12 +154,14 @@ namespace xeno_rat_server
             this.columnHeader3,
             this.columnHeader4,
             this.columnHeader5,
+            this.columnHeader15,
             this.columnHeader2,
             this.columnHeader6,
             this.columnHeader7,
             this.columnHeader8,
             this.columnHeader9,
-            this.columnHeader10});
+            this.columnHeader10,
+            this.columnHeader14});
             this.listView2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.listView2.FullRowSelect = true;
             this.listView2.GridLines = true;
@@ -189,6 +193,11 @@ namespace xeno_rat_server
             this.columnHeader5.Text = "Username";
             this.columnHeader5.Width = 145;
             // 
+            // columnHeader15
+            // 
+            this.columnHeader15.Text = "Domain name";
+            this.columnHeader15.Width = 127;
+            // 
             // columnHeader2
             // 
             this.columnHeader2.Text = "Client Version";
@@ -219,6 +228,11 @@ namespace xeno_rat_server
             this.columnHeader10.Text = "Ping";
             this.columnHeader10.Width = 50;
             // 
+            // columnHeader14
+            // 
+            this.columnHeader14.Text = "Idle Time";
+            this.columnHeader14.Width = 84;
+            // 
             // tabPage1
             // 
             this.tabPage1.Controls.Add(this.listView3);
@@ -226,7 +240,7 @@ namespace xeno_rat_server
             this.tabPage1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tabPage1.Size = new System.Drawing.Size(1703, 856);
+            this.tabPage1.Size = new System.Drawing.Size(1702, 860);
             this.tabPage1.TabIndex = 4;
             this.tabPage1.Text = "📜Logs";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -265,7 +279,7 @@ namespace xeno_rat_server
             this.tabPage3.Location = new System.Drawing.Point(4, 34);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(1703, 856);
+            this.tabPage3.Size = new System.Drawing.Size(1702, 860);
             this.tabPage3.TabIndex = 5;
             this.tabPage3.Text = "💡 On connect";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -305,7 +319,7 @@ namespace xeno_rat_server
             this.tabPage4.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tabPage4.Size = new System.Drawing.Size(1703, 856);
+            this.tabPage4.Size = new System.Drawing.Size(1702, 860);
             this.tabPage4.TabIndex = 1;
             this.tabPage4.Text = "🔌 Listener";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -456,7 +470,7 @@ namespace xeno_rat_server
             this.tabPage7.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tabPage7.Name = "tabPage7";
             this.tabPage7.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tabPage7.Size = new System.Drawing.Size(1703, 856);
+            this.tabPage7.Size = new System.Drawing.Size(1702, 860);
             this.tabPage7.TabIndex = 2;
             this.tabPage7.Text = "🛠 Builder";
             this.tabPage7.UseVisualStyleBackColor = true;
@@ -861,7 +875,7 @@ namespace xeno_rat_server
             this.tabPage8.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tabPage8.Name = "tabPage8";
             this.tabPage8.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.tabPage8.Size = new System.Drawing.Size(1703, 856);
+            this.tabPage8.Size = new System.Drawing.Size(1702, 860);
             this.tabPage8.TabIndex = 3;
             this.tabPage8.Text = "👤 About";
             this.tabPage8.UseVisualStyleBackColor = true;
@@ -971,6 +985,8 @@ namespace xeno_rat_server
         private System.Windows.Forms.ListView listView4;
         private System.Windows.Forms.ColumnHeader columnHeader13;
         private System.Windows.Forms.CheckBox checkBox4;
+        private System.Windows.Forms.ColumnHeader columnHeader15;
+        private System.Windows.Forms.ColumnHeader columnHeader14;
     }
 }
 

