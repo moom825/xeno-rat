@@ -57,7 +57,7 @@ namespace xeno_rat_server
         {
             
             InitializeComponent();
-            this.Text = "Xeno-rat: Created by moom825 - version 1.8.0";
+            this.Text = "Xeno-rat: Created by moom825 - version 1.8.5";
             key = Utils.CalculateSha256Bytes(string_key);
 
             ListeningHandler =new Listener(OnConnect);
@@ -153,7 +153,25 @@ namespace xeno_rat_server
                     return;
                 }
                 
-                //currentCount++;
+                List<ListViewItem> possibleDuplicates = GetClientsByHwid(clientdata.Text);
+                List<string[]> duplicates = new List<string[]>();
+                foreach (ListViewItem i in possibleDuplicates) 
+                {
+                    string[] match = new string[] { i.SubItems[2].Text, i.SubItems[7].Text };
+                    duplicates.Add(match);
+                }
+
+                if (duplicates.Count > 0 && duplicates.Contains(new string[] { clientdata.SubItems[2].Text, clientdata.SubItems[7].Text })) 
+                {
+                    client.Disconnect();
+                    return;
+                }
+
+                listView2.Invoke((MethodInvoker)(() =>//add the clientdata to the listview
+                {
+                    clientdata = listView2.Items.Add(clientdata);
+                }));
+
                 Node HeartSock=await client.CreateSubNodeAsync(1);//create HeartBeat Node
                 if (HeartSock == null) 
                 {
@@ -173,6 +191,19 @@ namespace xeno_rat_server
                 client.Parent = clients[client.ID];
                 await clients[client.ID].AddSubNode(client);
             }
+        }
+
+        private List<ListViewItem> GetClientsByHwid(string hwid)
+        {
+            List<ListViewItem> results = new List<ListViewItem>();
+            foreach (ListViewItem cliView in listView2.Items)
+            {
+                if (cliView.Text == hwid)
+                {
+                    results.Add(cliView);
+                }
+            }
+            return results;
         }
 
         private async Task CompleteOnConnectTasks(Node client) 
@@ -387,11 +418,8 @@ namespace xeno_rat_server
             lvi.SubItems.Add("");
             lvi.SubItems.Add("0");
             lvi.SubItems.Add("0");
-            listView2.Invoke((MethodInvoker)(() =>
-            {
-                item=listView2.Items.Add(lvi);
-            }));
-            return item; 
+            
+            return lvi; 
         } 
 
         private void OnDisconnect(Node client)

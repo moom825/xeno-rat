@@ -101,8 +101,7 @@ namespace Plugin
             {
                 while (!FULLSTOP) 
                 {
-                    Application.DoEvents();
-                    await Task.Delay(1);
+                    await Task.Delay(1000);
                 }
             }
 
