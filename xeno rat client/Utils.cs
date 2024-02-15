@@ -49,7 +49,10 @@ namespace xeno_rat_client
             public uint dwTime;
         }
 
-
+        public static async Task<string> GetCaptionOfActiveWindowAsync() 
+        {
+            return await Task.Run(() => GetCaptionOfActiveWindow());
+        }
         public static string GetCaptionOfActiveWindow()
         {
             string strTitle = string.Empty;
@@ -353,6 +356,10 @@ namespace xeno_rat_client
             return false; 
         }
 
+        public static async Task<uint> GetIdleTimeAsync() 
+        {
+            return await Task.Run(() => GetIdleTime());
+        }
         public static uint GetIdleTime()
         {
             LASTINPUTINFO lastInPut = new LASTINPUTINFO();

@@ -49,6 +49,7 @@ namespace xeno_rat_client
             {
                 await subServer.SendAsync(fail);
                 await subServer.SendAsync(Encoding.UTF8.GetBytes(e.Message));
+                Console.WriteLine(e.StackTrace);
             }
         }
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)

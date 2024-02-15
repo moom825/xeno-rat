@@ -57,7 +57,7 @@ namespace xeno_rat_server
         {
             
             InitializeComponent();
-            this.Text = "Xeno-rat: Created by moom825 - version 1.8.5";
+            this.Text = "Xeno-rat: Created by moom825 - version 1.8.7";
             key = Utils.CalculateSha256Bytes(string_key);
 
             ListeningHandler =new Listener(OnConnect);

