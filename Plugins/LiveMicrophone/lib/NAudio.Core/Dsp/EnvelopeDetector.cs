@@ -1,4 +1,4 @@
-// based on EnvelopeDetector.cpp v1.10 © 2006, ChunkWare Music Software, OPEN-SOURCE
+// based on EnvelopeDetector.cpp v1.10 Â© 2006, ChunkWare Music Software, OPEN-SOURCE
 using System;
 
 namespace NAudio.Dsp
@@ -44,11 +44,29 @@ namespace NAudio.Dsp
             }
         }
 
+        /// <summary>
+        /// Runs the attack or release process based on the input value and state, and returns the result.
+        /// </summary>
+        /// <param name="inValue">The input value to be processed.</param>
+        /// <param name="state">The state value used for processing.</param>
+        /// <returns>The result of the attack or release process based on the input <paramref name="inValue"/> and <paramref name="state"/>.</returns>
+        /// <remarks>
+        /// This method determines whether to run the attack or release process based on the comparison between the input value <paramref name="inValue"/> and the state value <paramref name="state"/>.
+        /// If the input value is greater than the state value, the attack process is executed using the <see cref="attack.Run"/> method; otherwise, the release process is executed using the <see cref="release.Run"/> method.
+        /// The method assumes that a positive delta represents an attack, while a negative delta represents a release, and it is suitable for both linear and logarithmic values.
+        /// </remarks>
         public double Run( double inValue, double state )
         {
             return inValue + coeff * (state - inValue);
         }
 
+        /// <summary>
+        /// Sets the coefficient using the formula: e^(-1.0 / (0.001 * <paramref name="ms"/> * <paramref name="sampleRate"/>))
+        /// </summary>
+        /// <remarks>
+        /// This method calculates the coefficient using the formula: e^(-1.0 / (0.001 * <paramref name="ms"/> * <paramref name="sampleRate"/>))
+        /// and assigns the result to the private variable <paramref name="coeff"/>.
+        /// </remarks>
         private void SetCoef()
         {
             coeff = Math.Exp(-1.0 / (0.001 * ms * sampleRate));

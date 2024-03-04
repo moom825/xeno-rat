@@ -42,7 +42,19 @@ namespace NAudio.CoreAudioApi
         {
             this.parent = parent;
         }
-        
+
+        /// <summary>
+        /// Handles the notification data and fires the event in the parent class.
+        /// </summary>
+        /// <param name="notifyData">A pointer to the notification data.</param>
+        /// <remarks>
+        /// Since AUDIO_VOLUME_NOTIFICATION_DATA is dynamic in length based on the
+        /// number of audio channels available, the method splits the data into two steps. First, the static
+        /// data is marshalled into the data structure, then with some IntPtr math, the
+        /// remaining floats are read from memory.
+        /// The method determines the offset in the structure of the first float and the offset in memory of the first float.
+        /// It then reads all floats from memory and creates a combined structure to fire the event in the parent class.
+        /// </remarks>
         public void OnNotify(IntPtr notifyData)
         {
             //Since AUDIO_VOLUME_NOTIFICATION_DATA is dynamic in length based on the

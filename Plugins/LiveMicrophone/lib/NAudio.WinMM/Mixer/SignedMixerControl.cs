@@ -22,10 +22,11 @@ namespace NAudio.Mixer
 			this.mixerControlDetails = new MixerInterop.MIXERCONTROLDETAILS();
 			GetControlDetails();
 		}
-		
+
 		/// <summary>
-		/// Gets details for this contrl
+		/// Retrieves the details of the mixer control and stores them in the signedDetails field.
 		/// </summary>
+		/// <param name="pDetails">A pointer to the details of the mixer control.</param>
 		protected override void GetDetails(IntPtr pDetails) 
 		{
 			signedDetails = Marshal.PtrToStructure<MixerInterop.MIXERCONTROLDETAILS_SIGNED>(mixerControlDetails.paDetails);
@@ -89,9 +90,9 @@ namespace NAudio.Mixer
         }
 
         /// <summary>
-        /// String Representation for debugging purposes
+        /// Returns a formatted string representing the object's base string and percentage value.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A string containing the base string and percentage value formatted with a percentage symbol.</returns>
         public override string ToString()
         {
             return String.Format("{0} {1}%", base.ToString(), Percent);

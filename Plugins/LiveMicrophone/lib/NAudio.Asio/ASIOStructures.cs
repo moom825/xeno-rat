@@ -43,10 +43,10 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Gets the name of the error.
+        /// Returns the name of the specified AsioError enum value.
         /// </summary>
-        /// <param name="error">The error.</param>
-        /// <returns>the name of the error</returns>
+        /// <param name="error">The AsioError enum value for which to retrieve the name.</param>
+        /// <returns>The name of the specified AsioError enum value.</returns>
         public static String getErrorName(AsioError error)
         {
             return Enum.GetName(typeof(AsioError), error);            

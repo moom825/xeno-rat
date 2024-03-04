@@ -20,6 +20,17 @@ namespace NAudio.CoreAudioApi
         private AudioStreamVolume audioStreamVolume;
         private AudioClientShareMode shareMode;
 
+        /// <summary>
+        /// Activates an audio client asynchronously and returns the activated AudioClient.
+        /// </summary>
+        /// <param name="deviceInterfacePath">The device interface path for the audio client.</param>
+        /// <param name="audioClientProperties">Optional properties for the audio client.</param>
+        /// <returns>An instance of the activated AudioClient.</returns>
+        /// <remarks>
+        /// This method activates an audio client asynchronously using the provided device interface path and optional audio client properties.
+        /// If <paramref name="audioClientProperties"/> is not null, it sets the client properties using the provided values.
+        /// The method then initializes the audio client and returns the activated AudioClient instance.
+        /// </remarks>
         public static async Task<AudioClient> ActivateAsync(string deviceInterfacePath, AudioClientProperties? audioClientProperties)
         {
             var icbh = new ActivateAudioInterfaceCompletionHandler(
@@ -78,14 +89,15 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Initializes the Audio Client
+        /// Initializes the audio client with the specified parameters.
         /// </summary>
-        /// <param name="shareMode">Share Mode</param>
-        /// <param name="streamFlags">Stream Flags</param>
-        /// <param name="bufferDuration">Buffer Duration</param>
-        /// <param name="periodicity">Periodicity</param>
-        /// <param name="waveFormat">Wave Format</param>
-        /// <param name="audioSessionGuid">Audio Session GUID (can be null)</param>
+        /// <param name="shareMode">The share mode for the audio client.</param>
+        /// <param name="streamFlags">The stream flags for the audio client.</param>
+        /// <param name="bufferDuration">The buffer duration in 100-nanosecond units.</param>
+        /// <param name="periodicity">The periodicity of the audio client in 100-nanosecond units.</param>
+        /// <param name="waveFormat">The wave format for the audio client.</param>
+        /// <param name="audioSessionGuid">The GUID of the audio session.</param>
+        /// <exception cref="MarshalDirectiveException">Thrown when an HRESULT is not S_OK.</exception>
         public void Initialize(AudioClientShareMode shareMode,
             AudioClientStreamFlags streamFlags,
             long bufferDuration,
@@ -239,17 +251,25 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Determines whether if the specified output format is supported
+        /// Checks if the specified audio format is supported for the given share mode and returns the closest match format if not directly supported.
         /// </summary>
-        /// <param name="shareMode">The share mode.</param>
-        /// <param name="desiredFormat">The desired format.</param>
-        /// <returns>True if the format is supported</returns>
+        /// <param name="shareMode">The share mode for the audio client.</param>
+        /// <param name="desiredFormat">The desired audio format to be checked for support.</param>
+        /// <param name="closestMatchFormat">When this method returns, contains the closest match format if the desired format is not directly supported; otherwise, null.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified audio format is directly supported for the given share mode; otherwise, <c>false</c>.
+        /// </returns>
+        /// <exception cref="NotSupportedException">Thrown when the HRESULT is not recognized.</exception>
         public bool IsFormatSupported(AudioClientShareMode shareMode,
             WaveFormat desiredFormat)
         {
             return IsFormatSupported(shareMode, desiredFormat, out _);
         }
 
+        /// <summary>
+        /// Allocates memory and returns a pointer to a pointer to the allocated memory.
+        /// </summary>
+        /// <returns>A pointer to a pointer to the allocated memory.</returns>
         private IntPtr GetPointerToPointer()
         {
             return Marshal.AllocHGlobal(Marshal.SizeOf<IntPtr>());
@@ -300,46 +320,51 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Starts the audio stream
+        /// Starts the audio client interface.
         /// </summary>
+        /// <remarks>
+        /// This method initiates the audio client interface to begin processing audio data.
+        /// </remarks>
         public void Start()
         {
             audioClientInterface.Start();
         }
 
         /// <summary>
-        /// Stops the audio stream.
+        /// Stops the audio playback.
         /// </summary>
+        /// <remarks>
+        /// This method stops the audio playback by calling the Stop method of the audioClientInterface.
+        /// </remarks>
         public void Stop()
         {
             audioClientInterface.Stop();
         }
 
         /// <summary>
-        /// Set the Event Handle for buffer synchro.
+        /// Sets the event handle for the audio client interface.
         /// </summary>
-        /// <param name="eventWaitHandle">The Wait Handle to setup</param>
+        /// <param name="eventWaitHandle">The handle to the event to be set.</param>
         public void SetEventHandle(IntPtr eventWaitHandle)
         {
             audioClientInterface.SetEventHandle(eventWaitHandle);
         }
 
         /// <summary>
-        /// Resets the audio stream
-        /// Reset is a control method that the client calls to reset a stopped audio stream. 
-        /// Resetting the stream flushes all pending data and resets the audio clock stream 
-        /// position to 0. This method fails if it is called on a stream that is not stopped
+        /// Resets the audio client interface.
         /// </summary>
         public void Reset()
         {
             audioClientInterface.Reset();
         }
 
-        #region IDisposable Members
-
         /// <summary>
-        /// Dispose
+        /// Performs the disposal of resources used by the audio client.
         /// </summary>
+        /// <remarks>
+        /// This method disposes of the audio clock client, audio render client, audio capture client, audio stream volume, and the audio client interface if they are not null.
+        /// Additionally, it suppresses the finalization of the current object by the garbage collector.
+        /// </remarks>
         public void Dispose()
         {
             if (audioClientInterface != null)

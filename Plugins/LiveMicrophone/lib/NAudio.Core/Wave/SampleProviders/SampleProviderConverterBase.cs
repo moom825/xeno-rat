@@ -34,18 +34,23 @@ namespace NAudio.Wave.SampleProviders
         public WaveFormat WaveFormat => waveFormat;
 
         /// <summary>
-        /// Reads samples from the source wave provider
+        /// Reads a sequence of elements from the specified buffer and advances the position within the buffer by the number of elements read.
         /// </summary>
-        /// <param name="buffer">Sample buffer</param>
-        /// <param name="offset">Offset into sample buffer</param>
-        /// <param name="count">Number of samples required</param>
-        /// <returns>Number of samples read</returns>
+        /// <param name="buffer">The buffer to read data from.</param>
+        /// <param name="offset">The zero-based byte offset in buffer at which to begin storing the data read from the current stream.</param>
+        /// <param name="count">The maximum number of elements to read.</param>
+        /// <returns>The total number of elements read into the buffer.</returns>
         public abstract int Read(float[] buffer, int offset, int count);
 
         /// <summary>
-        /// Ensure the source buffer exists and is big enough
+        /// Ensures that the source buffer has enough capacity to accommodate the specified number of bytes required.
         /// </summary>
-        /// <param name="sourceBytesRequired">Bytes required</param>
+        /// <param name="sourceBytesRequired">The number of bytes required for the source buffer.</param>
+        /// <remarks>
+        /// This method ensures that the source buffer has enough capacity to accommodate the specified number of bytes required.
+        /// If the current capacity of the source buffer is less than the specified number of bytes required, it reallocates the buffer with the new capacity.
+        /// The source buffer is modified in place to ensure sufficient capacity.
+        /// </remarks>
         protected void EnsureSourceBuffer(int sourceBytesRequired)
         {
             sourceBuffer = BufferHelpers.Ensure(sourceBuffer, sourceBytesRequired);

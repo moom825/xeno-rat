@@ -118,16 +118,18 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Volume Step Up
+        /// Increases the volume level by one step.
         /// </summary>
+        /// <exception cref="System.Runtime.InteropServices.COMException">Thrown when an error occurs while increasing the volume level.</exception>
         public void VolumeStepUp()
         {
             Marshal.ThrowExceptionForHR(audioEndPointVolume.VolumeStepUp(ref notificationGuid));
         }
 
         /// <summary>
-        /// Volume Step Down
+        /// Decreases the volume by one step.
         /// </summary>
+        /// <exception cref="System.Runtime.InteropServices.COMException">Thrown when an error is encountered while decreasing the volume.</exception>
         public void VolumeStepDown()
         {
             Marshal.ThrowExceptionForHR(audioEndPointVolume.VolumeStepDown(ref notificationGuid));
@@ -148,16 +150,30 @@ namespace NAudio.CoreAudioApi
             callBack = new AudioEndpointVolumeCallback(this);
             Marshal.ThrowExceptionForHR(audioEndPointVolume.RegisterControlChangeNotify(callBack));
         }
-        
+
+        /// <summary>
+        /// Fires a notification for audio volume changes.
+        /// </summary>
+        /// <param name="notificationData">The data containing information about the volume change.</param>
+        /// <remarks>
+        /// This method triggers the <see cref="OnVolumeNotification"/> event, passing the <paramref name="notificationData"/> as the argument.
+        /// </remarks>
         internal void FireNotification(AudioVolumeNotificationData notificationData)
         {
             OnVolumeNotification?.Invoke(notificationData);
         }
-        #region IDisposable Members
 
         /// <summary>
-        /// Dispose
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
+        /// <remarks>
+        /// This method releases the unmanaged resources used by the <see cref="audioEndPointVolume"/> object and optionally releases the managed resources.
+        /// If the <see cref="callBack"/> is not null, it unregisters the control change notification for the <see cref="audioEndPointVolume"/>.
+        /// It then releases the COM object and suppresses the finalization of this object.
+        /// </remarks>
+        /// <exception cref="System.Runtime.InteropServices.COMException">
+        /// Thrown when an error is encountered while unregistering the control change notification for the <see cref="audioEndPointVolume"/>.
+        /// </exception>
         public void Dispose()
         {
             if (callBack != null)

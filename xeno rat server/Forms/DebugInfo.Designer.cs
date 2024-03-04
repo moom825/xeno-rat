@@ -8,9 +8,21 @@
         private System.ComponentModel.IContainer components = null;
 
         /// <summary>
-        /// Clean up any resources being used.
+        /// Releases the unmanaged resources used by the Component and optionally releases the managed resources.
         /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        /// <remarks>
+        /// This method releases the unmanaged resources used by the Component and optionally releases the managed resources.
+        /// If the disposing parameter is true, this method releases all resources held by any managed objects that this Component references.
+        /// This method is called by the public Dispose() method and the Finalize method.
+        /// Dispose() invokes the protected Dispose(Boolean) method with the disposing parameter set to true.
+        /// Finalize invokes Dispose with disposing set to false.
+        /// When the disposing parameter is true, this method releases all resources held by any managed objects that this Component references.
+        /// This method is called by the public Dispose() method and the Finalize method.
+        /// Dispose() invokes the protected Dispose(Boolean) method with the disposing parameter set to true.
+        /// Finalize invokes Dispose with disposing set to false.
+        /// When the disposing parameter is true, this method releases all resources held by any managed objects that this Component references.
+        /// </remarks>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -20,12 +32,12 @@
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
-
         /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
+        /// Initializes the components of the form including the list view, buttons, labels, and text boxes.
         /// </summary>
+        /// <remarks>
+        /// This method sets up the visual components of the form including a list view for displaying items, buttons for refreshing the list and performing other actions, a rich text box for displaying console output, and labels for indicating the purpose of each section.
+        /// </remarks>
         private void InitializeComponent()
         {
             this.listView1 = new System.Windows.Forms.ListView();

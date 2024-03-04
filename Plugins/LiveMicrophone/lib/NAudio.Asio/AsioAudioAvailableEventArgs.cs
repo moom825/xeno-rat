@@ -49,9 +49,14 @@ namespace NAudio.Wave
         public int SamplesPerBuffer { get; private set; }
 
         /// <summary>
-        /// Converts all the recorded audio into a buffer of 32 bit floating point samples, interleaved by channel
+        /// Returns the input buffers as interleaved samples.
         /// </summary>
-        /// <samples>The samples as 32 bit floating point, interleaved</samples>
+        /// <returns>An array of interleaved samples.</returns>
+        /// <remarks>
+        /// This method retrieves the input buffers as interleaved samples and returns them as an array.
+        /// It is recommended to use the overload that takes an array and reuses the same one for better performance.
+        /// </remarks>
+        /// <exception cref="InvalidOperationException">Thrown when the input buffers are not available.</exception>
         public int GetAsInterleavedSamples(float[] samples)
         {
             int channels = InputBuffers.Length;

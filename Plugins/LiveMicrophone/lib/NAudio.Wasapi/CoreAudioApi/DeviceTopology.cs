@@ -30,8 +30,13 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Retrieves the connector at the supplied index
+        /// Gets the connector at the specified index.
         /// </summary>
+        /// <param name="index">The index of the connector to retrieve.</param>
+        /// <returns>A new instance of the Connector class representing the connector at the specified index.</returns>
+        /// <remarks>
+        /// This method retrieves the connector at the specified index from the device topology interface and creates a new instance of the Connector class to represent it.
+        /// </remarks>
         public Connector GetConnector(uint index)
         {
             deviceTopologyInterface.GetConnector(index, out var connectorInterface);

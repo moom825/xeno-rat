@@ -79,10 +79,11 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Retrieves the capabilities of a waveIn device
+        /// Retrieves the capabilities of the specified audio input device.
         /// </summary>
-        /// <param name="devNumber">Device to test</param>
-        /// <returns>The WaveIn device capabilities</returns>
+        /// <param name="devNumber">The device number of the audio input device.</param>
+        /// <returns>The capabilities of the audio input device specified by <paramref name="devNumber"/>.</returns>
+        /// <exception cref="MmException">Thrown when an error occurs while retrieving the device capabilities.</exception>
         public static WaveInCapabilities GetCapabilities(int devNumber)
         {
             var caps = new WaveInCapabilities();
@@ -106,6 +107,13 @@ namespace NAudio.Wave
         /// </summary>
         public int DeviceNumber { get; set; }
 
+        /// <summary>
+        /// Creates audio buffers for capturing audio data.
+        /// </summary>
+        /// <remarks>
+        /// This method creates audio buffers for capturing audio data. It calculates the buffer size based on the specified <see cref="BufferMilliseconds"/> and <see cref="WaveFormat"/>.
+        /// The method then creates an array of <see cref="WaveInBuffer"/> objects and initializes each buffer with the calculated size.
+        /// </remarks>
         private void CreateBuffers()
         {
             // Default to three buffers of 100ms each
@@ -123,8 +131,17 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Called when we get a new buffer of recorded data
+        /// Callback method for handling wave input messages.
         /// </summary>
+        /// <param name="waveInHandle">The handle to the input wave.</param>
+        /// <param name="message">The wave message received.</param>
+        /// <param name="userData">User data associated with the wave input.</param>
+        /// <param name="waveHeader">The wave header associated with the input.</param>
+        /// <param name="reserved">Reserved parameter.</param>
+        /// <remarks>
+        /// This method is called when a wave input message is received. If the message is WaveInData and recording is in progress, it processes the wave input buffer and raises the DataAvailable event.
+        /// If an exception occurs while reusing the buffer, the recording is stopped and the RecordingStopped event is raised with the exception details.
+        /// </remarks>
         private void Callback(IntPtr waveInHandle, WaveInterop.WaveMessage message, IntPtr userData, WaveHeader waveHeader, IntPtr reserved)
         {
             if (message == WaveInterop.WaveMessage.WaveInData)
@@ -151,11 +168,29 @@ namespace NAudio.Wave
             }
         }
 
+        /// <summary>
+        /// Raises the DataAvailable event with the provided WaveInBuffer data.
+        /// </summary>
+        /// <param name="buffer">The WaveInBuffer containing the recorded data.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the provided buffer is null.</exception>
+        /// <remarks>
+        /// This method raises the DataAvailable event with the recorded data from the WaveInBuffer.
+        /// The WaveInEventArgs object contains the recorded data and the number of bytes recorded.
+        /// </remarks>
         private void RaiseDataAvailable(WaveInBuffer buffer)
         {
             DataAvailable?.Invoke(this, new WaveInEventArgs(buffer.Data, buffer.BytesRecorded));
         }
 
+        /// <summary>
+        /// Raises the RecordingStopped event with the specified exception.
+        /// </summary>
+        /// <param name="e">The exception that caused the recording to stop.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the exception <paramref name="e"/> is null.</exception>
+        /// <remarks>
+        /// This method raises the RecordingStopped event with the specified exception <paramref name="e"/>.
+        /// If a synchronization context is available, the event is raised on the synchronization context; otherwise, it is raised on the current thread.
+        /// </remarks>
         private void RaiseRecordingStopped(Exception e)
         {
             var handler = RecordingStopped;
@@ -172,6 +207,14 @@ namespace NAudio.Wave
             }
         }
 
+        /// <summary>
+        /// Opens the wave input device and creates necessary buffers.
+        /// </summary>
+        /// <remarks>
+        /// This method closes any previously opened wave input device, then attempts to open the specified wave input device using the provided <paramref name="DeviceNumber"/> and <paramref name="WaveFormat"/>.
+        /// If successful, it creates necessary buffers for the opened wave input device.
+        /// </remarks>
+        /// <exception cref="MmException">Thrown when an error occurs during the wave input device opening process.</exception>
         private void OpenWaveInDevice()
         {
             CloseWaveInDevice();
@@ -181,8 +224,13 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Start recording
+        /// Starts the audio recording process.
         /// </summary>
+        /// <remarks>
+        /// This method starts the audio recording process by opening the wave input device, enqueueing buffers, and invoking the waveInStart function from the WaveInterop class.
+        /// If the recording is already in progress, an InvalidOperationException with the message "Already recording" is thrown.
+        /// </remarks>
+        /// <exception cref="InvalidOperationException">Thrown when the recording is already in progress.</exception>
         public void StartRecording()
         {
             if (recording)
@@ -195,6 +243,12 @@ namespace NAudio.Wave
             recording = true;
         }
 
+        /// <summary>
+        /// Enqueues the reusable buffers.
+        /// </summary>
+        /// <remarks>
+        /// This method iterates through the list of buffers and enqueues the ones that are not already in the queue by calling their <see cref="Buffer.Reuse"/> method.
+        /// </remarks>
         private void EnqueueBuffers()
         {
             foreach (var buffer in buffers)
@@ -207,8 +261,14 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Stop recording
+        /// Stops the recording if it is currently in progress.
         /// </summary>
+        /// <exception cref="MmException">Thrown when an error occurs while stopping the recording.</exception>
+        /// <remarks>
+        /// If the recording is currently in progress, this method stops the recording and reports any remaining buffers in the correct order.
+        /// It then raises the <see cref="DataAvailable"/> event for each completed buffer and the <see cref="RecordingStopped"/> event to indicate that the recording has stopped.
+        /// If no recording is in progress, this method does nothing.
+        /// </remarks>
         public void StopRecording()
         {
             if (recording)
@@ -232,10 +292,10 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Gets the current position in bytes from the wave input device.
-        /// it calls directly into waveInGetPosition)
+        /// Retrieves the current input position of the audio device in bytes.
         /// </summary>
-        /// <returns>Position in bytes</returns>
+        /// <returns>The current input position of the audio device in bytes.</returns>
+        /// <exception cref="Exception">Thrown when the retrieved time type does not match the expected type.</exception>
         public long GetPosition()
         {
             MmTime mmTime = new MmTime();
@@ -254,8 +314,11 @@ namespace NAudio.Wave
         public WaveFormat WaveFormat { get; set; }
 
         /// <summary>
-        /// Dispose pattern
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
+        /// <remarks>
+        /// This method disposes the resources used by the current instance. It is called by the public <see cref="Dispose()"/> method and the <see cref="GC.SuppressFinalize(object)"/> method.
+        /// </remarks>
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
@@ -271,6 +334,15 @@ namespace NAudio.Wave
             }
         }
 
+        /// <summary>
+        /// Closes the wave input device and releases associated resources.
+        /// </summary>
+        /// <remarks>
+        /// This method first checks if the <see cref="waveInHandle"/> is not equal to <see cref="IntPtr.Zero"/>, and if so, it returns without performing any further actions.
+        /// If the <see cref="waveInHandle"/> is not zero, it resets the wave input device using <see cref="WaveInterop.waveInReset(IntPtr)"/> to properly release buffers.
+        /// It then disposes of each buffer in the <see cref="buffers"/> array, if it is not null, and sets the array to null.
+        /// Finally, it closes the wave input device using <see cref="WaveInterop.waveInClose(IntPtr)"/> and sets the <see cref="waveInHandle"/> to <see cref="IntPtr.Zero"/>.
+        /// </remarks>
         private void CloseWaveInDevice()
         {
             if (waveInHandle == IntPtr.Zero) return;
@@ -290,8 +362,13 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Microphone Level
+        /// Gets the mixer line associated with the current wave input handle or device number.
         /// </summary>
+        /// <returns>The <see cref="MixerLine"/> object representing the mixer line associated with the current wave input handle or device number.</returns>
+        /// <remarks>
+        /// This method retrieves the mixer line associated with the current wave input handle or device number. If the wave input handle is not IntPtr.Zero, it creates a new <see cref="MixerLine"/> object using the wave input handle and MixerFlags.WaveInHandle.
+        /// If the wave input handle is IntPtr.Zero, it creates a new <see cref="MixerLine"/> object using the device number and MixerFlags.WaveIn.
+        /// </remarks>
         public MixerLine GetMixerLine()
         {
             // TODO use mixerGetID instead to see if this helps with XP

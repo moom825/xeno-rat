@@ -36,8 +36,12 @@ namespace NAudio.Wave
         public short SamplesPerBlock { get { return samplesPerBlock; } }
 
         /// <summary>
-        /// Writes this structure to a BinaryWriter
+        /// Serializes the object to a binary writer.
         /// </summary>
+        /// <param name="writer">The binary writer to which the object is serialized.</param>
+        /// <remarks>
+        /// This method serializes the object to a binary writer by first calling the base class's serialization method and then writing the <paramref name="samplesPerBlock"/> value to the writer.
+        /// </remarks>
         public override void Serialize(BinaryWriter writer)
         {
             base.Serialize(writer);

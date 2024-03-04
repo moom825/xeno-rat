@@ -79,14 +79,23 @@ namespace NAudio.CoreAudioApi
             }
         }
 
+        /// <summary>
+        /// Fires an event when a new audio session is created.
+        /// </summary>
+        /// <param name="newSession">The newly created audio session control.</param>
         internal void FireSessionCreated(IAudioSessionControl newSession)
         {
             OnSessionCreated?.Invoke(this, newSession);
         }
 
         /// <summary>
-        /// Refresh session of current device.
+        /// Refreshes the audio sessions and registers for notifications.
         /// </summary>
+        /// <remarks>
+        /// This method unregisters any existing notifications, retrieves the session enumerator, and creates a new session collection.
+        /// It then registers for session notifications and throws an exception if any of the underlying COM operations fail.
+        /// </remarks>
+        /// <exception cref="COMException">Thrown when any underlying COM operation fails.</exception>
         public void RefreshSessions()
         {
             UnregisterNotifications();
@@ -107,8 +116,11 @@ namespace NAudio.CoreAudioApi
         public SessionCollection Sessions => sessions;
 
         /// <summary>
-        /// Dispose.
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
+        /// <remarks>
+        /// This method unregisters any active notifications and suppresses the finalization of the current object by the garbage collector.
+        /// </remarks>
         public void Dispose()
         {
             UnregisterNotifications();
@@ -116,6 +128,13 @@ namespace NAudio.CoreAudioApi
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Unregisters the notifications for audio sessions and sets the sessions to null.
+        /// </summary>
+        /// <remarks>
+        /// This method sets the <paramref name="sessions"/> to null and unregisters the audio session notification if <paramref name="audioSessionNotification"/> and <paramref name="audioSessionInterface2"/> are not null.
+        /// If <paramref name="audioSessionNotification"/> and <paramref name="audioSessionInterface2"/> are not null, it calls the <see cref="Marshal.ThrowExceptionForHR(int)"/> method with the HRESULT returned by <see cref="IAudioSessionControl2.UnregisterSessionNotification(IAudioSessionEvents)"/>.
+        /// </remarks>
         private void UnregisterNotifications()
         {
             sessions = null;

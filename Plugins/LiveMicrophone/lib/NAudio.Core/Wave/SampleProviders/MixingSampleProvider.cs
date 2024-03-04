@@ -60,10 +60,15 @@ namespace NAudio.Wave.SampleProviders
         public bool ReadFully { get; set; }
 
         /// <summary>
-        /// Adds a WaveProvider as a Mixer input.
-        /// Must be PCM or IEEE float already
+        /// Adds a new input to the mixer.
         /// </summary>
-        /// <param name="mixerInput">IWaveProvider mixer input</param>
+        /// <param name="mixerInput">The input to be added to the mixer.</param>
+        /// <exception cref="InvalidOperationException">Thrown when there are already too many mixer inputs.</exception>
+        /// <exception cref="ArgumentException">Thrown when the input's WaveFormat does not match the mixer's WaveFormat.</exception>
+        /// <remarks>
+        /// This method adds a new input to the mixer. It checks if the maximum number of inputs has been reached and throws an InvalidOperationException if so.
+        /// It also checks if the input's WaveFormat matches the mixer's WaveFormat and throws an ArgumentException if not.
+        /// </remarks>
         public void AddMixerInput(IWaveProvider mixerInput)
         {
             AddMixerInput(SampleProviderConverters.ConvertWaveProviderIntoSampleProvider(mixerInput));
@@ -105,9 +110,9 @@ namespace NAudio.Wave.SampleProviders
         public event EventHandler<SampleProviderEventArgs> MixerInputEnded;
 
         /// <summary>
-        /// Removes a mixer input
+        /// Removes the specified mixer input from the list of sources.
         /// </summary>
-        /// <param name="mixerInput">Mixer input to remove</param>
+        /// <param name="mixerInput">The input to be removed from the list of sources.</param>
         public void RemoveMixerInput(ISampleProvider mixerInput)
         {
             lock (sources)
@@ -117,8 +122,11 @@ namespace NAudio.Wave.SampleProviders
         }
 
         /// <summary>
-        /// Removes all mixer inputs
+        /// Removes all mixer inputs.
         /// </summary>
+        /// <remarks>
+        /// This method removes all the inputs from the mixer by clearing the sources list after obtaining a lock on it.
+        /// </remarks>
         public void RemoveAllMixerInputs()
         {
             lock (sources)
@@ -133,12 +141,16 @@ namespace NAudio.Wave.SampleProviders
         public WaveFormat WaveFormat { get; private set; }
 
         /// <summary>
-        /// Reads samples from this sample provider
+        /// Reads audio samples from the sources and mixes them into the provided buffer.
         /// </summary>
-        /// <param name="buffer">Sample buffer</param>
-        /// <param name="offset">Offset into sample buffer</param>
-        /// <param name="count">Number of samples required</param>
-        /// <returns>Number of samples read</returns>
+        /// <param name="buffer">The buffer to mix the audio samples into.</param>
+        /// <param name="offset">The offset in the buffer at which to start mixing the samples.</param>
+        /// <param name="count">The number of samples to mix into the buffer.</param>
+        /// <returns>The number of output samples mixed into the buffer.</returns>
+        /// <remarks>
+        /// This method reads audio samples from the sources, mixes them into the provided buffer starting at the specified offset, and returns the number of output samples mixed into the buffer.
+        /// If the ReadFully flag is set and the output samples are less than the count, the remaining space in the buffer is filled with zeros.
+        /// </remarks>
         public int Read(float[] buffer, int offset, int count)
         {
             int outputSamples = 0;

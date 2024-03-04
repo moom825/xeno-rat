@@ -34,12 +34,12 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Reads bytes from this wave stream
+        /// Reads audio data from the source buffer, converts it to floating point, applies volume scaling, and writes the result to the destination buffer.
         /// </summary>
-        /// <param name="destBuffer">The destination buffer</param>
-        /// <param name="offset">Offset into the destination buffer</param>
-        /// <param name="numBytes">Number of bytes read</param>
-        /// <returns>Number of bytes read.</returns>
+        /// <param name="destBuffer">The destination buffer to write the converted audio data to.</param>
+        /// <param name="offset">The offset in the destination buffer at which to start writing the converted audio data.</param>
+        /// <param name="numBytes">The number of bytes to read and convert from the source buffer.</param>
+        /// <returns>The total number of bytes written to the destination buffer after conversion.</returns>
         public int Read(byte[] destBuffer, int offset, int numBytes)
         {
             int sourceBytesRequired = numBytes / 2;

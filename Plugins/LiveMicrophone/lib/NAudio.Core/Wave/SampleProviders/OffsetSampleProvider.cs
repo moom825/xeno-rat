@@ -19,12 +19,22 @@ namespace NAudio.Wave.SampleProviders
         private int takeSamples;
         private int leadOutSamples;
 
+        /// <summary>
+        /// Converts a TimeSpan to the equivalent number of samples based on the WaveFormat's sample rate and number of channels.
+        /// </summary>
+        /// <param name="time">The TimeSpan to be converted to samples.</param>
+        /// <returns>The number of samples equivalent to the input <paramref name="time"/> based on the WaveFormat's sample rate and number of channels.</returns>
         private int TimeSpanToSamples(TimeSpan time)
         {
             var samples = (int)(time.TotalSeconds * WaveFormat.SampleRate) * WaveFormat.Channels;
             return samples;
         }
 
+        /// <summary>
+        /// Converts the number of samples to a TimeSpan based on the audio wave format.
+        /// </summary>
+        /// <param name="samples">The number of samples to be converted.</param>
+        /// <returns>A TimeSpan representing the duration of the given number of samples based on the audio wave format.</returns>
         private TimeSpan SamplesToTimeSpan(int samples)
         {
             return TimeSpan.FromSeconds((samples / WaveFormat.Channels) / (double)WaveFormat.SampleRate);
@@ -165,12 +175,17 @@ namespace NAudio.Wave.SampleProviders
         }
 
         /// <summary>
-        /// Reads from this sample provider
+        /// Reads audio samples into the buffer and returns the number of samples read.
         /// </summary>
-        /// <param name="buffer">Sample buffer</param>
-        /// <param name="offset">Offset within sample buffer to read to</param>
-        /// <param name="count">Number of samples required</param>
-        /// <returns>Number of samples read</returns>
+        /// <param name="buffer">The buffer to store the audio samples.</param>
+        /// <param name="offset">The zero-based index in the buffer at which to begin storing the samples.</param>
+        /// <param name="count">The maximum number of samples to read.</param>
+        /// <returns>The number of samples actually read into the buffer.</returns>
+        /// <remarks>
+        /// This method reads audio samples from the source provider and stores them in the specified buffer.
+        /// It follows a multi-phase process where it may apply delay, skip over samples, take a specific number of samples, and apply lead out.
+        /// The phase and phase position are used to keep track of the progress through the process.
+        /// </remarks>
         public int Read(float[] buffer, int offset, int count)
         {
             int samplesRead = 0;

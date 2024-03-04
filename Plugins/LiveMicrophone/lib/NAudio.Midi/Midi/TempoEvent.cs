@@ -37,14 +37,19 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Creates a deep clone of this MIDI event.
+        /// Creates a new instance of the TempoEvent class that is a copy of the current instance.
         /// </summary>
+        /// <returns>A new instance of the TempoEvent class that is a copy of the current instance.</returns>
         public override MidiEvent Clone() => (TempoEvent)MemberwiseClone();
 
         /// <summary>
-        /// Describes this tempo event
+        /// Returns a string representation of the object.
         /// </summary>
-        /// <returns>String describing the tempo event</returns>
+        /// <returns>A string containing the object's name, beats per minute, and calculated tempo.</returns>
+        /// <remarks>
+        /// This method returns a formatted string that includes the object's name, beats per minute, and calculated tempo based on the microseconds per quarter note.
+        /// The tempo is calculated using the formula: 60000000 / microsecondsPerQuarterNote.
+        /// </remarks>
         public override string ToString() 
         {
             return String.Format("{0} {2}bpm ({1})",
@@ -72,10 +77,14 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Calls base class export first, then exports the data 
-        /// specific to this event
-        /// <seealso cref="MidiEvent.Export">MidiEvent.Export</seealso>
+        /// Exports the current object to a binary writer, including the microseconds per quarter note.
         /// </summary>
+        /// <param name="absoluteTime">The absolute time value.</param>
+        /// <param name="writer">The binary writer to which the object is exported.</param>
+        /// <remarks>
+        /// This method exports the current object to the specified binary writer, including the microseconds per quarter note.
+        /// It first calls the base class's Export method to export the base object, then writes the microseconds per quarter note to the writer in little-endian format using three bytes.
+        /// </remarks>
         public override void Export(ref long absoluteTime, BinaryWriter writer)
         {
             base.Export(ref absoluteTime, writer);

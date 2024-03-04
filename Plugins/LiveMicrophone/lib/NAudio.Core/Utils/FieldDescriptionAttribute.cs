@@ -22,9 +22,9 @@ namespace NAudio.Utils
         }
 
         /// <summary>
-        /// String representation
+        /// Returns the description of the object as a string.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The description of the object as a string.</returns>
         public override string ToString()
         {
             return Description;

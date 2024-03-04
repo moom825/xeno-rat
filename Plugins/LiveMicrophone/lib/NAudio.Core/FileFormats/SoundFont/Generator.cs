@@ -67,8 +67,13 @@ namespace NAudio.SoundFont
         public SampleHeader SampleHeader { get; set; }
 
         /// <summary>
-        /// <see cref="object.ToString"/>
+        /// Returns a string representation based on the generator type.
         /// </summary>
+        /// <returns>
+        /// A string representation based on the generator type. If the generator type is Instrument, the string will be in the format "Generator Instrument {Instrument.Name}".
+        /// If the generator type is SampleID, the string will be in the format "Generator SampleID {SampleHeader}".
+        /// If the generator type is neither Instrument nor SampleID, the string will be in the format "Generator {GeneratorType} {UInt16Amount}".
+        /// </returns>
         public override string ToString()
         {
             if (GeneratorType == GeneratorEnum.Instrument)

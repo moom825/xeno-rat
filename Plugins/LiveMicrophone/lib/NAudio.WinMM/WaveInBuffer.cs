@@ -42,8 +42,13 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Place this buffer back to record more audio
+        /// Reuses the wave header for audio input.
         /// </summary>
+        /// <remarks>
+        /// This method unprepares and reprepares the wave header for audio input. It first tries to unprepare the header using <see cref="WaveInterop.waveInUnprepareHeader"/> and then prepares the header using <see cref="WaveInterop.waveInPrepareHeader"/>.
+        /// After that, it adds the buffer using <see cref="WaveInterop.waveInAddBuffer"/>.
+        /// </remarks>
+        /// <exception cref="MmException">Thrown when an error occurs during unpreparing, preparing, or adding the buffer.</exception>
         public void Reuse()
         {
             // TEST: we might not actually need to bother unpreparing and repreparing
@@ -65,8 +70,12 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Releases resources held by this WaveBuffer
+        /// Releases the managed and unmanaged resources used by the WaveInRecorder.
         /// </summary>
+        /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        /// <remarks>
+        /// This method releases the managed resources if <paramref name="disposing"/> is true. It also releases the unmanaged resources used by the WaveInRecorder, including the waveInHandle, header, hHeader, hBuffer, and hThis.
+        /// </remarks>
         public void Dispose()
         {
             GC.SuppressFinalize(this);

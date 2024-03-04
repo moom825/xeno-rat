@@ -193,6 +193,17 @@ namespace NAudio.Midi
         /// </summary>
         public int DeltaTicksPerQuarterNote => deltaTicksPerQuarterNote;
 
+        /// <summary>
+        /// Finds and updates the corresponding NoteOnEvent in the list of outstandingNoteOns with the provided NoteOffEvent.
+        /// </summary>
+        /// <param name="offEvent">The NoteOffEvent to find a corresponding NoteOnEvent for.</param>
+        /// <param name="outstandingNoteOns">The list of outstanding NoteOnEvents to search for a matching NoteOnEvent.</param>
+        /// <exception cref="FormatException">Thrown when a NoteOffEvent is received without a corresponding NoteOnEvent, and strictChecking is enabled.</exception>
+        /// <remarks>
+        /// This method iterates through the list of outstandingNoteOns to find a matching NoteOnEvent based on the channel and note number.
+        /// If a matching NoteOnEvent is found, it updates the OffEvent property of the NoteOnEvent with the provided offEvent, removes the NoteOnEvent from the list of outstandingNoteOns, and sets the found flag to true.
+        /// If no matching NoteOnEvent is found and strictChecking is enabled, it throws a FormatException with a message indicating that an off without an on was received.
+        /// </remarks>
         private void FindNoteOn(NoteEvent offEvent, List<NoteOnEvent> outstandingNoteOns)
         {
             bool found = false;
@@ -214,21 +225,39 @@ namespace NAudio.Midi
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Swaps the bytes of a 32-bit unsigned integer and returns the result.
+        /// </summary>
+        /// <param name="i">The 32-bit unsigned integer to swap the bytes of.</param>
+        /// <returns>The 32-bit unsigned integer with its bytes swapped.</returns>
+        /// <remarks>
+        /// This method swaps the bytes of the input 32-bit unsigned integer <paramref name="i"/> such that the most significant byte becomes the least significant byte and vice versa.
+        /// </remarks>
         private static uint SwapUInt32(uint i) 
         {
             return ((i & 0xFF000000) >> 24) | ((i & 0x00FF0000) >> 8) | ((i & 0x0000FF00) << 8) | ((i & 0x000000FF) << 24);
         }
 
+        /// <summary>
+        /// Swaps the high and low bytes of the input unsigned 16-bit integer and returns the result.
+        /// </summary>
+        /// <param name="i">The unsigned 16-bit integer to be swapped.</param>
+        /// <returns>The result of swapping the high and low bytes of the input <paramref name="i"/>.</returns>
+        /// <remarks>
+        /// This method takes an unsigned 16-bit integer <paramref name="i"/> and swaps its high and low bytes.
+        /// It does this by first masking the high and low bytes using bitwise AND operations, shifting the high byte to the low byte position, and shifting the low byte to the high byte position using bitwise OR operations.
+        /// The result is then returned as the swapped unsigned 16-bit integer.
+        /// </remarks>
         private static ushort SwapUInt16(ushort i) 
         {
             return (ushort) (((i & 0xFF00) >> 8) | ((i & 0x00FF) << 8));
         }
-        
+
         /// <summary>
-        /// Describes the MIDI file
+        /// Returns a string representation of the MIDI file.
         /// </summary>
-        /// <returns>A string describing the MIDI file and its events</returns>
+        /// <returns>A string containing the format, number of tracks, and delta ticks per quarter note, followed by a list of MIDI events for each track.</returns>
         public override string ToString() 
         {
             var sb = new StringBuilder();
@@ -245,10 +274,16 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Exports a MIDI file
+        /// Exports the MIDI events to a file with the specified filename.
         /// </summary>
-        /// <param name="filename">Filename to export to</param>
-        /// <param name="events">Events to export</param>
+        /// <param name="filename">The name of the file to which the MIDI events will be exported.</param>
+        /// <param name="events">The collection of MIDI events to be exported.</param>
+        /// <exception cref="ArgumentException">Thrown when attempting to export more than one track to a type 0 file.</exception>
+        /// <remarks>
+        /// This method exports the MIDI events to a file with the specified filename.
+        /// If the MIDI file type is 0 and there are more than one track, an <see cref="ArgumentException"/> is thrown.
+        /// The method writes the MIDI events to the file in the specified format, including the header and track information.
+        /// </remarks>
         public static void Export(string filename, MidiEventCollection events)
         {
             if (events.MidiFileType == 0 && events.Tracks > 1)

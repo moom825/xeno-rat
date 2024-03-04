@@ -50,14 +50,13 @@ namespace NAudio.Dmo
             }
         }
 
-
-        #region IDisposable Members
-
         /// <summary>
-        /// Dispose code - experimental at the moment
-        /// Was added trying to track down why Resampler crashes NUnit
-        /// This code not currently being called by ResamplerDmoStream
+        /// Performs resource cleanup by releasing COM objects and disposing managed resources.
         /// </summary>
+        /// <remarks>
+        /// This method releases the COM object <paramref name="propertyStoreInterface"/> if it is not null.
+        /// It also disposes the <paramref name="mediaObject"/> and releases the COM object <paramref name="mediaComObject"/> if they are not null.
+        /// </remarks>
         public void Dispose()
         {
             if(propertyStoreInterface != null)

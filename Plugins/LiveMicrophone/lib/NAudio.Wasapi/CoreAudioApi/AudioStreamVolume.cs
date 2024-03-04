@@ -18,10 +18,15 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Verify that the channel index is valid.
+        /// Checks if the provided channel index is within the valid range.
         /// </summary>
-        /// <param name="channelIndex"></param>
-        /// <param name="parameter"></param>
+        /// <param name="channelIndex">The index of the channel to be checked.</param>
+        /// <param name="parameter">The name of the parameter being checked.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when the provided channel index is greater than or equal to the current count of channels.</exception>
+        /// <remarks>
+        /// This method checks if the provided channel index is within the valid range based on the current count of channels.
+        /// If the channel index is greater than or equal to the current count of channels, an <see cref="ArgumentOutOfRangeException"/> is thrown with a message indicating that a valid channel index must be supplied.
+        /// </remarks>
         private void CheckChannelIndex(int channelIndex, string parameter)
         {
             int channelCount = ChannelCount;
@@ -32,9 +37,14 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Return the current stream volumes for all channels
+        /// Retrieves the volume levels for all audio channels and returns an array of volume levels.
         /// </summary>
-        /// <returns>An array of volume levels between 0.0 and 1.0 for each channel in the audio stream.</returns>
+        /// <returns>An array containing the volume levels for all audio channels.</returns>
+        /// <exception cref="System.Runtime.InteropServices.COMException">Thrown when an error occurs while retrieving the volume levels.</exception>
+        /// <remarks>
+        /// This method retrieves the number of audio channels using the <see cref="audioStreamVolumeInterface.GetChannelCount"/> method and then retrieves the volume levels for all channels using the <see cref="audioStreamVolumeInterface.GetAllVolumes"/> method.
+        /// The retrieved volume levels are returned as an array of floats, where each element represents the volume level for a specific audio channel.
+        /// </remarks>
         public float[] GetAllVolumes()
         {
             Marshal.ThrowExceptionForHR(audioStreamVolumeInterface.GetChannelCount(out var channels));
@@ -59,10 +69,16 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Return the current volume for the requested channel.
+        /// Retrieves the volume level of the specified audio channel.
         /// </summary>
-        /// <param name="channelIndex">The 0 based index into the channels.</param>
-        /// <returns>The volume level for the channel between 0.0 and 1.0.</returns>
+        /// <param name="channelIndex">The index of the audio channel for which to retrieve the volume level.</param>
+        /// <returns>The volume level of the specified audio <paramref name="channelIndex"/>.</returns>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="channelIndex"/> is invalid.</exception>
+        /// <remarks>
+        /// This method retrieves the volume level of the specified audio channel using the <c>audioStreamVolumeInterface</c>.
+        /// It first checks the validity of the <paramref name="channelIndex"/> using the <c>CheckChannelIndex</c> method.
+        /// The volume level is then retrieved using the <c>GetChannelVolume</c> method and returned.
+        /// </remarks>
         public float GetChannelVolume(int channelIndex)
         {
             CheckChannelIndex(channelIndex, "channelIndex");
@@ -77,15 +93,14 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Set the volume level for each channel of the audio stream.
+        /// Sets the volume levels for all channels in the audio stream.
         /// </summary>
-        /// <param name="levels">An array of volume levels (between 0.0 and 1.0) one for each channel.</param>
+        /// <param name="levels">An array of volume levels for each channel. Must contain a volume level for each channel in the audio stream.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the input array <paramref name="levels"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when the length of the input array <paramref name="levels"/> does not match the number of channels in the audio stream, or when any volume level is outside the valid range of 0.0 to 1.0.</exception>
         /// <remarks>
-        /// A volume level MUST be supplied for reach channel in the audio stream.
+        /// This method sets the volume levels for all channels in the audio stream. It throws exceptions for common problems such as null input array, mismatch in the number of channels, or invalid volume levels.
         /// </remarks>
-        /// <exception cref="ArgumentOutOfRangeException">
-        /// Thrown when <paramref name="levels"/> does not contain <see cref="ChannelCount"/> elements.
-        /// </exception>
         public void SetAllVolumes(float[] levels)
         {
             // Make friendly Net exceptions for common problems:
@@ -114,10 +129,17 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Sets the volume level for one channel in the audio stream.
+        /// Sets the volume level for the specified audio channel.
         /// </summary>
-        /// <param name="index">The 0-based index into the channels to adjust the volume of.</param>
-        /// <param name="level">The volume level between 0.0 and 1.0 for this channel of the audio stream.</param>
+        /// <param name="index">The index of the audio channel for which the volume level is to be set.</param>
+        /// <param name="level">The volume level to be set for the specified audio channel. Must be between 0.0 and 1.0.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when the volume level is not within the range of 0.0 to 1.0.</exception>
+        /// <remarks>
+        /// This method sets the volume level for the specified audio channel using the <paramref name="index"/> and <paramref name="level"/> parameters.
+        /// It first checks if the <paramref name="index"/> is valid by calling the <see cref="CheckChannelIndex"/> method.
+        /// If the <paramref name="level"/> is not within the range of 0.0 to 1.0, an <see cref="ArgumentOutOfRangeException"/> is thrown with an appropriate message.
+        /// The volume level is then set using the <see cref="audioStreamVolumeInterface.SetChannelVolume"/> method.
+        /// </remarks>
         public void SetChannelVolume(int index, float level)
         {
             CheckChannelIndex(index, "index");
@@ -130,11 +152,14 @@ namespace NAudio.CoreAudioApi
             }
         }
 
-        #region IDisposable Members
-
         /// <summary>
-        /// Dispose
+        /// Releases the unmanaged resources used by the AudioStreamVolume object.
         /// </summary>
+        /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        /// <remarks>
+        /// This method releases the unmanaged resources used by the AudioStreamVolume object if <paramref name="disposing"/> is true.
+        /// It releases the audioStreamVolumeInterface by calling Marshal.ReleaseComObject if it is not null.
+        /// </remarks>
         public void Dispose()
         {
             Dispose(true);

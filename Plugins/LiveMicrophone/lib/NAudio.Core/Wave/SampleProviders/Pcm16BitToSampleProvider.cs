@@ -18,12 +18,16 @@ namespace NAudio.Wave.SampleProviders
         }
 
         /// <summary>
-        /// Reads samples from this sample provider
+        /// Reads a specified number of floating-point values from the source buffer and stores them in the provided buffer.
         /// </summary>
-        /// <param name="buffer">Sample buffer</param>
-        /// <param name="offset">Offset into sample buffer</param>
-        /// <param name="count">Samples required</param>
-        /// <returns>Number of samples read</returns>
+        /// <param name="buffer">The buffer to store the read floating-point values.</param>
+        /// <param name="offset">The zero-based byte offset in the buffer at which to begin storing the data.</param>
+        /// <param name="count">The number of floating-point values to read.</param>
+        /// <returns>The actual number of floating-point values read and stored in the buffer.</returns>
+        /// <remarks>
+        /// This method reads a specified number of bytes from the source buffer and interprets them as 16-bit signed integers, which are then converted to floating-point values by dividing by 32768.
+        /// The resulting floating-point values are stored in the provided buffer starting at the specified offset.
+        /// </remarks>
         public override int Read(float[] buffer, int offset, int count)
         {
             int sourceBytesRequired = count * 2;

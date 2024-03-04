@@ -1,4 +1,4 @@
-// based on SimpleGate v1.10 © 2006, ChunkWare Music Software, OPEN-SOURCE
+// based on SimpleGate v1.10 Â© 2006, ChunkWare Music Software, OPEN-SOURCE
 using System;
 using NAudio.Utils;
 
@@ -21,6 +21,16 @@ namespace NAudio.Dsp
             env = DC_OFFSET;
         }
 
+        /// <summary>
+        /// Processes the input stereo data using sidechain compression.
+        /// </summary>
+        /// <param name="in1">The first input signal, passed by reference.</param>
+        /// <param name="in2">The second input signal, passed by reference.</param>
+        /// <remarks>
+        /// This method processes the input stereo data using sidechain compression. It first rectifies the input signals, then determines the key signal by selecting the greater of the two rectified signals.
+        /// The key signal is compared to a threshold, and based on the result, an attack/release process is applied to generate an envelope.
+        /// The envelope is then used to apply gain reduction to the input signals, resulting in the processed stereo data.
+        /// </remarks>
         public void Process( ref double in1, ref double in2 )
         {
             // in/out pointers are assummed to reference stereo data

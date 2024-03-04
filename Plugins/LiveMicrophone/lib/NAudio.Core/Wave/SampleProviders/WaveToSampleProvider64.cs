@@ -22,8 +22,17 @@ namespace NAudio.Wave.SampleProviders
         }
 
         /// <summary>
-        /// Reads from this provider
+        /// Reads data from the source buffer and converts it to float values, storing them in the specified buffer.
         /// </summary>
+        /// <param name="buffer">The buffer to store the float values.</param>
+        /// <param name="offset">The zero-based byte offset in the buffer at which to begin storing the data.</param>
+        /// <param name="count">The number of float values to read.</param>
+        /// <returns>The number of float values read and stored in the buffer.</returns>
+        /// <remarks>
+        /// This method reads data from the source buffer, converts it to float values, and stores them in the specified buffer.
+        /// It ensures that the source buffer has enough bytes for the required data and then reads the data into the source buffer.
+        /// The method then iterates through the source buffer, converting each 8-byte segment to a float value and storing it in the buffer.
+        /// </remarks>
         public override int Read(float[] buffer, int offset, int count)
         {
             int bytesNeeded = count * 8;

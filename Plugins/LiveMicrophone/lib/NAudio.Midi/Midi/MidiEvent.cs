@@ -16,11 +16,18 @@ namespace NAudio.Midi
         private long absoluteTime;
 
         /// <summary>
-        /// Creates a MidiEvent from a raw message received using
-        /// the MME MIDI In APIs
+        /// Converts a raw MIDI message to a MidiEvent object.
         /// </summary>
-        /// <param name="rawMessage">The short MIDI message</param>
-        /// <returns>A new MIDI Event</returns>
+        /// <param name="rawMessage">The raw MIDI message to be converted.</param>
+        /// <returns>A MidiEvent object representing the raw MIDI message.</returns>
+        /// <remarks>
+        /// This method parses the raw MIDI message and constructs a corresponding MidiEvent object.
+        /// It extracts the command code, channel, and data bytes from the raw message and creates the appropriate MidiEvent based on the command code.
+        /// If the command code is NoteOn, NoteOff, or KeyAfterTouch and the data2 value is greater than 0, it creates a NoteOnEvent; otherwise, it creates a NoteEvent.
+        /// For ControlChange, PatchChange, ChannelAfterTouch, and PitchWheelChange command codes, it creates the corresponding events with the extracted data values.
+        /// For other command codes, it throws a FormatException indicating an unsupported MIDI Command Code for the raw message.
+        /// </remarks>
+        /// <exception cref="FormatException">Thrown when the raw message contains an unsupported MIDI Command Code.</exception>
         public static MidiEvent FromRawMessage(int rawMessage)
         {
             long absoluteTime = 0;
@@ -85,11 +92,19 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Constructs a MidiEvent from a BinaryStream
+        /// Reads the next MIDI event from the BinaryReader and returns the corresponding MidiEvent.
         /// </summary>
-        /// <param name="br">The binary stream of MIDI data</param>
-        /// <param name="previous">The previous MIDI event (pass null for first event)</param>
-        /// <returns>A new MidiEvent</returns>
+        /// <param name="br">The BinaryReader used to read the MIDI data.</param>
+        /// <param name="previous">The previous MidiEvent, used to determine running status.</param>
+        /// <returns>The MidiEvent read from the BinaryReader.</returns>
+        /// <remarks>
+        /// This method reads the next MIDI event from the BinaryReader and returns the corresponding MidiEvent.
+        /// It first reads the delta time using the ReadVarInt method, then determines the command code and channel based on the MIDI data.
+        /// Depending on the command code, it creates a specific type of MidiEvent (e.g., NoteOnEvent, NoteOffEvent, ControlChangeEvent) using the BinaryReader.
+        /// If the command code is not supported, it throws a FormatException with a message indicating the unsupported MIDI Command Code.
+        /// The created MidiEvent is then populated with the channel, delta time, and command code before being returned.
+        /// </remarks>
+        /// <exception cref="FormatException">Thrown when the MIDI Command Code is not supported.</exception>
         public static MidiEvent ReadNextEvent(BinaryReader br, MidiEvent previous) 
         {
             int deltaTime = ReadVarInt(br);
@@ -161,11 +176,9 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Converts this MIDI event to a short message (32 bit integer) that
-        /// can be sent by the Windows MIDI out short message APIs
-        /// Cannot be implemented for all MIDI messages
+        /// Returns the short message value calculated based on the channel and command code.
         /// </summary>
-        /// <returns>A short message</returns>
+        /// <returns>The short message value calculated as (channel - 1) + (int)commandCode.</returns>
         public virtual int GetAsShortMessage()
         {
             return (channel - 1) + (int)commandCode;
@@ -192,8 +205,9 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Creates a deep clone of this MIDI event.
+        /// Creates a new object that is a copy of the current instance.
         /// </summary>
+        /// <returns>A new object that is a copy of this instance.</returns>
         public virtual MidiEvent Clone() => (MidiEvent)MemberwiseClone();
 
         object ICloneable.Clone() => Clone();
@@ -253,8 +267,16 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Whether this is a note off event
+        /// Checks if the given MIDI event represents a Note Off message.
         /// </summary>
+        /// <param name="midiEvent">The MIDI event to be checked.</param>
+        /// <returns>True if the MIDI event represents a Note Off message; otherwise, false.</returns>
+        /// <remarks>
+        /// This method checks if the provided <paramref name="midiEvent"/> is not null and if its command code is NoteOn.
+        /// If the command code is NoteOn, it further checks if the velocity of the NoteEvent is 0 and returns true.
+        /// If the command code is not NoteOn, it directly checks if the command code is NoteOff and returns the result.
+        /// If the provided <paramref name="midiEvent"/> is null, it returns false.
+        /// </remarks>
         public static bool IsNoteOff(MidiEvent midiEvent)
         {
             if (midiEvent != null)
@@ -270,8 +292,10 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Whether this is a note on event
+        /// Checks if the provided MIDI event is a Note On event and returns true if the velocity is greater than 0.
         /// </summary>
+        /// <param name="midiEvent">The MIDI event to be checked.</param>
+        /// <returns>True if the provided <paramref name="midiEvent"/> is a Note On event with velocity greater than 0; otherwise, false.</returns>
         public static bool IsNoteOn(MidiEvent midiEvent)
         {
             if (midiEvent != null)
@@ -286,8 +310,14 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Determines if this is an end track event
+        /// Checks if the provided MIDI event is an end track event.
         /// </summary>
+        /// <param name="midiEvent">The MIDI event to be checked.</param>
+        /// <returns>True if the MIDI event is an end track event; otherwise, false.</returns>
+        /// <remarks>
+        /// This method checks if the provided MIDI event is a meta event and if so, it further checks if the meta event type is EndTrack.
+        /// If the provided MIDI event is null or not a meta event, the method returns false.
+        /// </remarks>
         public static bool IsEndTrack(MidiEvent midiEvent)
         {
             if (midiEvent != null)
@@ -301,11 +331,19 @@ namespace NAudio.Midi
             return false;
         }
 
-        
         /// <summary>
-        /// Displays a summary of the MIDI event
+        /// Returns a string representation of the current Midi event.
         /// </summary>
-        /// <returns>A string containing a brief description of this MIDI event</returns>
+        /// <returns>
+        /// A string representing the Midi event. If the <see cref="commandCode"/> is greater than or equal to <see cref="MidiCommandCode.Sysex"/>,
+        /// the string contains the <see cref="absoluteTime"/> and the <see cref="commandCode"/>.
+        /// Otherwise, the string contains the <see cref="absoluteTime"/>, the <see cref="commandCode"/>, and the <see cref="channel"/>.
+        /// </returns>
+        /// <remarks>
+        /// This method returns a string representation of the current Midi event. If the <see cref="commandCode"/> is greater than or equal to <see cref="MidiCommandCode.Sysex"/>,
+        /// the string contains the <see cref="absoluteTime"/> and the <see cref="commandCode"/>.
+        /// Otherwise, the string contains the <see cref="absoluteTime"/>, the <see cref="commandCode"/>, and the <see cref="channel"/>.
+        /// </remarks>
         public override string ToString() 
         {
             if(commandCode >= MidiCommandCode.Sysex)
@@ -313,12 +351,18 @@ namespace NAudio.Midi
             else
                 return String.Format("{0} {1} Ch: {2}", absoluteTime, commandCode, channel);
         }
-        
+
         /// <summary>
-        /// Utility function that can read a variable length integer from a binary stream
+        /// Reads a variable-length encoded integer from the provided BinaryReader and returns the result.
         /// </summary>
-        /// <param name="br">The binary stream</param>
-        /// <returns>The integer read</returns>
+        /// <param name="br">The BinaryReader from which to read the variable-length encoded integer.</param>
+        /// <returns>The variable-length encoded integer read from the BinaryReader.</returns>
+        /// <remarks>
+        /// This method reads a variable-length encoded integer from the provided BinaryReader by reading up to 4 bytes and decoding the value based on the MSB (Most Significant Bit) of each byte.
+        /// The method shifts the value by 7 bits for each byte read and adds the lower 7 bits of the byte to the value until a byte with the MSB set to 0 is encountered, indicating the end of the encoded integer.
+        /// If the method does not encounter a valid end byte after reading 4 bytes, it throws a FormatException with the message "Invalid Var Int".
+        /// </remarks>
+        /// <exception cref="FormatException">Thrown when the method encounters an invalid variable-length encoded integer format.</exception>
         public static int ReadVarInt(BinaryReader br) 
         {
             int value = 0;
@@ -337,10 +381,14 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Writes a variable length integer to a binary stream
+        /// Writes a variable-length encoded integer to the specified BinaryWriter.
         /// </summary>
-        /// <param name="writer">Binary stream</param>
-        /// <param name="value">The value to write</param>
+        /// <param name="writer">The BinaryWriter to write the integer to.</param>
+        /// <param name="value">The integer value to be written.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="value"/> is negative or exceeds the maximum allowed value (0x0FFFFFFF).</exception>
+        /// <remarks>
+        /// This method writes a variable-length encoded integer to the specified BinaryWriter. The integer value is encoded using a variable-length format, where each byte contains 7 bits of the original value and a continuation bit. The process continues until all bits of the original value have been encoded.
+        /// </remarks>
         public static void WriteVarInt(BinaryWriter writer, int value)
         {
             if (value < 0)
@@ -371,12 +419,16 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Exports this MIDI event's data
-        /// Overriden in derived classes, but they should call this version
+        /// Exports the MIDI event and updates the absolute time.
         /// </summary>
-        /// <param name="absoluteTime">Absolute time used to calculate delta. 
-        /// Is updated ready for the next delta calculation</param>
-        /// <param name="writer">Stream to write to</param>
+        /// <param name="absoluteTime">The absolute time of the event.</param>
+        /// <param name="writer">The BinaryWriter to write the event to.</param>
+        /// <exception cref="FormatException">Thrown when the event is unsorted.</exception>
+        /// <remarks>
+        /// This method exports the MIDI event to the specified BinaryWriter and updates the absolute time.
+        /// If the event's absolute time is less than the specified absolute time, a FormatException is thrown with the message "Can't export unsorted MIDI events".
+        /// The method then writes the variable-length quantity representing the time difference to the writer, updates the absolute time, and writes the event data to the writer.
+        /// </remarks>
         public virtual void Export(ref long absoluteTime, BinaryWriter writer)
         {
             if (this.absoluteTime < absoluteTime)

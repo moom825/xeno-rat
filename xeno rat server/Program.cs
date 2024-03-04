@@ -8,9 +8,13 @@ namespace xeno_rat_server
 {
     static class Program
     {
+
         /// <summary>
-        /// The main entry point for the application.
+        /// Runs the application with the specified main form.
         /// </summary>
+        /// <remarks>
+        /// This method initializes the application, enables visual styles, sets text rendering compatibility, and runs the specified main form.
+        /// </remarks>
         [STAThread]
         static void Main()
         {

@@ -2,7 +2,7 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
+// Copyright Â© AForge.NET, 2007-2011
 // contacts@aforgenet.com
 //
 
@@ -18,48 +18,41 @@ namespace AForge.Video.DirectShow.Internals
     /// 
     internal static class Win32
     {
+
         /// <summary>
-        /// Supplies a pointer to an implementation of <b>IBindCtx</b> (a bind context object).
-        /// This object stores information about a particular moniker-binding operation.
+        /// Creates a new instance of the bind context object.
         /// </summary>
-        /// 
-        /// <param name="reserved">Reserved for future use; must be zero.</param>
-        /// <param name="ppbc">Address of <b>IBindCtx*</b> pointer variable that receives the
-        /// interface pointer to the new bind context object.</param>
-        /// 
-        /// <returns>Returns <b>S_OK</b> on success.</returns>
-        /// 
+        /// <param name="reserved">Reserved for future use. Must be 0.</param>
+        /// <param name="ppbc">When this method returns, contains a reference to the new bind context object. This parameter is passed uninitialized.</param>
+        /// <returns>An integer value indicating the result of the operation.</returns>
+        /// <exception cref="System.Runtime.InteropServices.COMException">Thrown when an error occurs while creating the bind context object.</exception>
         [DllImport( "ole32.dll" )]
         public static extern
         int CreateBindCtx( int reserved, out IBindCtx ppbc );
 
         /// <summary>
-        /// Converts a string into a moniker that identifies the object named by the string.
+        /// Parses a display name to create a moniker and returns the result.
         /// </summary>
-        /// 
-        /// <param name="pbc">Pointer to the IBindCtx interface on the bind context object to be used in this binding operation.</param>
-        /// <param name="szUserName">Pointer to a zero-terminated wide character string containing the display name to be parsed. </param>
-        /// <param name="pchEaten">Pointer to the number of characters of szUserName that were consumed.</param>
-        /// <param name="ppmk">Address of <b>IMoniker*</b> pointer variable that receives the interface pointer
-        /// to the moniker that was built from <b>szUserName</b>.</param>
-        /// 
-        /// <returns>Returns <b>S_OK</b> on success.</returns>
-        /// 
+        /// <param name="pbc">A reference to the bind context to use in this binding operation. </param>
+        /// <param name="szUserName">The display name to be parsed.</param>
+        /// <param name="pchEaten">On entry, contains the number of characters of szUserName to parse. On exit, contains the number of characters of szUserName that were successfully parsed.</param>
+        /// <param name="ppmk">When this method returns, contains the interface pointer to the moniker that was created based on <paramref name="szUserName"/>.</param>
+        /// <returns>An integer value indicating the result of the operation.</returns>
         [DllImport( "ole32.dll", CharSet = CharSet.Unicode )]
         public static extern
         int MkParseDisplayName( IBindCtx pbc, string szUserName,
             ref int pchEaten, out IMoniker ppmk );
 
         /// <summary>
-        /// Copy a block of memory.
+        /// Copies a block of memory from a source address to a destination address.
         /// </summary>
-        /// 
-        /// <param name="dst">Destination pointer.</param>
-        /// <param name="src">Source pointer.</param>
-        /// <param name="count">Memory block's length to copy.</param>
-        /// 
-        /// <returns>Return's the value of <b>dst</b> - pointer to destination.</returns>
-        /// 
+        /// <param name="dst">The destination address where the memory will be copied.</param>
+        /// <param name="src">The source address from where the memory will be copied.</param>
+        /// <param name="count">The number of bytes to be copied.</param>
+        /// <returns>The destination address after the memory has been copied.</returns>
+        /// <remarks>
+        /// This method copies a block of memory from the source address to the destination address. It is important to ensure that the destination address has enough space to accommodate the copied memory, and that the count parameter specifies the correct number of bytes to be copied.
+        /// </remarks>
         [DllImport( "ntdll.dll", CallingConvention = CallingConvention.Cdecl )]
         public static unsafe extern int memcpy(
             byte* dst,
@@ -67,23 +60,20 @@ namespace AForge.Video.DirectShow.Internals
             int count );
 
         /// <summary>
-        /// Invokes a new property frame, that is, a property sheet dialog box.
+        /// Displays a property frame for the specified objects.
         /// </summary>
-        /// 
-        /// <param name="hwndOwner">Parent window of property sheet dialog box.</param>
-        /// <param name="x">Horizontal position for dialog box.</param>
-        /// <param name="y">Vertical position for dialog box.</param>
-        /// <param name="caption">Dialog box caption.</param>
-        /// <param name="cObjects">Number of object pointers in <b>ppUnk</b>.</param>
-        /// <param name="ppUnk">Pointer to the objects for property sheet.</param>
-        /// <param name="cPages">Number of property pages in <b>lpPageClsID</b>.</param>
-        /// <param name="lpPageClsID">Array of CLSIDs for each property page.</param>
-        /// <param name="lcid">Locale identifier for property sheet locale.</param>
-        /// <param name="dwReserved">Reserved.</param>
-        /// <param name="lpvReserved">Reserved.</param>
-        /// 
-        /// <returns>Returns <b>S_OK</b> on success.</returns>
-        /// 
+        /// <param name="hwndOwner">A handle to the window that owns the property frame.</param>
+        /// <param name="x">The horizontal position of the upper-left corner of the property frame relative to the screen.</param>
+        /// <param name="y">The vertical position of the upper-left corner of the property frame relative to the screen.</param>
+        /// <param name="caption">The caption for the property frame.</param>
+        /// <param name="cObjects">The number of objects in the <paramref name="ppUnk"/> array.</param>
+        /// <param name="ppUnk">An array of pointers to the objects for which the property frame is displayed.</param>
+        /// <param name="cPages">The number of property pages in the <paramref name="lpPageClsID"/> array.</param>
+        /// <param name="lpPageClsID">An array of CLSIDs for the property pages that are displayed in the frame.</param>
+        /// <param name="lcid">The locale identifier for the property frame and property pages.</param>
+        /// <param name="dwReserved">Reserved for future use; must be 0.</param>
+        /// <param name="lpvReserved">Reserved for future use; must be IntPtr.Zero.</param>
+        /// <returns>Returns zero if successful; otherwise, returns a non-zero HRESULT value.</returns>
         [DllImport( "oleaut32.dll" )]
         public static extern int OleCreatePropertyFrame(
             IntPtr hwndOwner,

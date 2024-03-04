@@ -73,12 +73,16 @@ namespace NAudio.Wave.SampleProviders
         private float[] inputBuffer;
 
         /// <summary>
-        /// Reads samples from this sample provider
+        /// Reads audio samples from the input channels and stores them in the buffer.
         /// </summary>
-        /// <param name="buffer">Buffer to be filled with sample data</param>
-        /// <param name="offset">Offset into buffer to start writing to, usually 0</param>
-        /// <param name="count">Number of samples required</param>
-        /// <returns>Number of samples read</returns>
+        /// <param name="buffer">The buffer to store the audio samples.</param>
+        /// <param name="offset">The offset in the buffer to start storing the samples.</param>
+        /// <param name="count">The number of samples to read from the input channels.</param>
+        /// <returns>The total number of samples read from the input channels and stored in the buffer.</returns>
+        /// <remarks>
+        /// This method reads audio samples from all input channels, ensuring that they stay in sync, and stores them in the buffer.
+        /// It modifies the original buffer in place.
+        /// </remarks>
         public int Read(float[] buffer, int offset, int count)
         {
             int sampleFramesRequested = count / outputChannelCount;
@@ -131,10 +135,15 @@ namespace NAudio.Wave.SampleProviders
         public WaveFormat WaveFormat => waveFormat;
 
         /// <summary>
-        /// Connects a specified input channel to an output channel
+        /// Connects the input channel to the output channel.
         /// </summary>
-        /// <param name="inputChannel">Input Channel index (zero based). Must be less than InputChannelCount</param>
-        /// <param name="outputChannel">Output Channel index (zero based). Must be less than OutputChannelCount</param>
+        /// <param name="inputChannel">The input channel to be connected.</param>
+        /// <param name="outputChannel">The output channel to be connected.</param>
+        /// <exception cref="ArgumentException">Thrown when the input channel or output channel is invalid.</exception>
+        /// <remarks>
+        /// This method connects the specified input channel to the specified output channel by updating the mappings array.
+        /// It performs validation to ensure that the input and output channels are within the valid range.
+        /// </remarks>
         public void ConnectInputToOutput(int inputChannel, int outputChannel)
         {
             if (inputChannel < 0 || inputChannel >= InputChannelCount)

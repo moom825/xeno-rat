@@ -11,6 +11,14 @@ namespace NAudio.SoundFont
     {
         private Instrument lastInstrument = null;
 
+        /// <summary>
+        /// Reads an instrument from the binary reader and returns the instrument.
+        /// </summary>
+        /// <param name="br">The binary reader to read from.</param>
+        /// <returns>The instrument read from the binary reader.</returns>
+        /// <remarks>
+        /// This method reads an instrument from the binary reader by reading the name and startInstrumentZoneIndex, and then updates the lastInstrument and adds the read instrument to the data collection.
+        /// </remarks>
         public override Instrument Read(BinaryReader br)
         {
             Instrument i = new Instrument();
@@ -30,12 +38,28 @@ namespace NAudio.SoundFont
             return i;
         }
 
+        /// <summary>
+        /// Writes the instrument data to a binary writer.
+        /// </summary>
+        /// <param name="bw">The binary writer to write the data to.</param>
+        /// <param name="instrument">The instrument data to be written.</param>
+        /// <remarks>
+        /// This method writes the instrument data to the specified binary writer.
+        /// </remarks>
         public override void Write(BinaryWriter bw, Instrument instrument)
         {
         }
 
         public override int Length => 22;
 
+        /// <summary>
+        /// Loads the provided zones into the instruments, excluding the last preset (EOP).
+        /// </summary>
+        /// <param name="zones">An array of Zone objects to be loaded into the instruments.</param>
+        /// <remarks>
+        /// This method iterates through the instruments and assigns the corresponding zones based on the start and end indices.
+        /// It then removes the last preset (EOP) from the data.
+        /// </remarks>
         public void LoadZones(Zone[] zones)
         {
             // don't do the last preset, which is simply EOP

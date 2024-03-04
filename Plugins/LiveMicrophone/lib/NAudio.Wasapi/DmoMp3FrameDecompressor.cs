@@ -48,8 +48,17 @@ namespace NAudio.FileFormats.Mp3
         public WaveFormat OutputFormat { get { return pcmFormat; } }
 
         /// <summary>
-        /// Decompress a single frame of MP3
+        /// Decompresses the provided MP3 frame and writes the decompressed data to the specified destination buffer.
         /// </summary>
+        /// <param name="frame">The MP3 frame to be decompressed.</param>
+        /// <param name="dest">The destination buffer where the decompressed data will be written.</param>
+        /// <param name="destOffset">The offset in the destination buffer where the decompressed data will be written.</param>
+        /// <returns>The length of the decompressed data written to the destination buffer.</returns>
+        /// <remarks>
+        /// This method decompresses the provided MP3 frame using a DMO (DirectX Media Object) and writes the decompressed data to the specified destination buffer at the specified offset.
+        /// It first loads the MP3 frame data into the input buffer of the DMO, then processes the input buffer, retrieves the output data from the DMO, and writes it to the destination buffer.
+        /// If no output data is available, it returns 0. The method also asserts that more data is not available in the output buffer.
+        /// </remarks>
         public int DecompressFrame(Mp3Frame frame, byte[] dest, int destOffset)
         {
             // 1. copy into our DMO's input buffer
@@ -84,7 +93,7 @@ namespace NAudio.FileFormats.Mp3
         }
 
         /// <summary>
-        /// Alerts us that a reposition has occured so the MP3 decoder needs to reset its state
+        /// Resets the state of the object, indicating that repositioning is required.
         /// </summary>
         public void Reset()
         {
@@ -92,8 +101,12 @@ namespace NAudio.FileFormats.Mp3
         }
 
         /// <summary>
-        /// Dispose of this obejct and clean up resources
+        /// Disposes the input media buffer, output buffer, and MP3 decoder if they are not null.
         /// </summary>
+        /// <remarks>
+        /// This method disposes the input media buffer, output buffer, and MP3 decoder if they are not null.
+        /// It also sets the corresponding references to null after disposal.
+        /// </remarks>
         public void Dispose()
         {
             if (inputMediaBuffer != null)

@@ -51,8 +51,17 @@ namespace NAudio.Wave
         public WaveFormat WaveFormat { get; }
 
         /// <summary>
-        /// Reads bytes from this WaveProvider
+        /// Reads audio data from the source buffer and processes it to the destination buffer.
         /// </summary>
+        /// <param name="buffer">The destination buffer to write the processed audio data to.</param>
+        /// <param name="offset">The offset in the destination buffer to start writing the data.</param>
+        /// <param name="count">The number of bytes to read from the source buffer and process.</param>
+        /// <returns>The number of bytes written to the destination buffer after processing the audio data.</returns>
+        /// <remarks>
+        /// This method reads audio data from the source buffer, processes it by applying left and right volume adjustments, and writes the processed data to the destination buffer.
+        /// It ensures that the source buffer has enough space to accommodate the required number of bytes, reads the source audio data, processes each sample by applying volume adjustments, and writes the processed data to the destination buffer.
+        /// The method returns the total number of bytes written to the destination buffer after processing the audio data, which is calculated based on the number of samples read and the size of each sample.
+        /// </remarks>
         public int Read(byte[] buffer, int offset, int count)
         {
             var sourceBytesRequired = count / 2;

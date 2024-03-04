@@ -45,12 +45,16 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Read bytes from this WaveProvider
+        /// Reads data from the source provider into the buffer and applies volume adjustments if necessary.
         /// </summary>
-        /// <param name="buffer">Buffer to read into</param>
-        /// <param name="offset">Offset within buffer to read to</param>
-        /// <param name="count">Bytes desired</param>
-        /// <returns>Bytes read</returns>
+        /// <param name="buffer">The buffer to read data into.</param>
+        /// <param name="offset">The zero-based byte offset in buffer at which to begin storing the data read from the current stream.</param>
+        /// <param name="count">The maximum number of bytes to read.</param>
+        /// <returns>The total number of bytes read into the buffer.</returns>
+        /// <remarks>
+        /// This method reads data from the source provider into the buffer, and if the volume is not 1.0f, it applies volume adjustments to the samples in the buffer.
+        /// If the volume is 0.0f, it fills the buffer with zeros.
+        /// </remarks>
         public int Read(byte[] buffer, int offset, int count)
         {
             // always read from the source

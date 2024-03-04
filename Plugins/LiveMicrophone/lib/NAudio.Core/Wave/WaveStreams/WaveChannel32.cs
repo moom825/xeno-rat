@@ -70,11 +70,21 @@ namespace NAudio.Wave
             position = 0;
         }
 
+        /// <summary>
+        /// Converts the size of the source bytes to the size of the destination bytes based on the sample sizes and returns the result.
+        /// </summary>
+        /// <param name="sourceBytes">The size of the source bytes to be converted.</param>
+        /// <returns>The size of the destination bytes calculated based on the sample sizes.</returns>
         private long SourceToDest(long sourceBytes)
         {
             return (sourceBytes / sourceBytesPerSample) * destBytesPerSample;
         }
 
+        /// <summary>
+        /// Converts the destination bytes to source bytes based on the sample sizes and returns the result.
+        /// </summary>
+        /// <param name="destBytes">The number of destination bytes to be converted.</param>
+        /// <returns>The equivalent number of source bytes calculated based on the sample sizes.</returns>
         private long DestToSource(long destBytes)
         {
             return (destBytes / destBytesPerSample) * sourceBytesPerSample;
@@ -129,14 +139,20 @@ namespace NAudio.Wave
             }
         }
 
-
         /// <summary>
-        /// Reads bytes from this wave stream
+        /// Reads audio data from the source stream and writes it to the destination buffer.
         /// </summary>
-        /// <param name="destBuffer">The destination buffer</param>
-        /// <param name="offset">Offset into the destination buffer</param>
-        /// <param name="numBytes">Number of bytes read</param>
-        /// <returns>Number of bytes read.</returns>
+        /// <param name="destBuffer">The destination buffer to write the audio data to.</param>
+        /// <param name="offset">The offset in the destination buffer at which to start writing the audio data.</param>
+        /// <param name="numBytes">The number of bytes of audio data to read and write to the destination buffer.</param>
+        /// <returns>The number of bytes written to the destination buffer.</returns>
+        /// <remarks>
+        /// This method reads audio data from the source stream and writes it to the destination buffer.
+        /// It first fills with silence if the position is less than 0, then loads the next chunk of audio data from the source stream and writes it to the destination buffer.
+        /// It implements panning laws and adjusts the volume of the audio data.
+        /// If PadWithZeroes is true, it fills out the remaining space in the destination buffer with zeroes.
+        /// The position is updated by the number of bytes written to the destination buffer.
+        /// </remarks>
         public override int Read(byte[] destBuffer, int offset, int numBytes)
         {
             lock (lockObject)
@@ -211,9 +227,15 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Determines whether this channel has any data to play
-        /// to allow optimisation to not read, but bump position forward
+        /// Checks if the source stream has data available based on the specified count.
         /// </summary>
+        /// <param name="count">The number of bytes to check for availability.</param>
+        /// <returns>True if the source stream has data available for the specified count; otherwise, false.</returns>
+        /// <remarks>
+        /// This method checks whether the source stream has data available based on the specified count.
+        /// It first checks if the source stream has data, and then verifies if the position plus count is not less than 0.
+        /// If both conditions are met, it returns true if the position is less than the length and the volume is not equal to 0; otherwise, it returns false.
+        /// </remarks>
         public override bool HasData(int count)
         {
             // Check whether the source stream has data.
@@ -229,8 +251,14 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Disposes this WaveStream
+        /// Releases the unmanaged resources used by the WaveChannel32 and optionally releases the managed resources.
         /// </summary>
+        /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        /// <remarks>
+        /// This method releases the unmanaged resources used by the WaveChannel32 and optionally releases the managed resources.
+        /// If <paramref name="disposing"/> is true, this method disposes of the sourceStream if it is not null.
+        /// If <paramref name="disposing"/> is false, this method asserts that the WaveChannel32 was not disposed.
+        /// </remarks>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -257,8 +285,13 @@ namespace NAudio.Wave
         private SampleEventArgs sampleEventArgs = new SampleEventArgs(0,0);
 
         /// <summary>
-        /// Raise the sample event (no check for null because it has already been done)
+        /// Raises the Sample event with the specified left and right values.
         /// </summary>
+        /// <param name="left">The left value to be raised.</param>
+        /// <param name="right">The right value to be raised.</param>
+        /// <remarks>
+        /// This method raises the Sample event with the specified left and right values by updating the <see cref="SampleEventArgs"/> instance and invoking the event.
+        /// </remarks>
         private void RaiseSample(float left, float right)
         {
             sampleEventArgs.Left = left;

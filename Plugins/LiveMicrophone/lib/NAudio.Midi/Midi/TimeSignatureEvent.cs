@@ -50,8 +50,9 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Creates a deep clone of this MIDI event.
+        /// Clones the current TimeSignatureEvent and returns the cloned instance.
         /// </summary>
+        /// <returns>A new instance of TimeSignatureEvent that is a copy of the current instance.</returns>
         public override MidiEvent Clone() => (TimeSignatureEvent)MemberwiseClone();
 
         /// <summary>
@@ -116,11 +117,11 @@ namespace NAudio.Midi
                 return String.Format("{0}/{1}",numerator,den);
             }
         }
-        
+
         /// <summary>
-        /// Describes this time signature event
+        /// Returns a formatted string that includes the base string representation, time signature, ticks in metronome click, and 32nd notes in a quarter note.
         /// </summary>
-        /// <returns>A string describing this event</returns>
+        /// <returns>A formatted string containing the base string representation, time signature, ticks in metronome click, and 32nd notes in a quarter note.</returns>
         public override string ToString() 
         {
             return String.Format("{0} {1} TicksInClick:{2} 32ndsInQuarterNote:{3}",
@@ -128,10 +129,13 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Calls base class export first, then exports the data 
-        /// specific to this event
-        /// <seealso cref="MidiEvent.Export">MidiEvent.Export</seealso>
+        /// Exports the object's data to a binary writer.
         /// </summary>
+        /// <param name="absoluteTime">The absolute time value.</param>
+        /// <param name="writer">The binary writer to which the data is exported.</param>
+        /// <remarks>
+        /// This method exports the numerator, denominator, ticks in metronome click, and number of 32nd notes in a quarter note to the specified binary writer.
+        /// </remarks>
         public override void Export(ref long absoluteTime, BinaryWriter writer)
         {
             base.Export(ref absoluteTime, writer);

@@ -38,8 +38,9 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Creates a deep clone of this MIDI event.
+        /// Clones the current NoteOnEvent and returns a new instance of NoteOnEvent.
         /// </summary>
+        /// <returns>A new instance of NoteOnEvent that is a clone of the current NoteOnEvent.</returns>
         public override MidiEvent Clone() => new NoteOnEvent(AbsoluteTime, Channel, NoteNumber, Velocity, NoteLength);
 
         /// <summary>
@@ -131,10 +132,11 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Calls base class export first, then exports the data 
-        /// specific to this event
-        /// <seealso cref="MidiEvent.Export">MidiEvent.Export</seealso>
+        /// Returns a string representation of the object.
         /// </summary>
+        /// <returns>
+        /// A string that represents the object. If the velocity is 0 and the OffEvent is null, it returns the note off message along with the base string representation. Otherwise, it returns the base string representation along with the length of the note.
+        /// </returns>
         public override string ToString()
         {
             if ((this.Velocity == 0) && (OffEvent == null))

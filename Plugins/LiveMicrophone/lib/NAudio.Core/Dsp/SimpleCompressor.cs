@@ -1,4 +1,4 @@
-// based on SimpleComp v1.10 © 2006, ChunkWare Music Software, OPEN-SOURCE
+// based on SimpleComp v1.10 Â© 2006, ChunkWare Music Software, OPEN-SOURCE
 using System;
 using NAudio.Utils;
 
@@ -29,13 +29,23 @@ namespace NAudio.Dsp
 
         public double Ratio { get; set; }
 
-        // call before runtime (in resume())
+        /// <summary>
+        /// Initializes the runtime by setting the environment dB to the DC offset value.
+        /// </summary>
         public void InitRuntime()
         {
             this.envdB = DC_OFFSET;
         }
-    
-        // // compressor runtime process
+
+        /// <summary>
+        /// Processes the input signals using a dynamic range compressor.
+        /// </summary>
+        /// <param name="in1">The first input signal to be processed.</param>
+        /// <param name="in2">The second input signal to be processed.</param>
+        /// <remarks>
+        /// This method processes the input signals using a dynamic range compressor, which involves rectifying the input signals, applying threshold, attack/release envelope, transfer function, and output gain.
+        /// The method modifies the original input signals in place.
+        /// </remarks>
         public void Process(ref double in1, ref double in2)
         {
             // sidechain

@@ -26,12 +26,17 @@
              7,7,7,7,7,7,7,7,
              7,7,7,7,7,7,7,7
         };
-        
+
         /// <summary>
-        /// Encodes a single 16 bit sample to a-law
+        /// Converts a linear PCM sample to A-law format.
         /// </summary>
-        /// <param name="sample">16 bit PCM sample</param>
-        /// <returns>a-law encoded byte</returns>
+        /// <param name="sample">The linear PCM sample to be converted.</param>
+        /// <returns>The A-law compressed byte representation of the input <paramref name="sample"/>.</returns>
+        /// <remarks>
+        /// This method converts a linear PCM sample to A-law format as per the ITU-T G.711 specification.
+        /// It first determines the sign, exponent, and mantissa of the input sample and then compresses it to A-law format.
+        /// The resulting A-law compressed byte is returned as the output.
+        /// </remarks>
         public static byte LinearToALawSample(short sample)
         {
             int sign;

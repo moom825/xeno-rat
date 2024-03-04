@@ -13,6 +13,16 @@ namespace NAudio.Wave
             this.waveCallback = waveCallback;
         }
 
+        /// <summary>
+        /// Overrides the window procedure to handle wave messages.
+        /// </summary>
+        /// <param name="m">A reference to a Message that contains the message to process.</param>
+        /// <remarks>
+        /// This method handles various wave messages and calls the <paramref name="waveCallback"/> method accordingly.
+        /// If the message is WaveOutDone or WaveInData, it retrieves the output device handle and wave header, and then calls the <paramref name="waveCallback"/> method with appropriate parameters.
+        /// If the message is WaveOutOpen, WaveOutClose, WaveInClose, or WaveInOpen, it calls the <paramref name="waveCallback"/> method with appropriate parameters.
+        /// If the message is not a wave message, it calls the base class's WndProc method to handle the message.
+        /// </remarks>
         protected override void WndProc(ref Message m)
         {
             WaveInterop.WaveMessage message = (WaveInterop.WaveMessage)m.Msg;

@@ -72,8 +72,14 @@ namespace NAudio.Wave
         public List<RiffChunk> ExtraChunks { get; }
 
         /// <summary>
-        /// Gets the data for the specified chunk
+        /// Retrieves the data of a specific RIFF chunk from the wave stream.
         /// </summary>
+        /// <param name="chunk">The RIFF chunk for which the data needs to be retrieved.</param>
+        /// <returns>The byte array containing the data of the specified <paramref name="chunk"/>.</returns>
+        /// <remarks>
+        /// This method temporarily changes the position of the wave stream to read the data of the specified <paramref name="chunk"/>.
+        /// It then restores the original position of the wave stream after reading the data.
+        /// </remarks>
         public byte[] GetChunkData(RiffChunk chunk)
         {
             long oldPosition = waveStream.Position;
@@ -85,8 +91,16 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Cleans up the resources associated with this WaveFileReader
+        /// Releases the unmanaged resources used by the WaveFileReader and optionally releases the managed resources.
         /// </summary>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        /// <remarks>
+        /// This method releases the unmanaged resources used by the WaveFileReader and optionally releases the managed resources.
+        /// If <paramref name="disposing"/> is true, this method releases all resources held by any managed objects that this WaveFileReader references.
+        /// This method also calls the Dispose method of the base class with the <paramref name="disposing"/> parameter set to true.
+        /// If <paramref name="disposing"/> is false, this method indicates that the WaveFileReader was not disposed.
+        /// </remarks>
+        /// <exception cref="System.Diagnostics.Debug.AssertException">Thrown when WaveFileReader was not disposed.</exception>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -167,9 +181,18 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Reads bytes from the Wave File
-        /// <see cref="Stream.Read"/>
+        /// Reads a sequence of bytes from the current stream and advances the position within the stream by the number of bytes read.
         /// </summary>
+        /// <param name="array">An array of bytes. When this method returns, the buffer contains the specified byte array with the values between offset and (offset + count - 1) replaced by the bytes read from the current source.</param>
+        /// <param name="offset">The zero-based byte offset in array at which to begin storing the data read from the current stream.</param>
+        /// <param name="count">The maximum number of bytes to be read from the current stream.</param>
+        /// <exception cref="ArgumentException">Thrown when count is not a multiple of waveFormat.BlockAlign.</exception>
+        /// <returns>The total number of bytes read into the buffer. This might be less than the number of bytes requested if that many bytes are not currently available, or zero if the end of the stream is reached.</returns>
+        /// <remarks>
+        /// This method ensures that a complete block of bytes is read, as it throws an ArgumentException if count is not a multiple of waveFormat.BlockAlign.
+        /// It then locks the current object and reads a sequence of bytes from the waveStream into the specified array, starting at the specified offset.
+        /// If the position plus count exceeds the length of the data chunk, it adjusts the count to read only up to the end of the data chunk.
+        /// </remarks>
         public override int Read(byte[] array, int offset, int count)
         {
             if (count % waveFormat.BlockAlign != 0)
@@ -187,12 +210,18 @@ namespace NAudio.Wave
                 return waveStream.Read(array, offset, count);
             }
         }
-        
+
         /// <summary>
-        /// Attempts to read the next sample or group of samples as floating point normalised into the range -1.0f to 1.0f
+        /// Reads the next sample frame from the audio data and returns it as an array of floats.
         /// </summary>
-        /// <returns>An array of samples, 1 for mono, 2 for stereo etc. Null indicates end of file reached
-        /// </returns>
+        /// <exception cref="InvalidOperationException">Thrown when the audio data encoding is not supported (only 16, 24, or 32 bit PCM or IEEE float audio data are supported).</exception>
+        /// <exception cref="InvalidDataException">Thrown when an unexpected end of file is encountered while reading the audio data.</exception>
+        /// <returns>An array of floats representing the next sample frame from the audio data.</returns>
+        /// <remarks>
+        /// This method reads the next sample frame from the audio data based on the specified wave format.
+        /// It handles different bit depths and encodings to convert the raw byte data into floats.
+        /// If the end of the file is reached, it returns null.
+        /// </remarks>
         public float[] ReadNextSampleFrame()
         {
             switch (waveFormat.Encoding)
@@ -242,10 +271,15 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Attempts to read a sample into a float. n.b. only applicable for uncompressed formats
-        /// Will normalise the value read into the range -1.0f to 1.0f if it comes from a PCM encoding
+        /// Tries to read the next sample frame and returns a float value if successful.
         /// </summary>
-        /// <returns>False if the end of the WAV data chunk was reached</returns>
+        /// <param name="sampleValue">When this method returns, contains the float value read from the sample frame, if the read operation succeeded, or 0 if it failed.</param>
+        /// <returns>
+        ///   <c>true</c> if a sample frame was successfully read and <paramref name="sampleValue"/> contains a valid float value; otherwise, <c>false</c>.
+        /// </returns>
+        /// <remarks>
+        /// This method is marked as obsolete and it is recommended to use <see cref="ReadNextSampleFrame"/> instead, as this version does not support stereo properly.
+        /// </remarks>
         [Obsolete("Use ReadNextSampleFrame instead (this version does not support stereo properly)")]
         public bool TryReadFloat(out float sampleValue)
         {

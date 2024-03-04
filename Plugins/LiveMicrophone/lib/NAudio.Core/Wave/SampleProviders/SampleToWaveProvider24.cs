@@ -32,12 +32,16 @@ namespace NAudio.Wave.SampleProviders
         }
 
         /// <summary>
-        /// Reads bytes from this wave stream, clipping if necessary
+        /// Reads audio samples from the source provider and writes them to the destination buffer.
         /// </summary>
-        /// <param name="destBuffer">The destination buffer</param>
-        /// <param name="offset">Offset into the destination buffer</param>
-        /// <param name="numBytes">Number of bytes read</param>
-        /// <returns>Number of bytes read.</returns>
+        /// <param name="destBuffer">The destination buffer to write the audio samples to.</param>
+        /// <param name="offset">The offset in the destination buffer at which to start writing.</param>
+        /// <param name="numBytes">The number of bytes to read from the source provider and write to the destination buffer.</param>
+        /// <returns>The actual number of bytes written to the destination buffer.</returns>
+        /// <remarks>
+        /// This method reads audio samples from the source provider, adjusts their volume, clips them if necessary, converts them to 24-bit samples, and writes them to the destination buffer.
+        /// If the number of bytes requested is not a multiple of 3, the remaining bytes in the destination buffer will not be written to.
+        /// </remarks>
         public int Read(byte[] destBuffer, int offset, int numBytes)
         {
             var samplesRequired = numBytes / 3;

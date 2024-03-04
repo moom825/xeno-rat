@@ -33,8 +33,9 @@ namespace NAudio.Dmo
         }
 
         /// <summary>
-        /// ToString
-        /// </summary>        
+        /// Returns a string representation of the object, including its size, alignment, and maximum lookahead.
+        /// </summary>
+        /// <returns>A string containing the size, alignment, and maximum lookahead of the object.</returns>
         public override string ToString()
         {
             return $"Size: {Size}, Alignment {Alignment}, MaxLookahead {MaxLookahead}";

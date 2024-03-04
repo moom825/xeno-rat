@@ -7,12 +7,21 @@ namespace NAudio.Wave.SampleProviders
     /// </summary>
     static class SampleProviderConverters
     {
+
         /// <summary>
-        /// Helper function to go from IWaveProvider to a SampleProvider
-        /// Must already be PCM or IEEE float
+        /// Converts the specified WaveProvider into a SampleProvider.
         /// </summary>
-        /// <param name="waveProvider">The WaveProvider to convert</param>
-        /// <returns>A sample provider</returns>
+        /// <param name="waveProvider">The WaveProvider to be converted.</param>
+        /// <returns>A SampleProvider representing the converted WaveProvider.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the bit depth of the WaveProvider is unsupported.</exception>
+        /// <exception cref="ArgumentException">Thrown when the encoding of the WaveProvider is unsupported.</exception>
+        /// <remarks>
+        /// This method converts the input WaveProvider into a SampleProvider based on its encoding and bit depth.
+        /// If the WaveProvider's encoding is PCM, it creates a corresponding PCM-to-SampleProvider converter based on the bit depth.
+        /// If the WaveProvider's encoding is IEEE Float, it creates a corresponding Wave-to-SampleProvider converter.
+        /// If the WaveProvider's encoding is not supported, an ArgumentException is thrown.
+        /// If the bit depth of the WaveProvider is not supported, an InvalidOperationException is thrown.
+        /// </remarks>
         public static ISampleProvider ConvertWaveProviderIntoSampleProvider(IWaveProvider waveProvider)
         {
             ISampleProvider sampleProvider;

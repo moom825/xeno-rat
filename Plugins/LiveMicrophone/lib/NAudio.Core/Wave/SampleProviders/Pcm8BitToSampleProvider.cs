@@ -16,12 +16,16 @@
         }
 
         /// <summary>
-        /// Reads samples from this sample provider
+        /// Reads data from the source into the buffer and returns the number of bytes read.
         /// </summary>
-        /// <param name="buffer">Sample buffer</param>
-        /// <param name="offset">Offset into sample buffer</param>
-        /// <param name="count">Number of samples to read</param>
-        /// <returns>Number of samples read</returns>
+        /// <param name="buffer">The buffer to read the data into.</param>
+        /// <param name="offset">The zero-based byte offset in buffer at which to begin storing the data read from the current stream.</param>
+        /// <param name="count">The maximum number of bytes to read.</param>
+        /// <returns>The total number of bytes read into the buffer.</returns>
+        /// <remarks>
+        /// This method reads data from the source into the buffer. It ensures that the source buffer has enough space to accommodate the required bytes.
+        /// It then reads the data from the source into the buffer, processes it, and returns the total number of bytes read.
+        /// </remarks>
         public override int Read(float[] buffer, int offset, int count)
         {
             int sourceBytesRequired = count;

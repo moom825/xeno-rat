@@ -46,8 +46,13 @@ namespace NAudio.Midi
         private static readonly string[] NoteNames = new string[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
 
         /// <summary>
-        /// <see cref="MidiEvent.GetAsShortMessage" />
+        /// Gets the short message representation of the note event.
         /// </summary>
+        /// <returns>The short message representation of the note event.</returns>
+        /// <remarks>
+        /// This method calculates the short message representation of the note event by combining the base short message with the note number and velocity.
+        /// The note number is shifted left by 8 bits and the velocity is shifted left by 16 bits before being added to the base short message.
+        /// </remarks>
         public override int GetAsShortMessage()
         {
             return base.GetAsShortMessage() + (noteNumber << 8) + (velocity << 16);
@@ -161,9 +166,9 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Describes the Note Event
+        /// Returns a formatted string representing the note's name and velocity.
         /// </summary>
-        /// <returns>Note event as a string</returns>
+        /// <returns>A string containing the note's name and velocity, formatted as "{base.ToString()} {this.NoteName} Vel:{this.Velocity}"</returns>
         public override string ToString()
         {
             return String.Format("{0} {1} Vel:{2}",
@@ -173,8 +178,13 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// <see cref="MidiEvent.Export"/>
+        /// Exports the note number and velocity to a binary writer.
         /// </summary>
+        /// <param name="absoluteTime">The absolute time of the event.</param>
+        /// <param name="writer">The binary writer to which the note number and velocity will be exported.</param>
+        /// <remarks>
+        /// This method exports the note number and velocity to the specified binary writer.
+        /// </remarks>
         public override void Export(ref long absoluteTime, BinaryWriter writer)
         {
             base.Export(ref absoluteTime, writer);

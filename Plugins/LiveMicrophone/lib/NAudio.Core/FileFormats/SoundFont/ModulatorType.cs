@@ -86,9 +86,12 @@ namespace NAudio.SoundFont
 		}
 
 		/// <summary>
-		/// <see cref="Object.ToString"/>
+		/// Returns a string representation of the object.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>
+		/// A string representation of the object. If <see cref="midiContinuousController"/> is true, the string includes the <see cref="sourceType"/> and the MIDI continuous controller number.
+		/// If <see cref="midiContinuousController"/> is false, the string includes the <see cref="sourceType"/> and the <see cref="controllerSource"/>.
+		/// </returns>
 		public override string ToString()
 		{
 			if(midiContinuousController)

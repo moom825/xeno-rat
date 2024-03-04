@@ -548,13 +548,14 @@ namespace AForge.Video.DirectShow
         }
 
         /// <summary>
-        /// Start video source.
+        /// Starts the video capture process.
         /// </summary>
-        /// 
-        /// <remarks>Starts video source and return execution to caller. Video source
-        /// object creates background thread and notifies about new frames with the
-        /// help of <see cref="NewFrame"/> event.</remarks>
-        /// 
+        /// <exception cref="ArgumentException">Thrown when the video source is not specified.</exception>
+        /// <remarks>
+        /// This method starts the video capture process if it is not already running. It checks if the video source is specified, and if not, it throws an ArgumentException.
+        /// It initializes various parameters such as framesReceived, bytesReceived, isCrossbarAvailable, and needToSetVideoInput.
+        /// It creates a ManualResetEvent for stopping the video capture process and a new thread for the WorkerThread method, and starts the thread.
+        /// </remarks>
         public void Start( )
         {
             if ( !IsRunning )
@@ -582,12 +583,12 @@ namespace AForge.Video.DirectShow
         }
 
         /// <summary>
-        /// Signal video source to stop its work.
+        /// Signals the thread to stop.
         /// </summary>
-        /// 
-        /// <remarks>Signals video source to stop its background thread, stop to
-        /// provide new frames and free resources.</remarks>
-        /// 
+        /// <remarks>
+        /// This method signals the associated thread to stop by setting the stop event.
+        /// If the thread is not null, the stop event is set to signal the thread to stop.
+        /// </remarks>
         public void SignalToStop( )
         {
             // stop thread
@@ -599,12 +600,11 @@ namespace AForge.Video.DirectShow
         }
 
         /// <summary>
-        /// Wait for video source has stopped.
+        /// Waits for the thread to stop and then frees any resources associated with it.
         /// </summary>
-        /// 
-        /// <remarks>Waits for source stopping after it was signalled to stop using
-        /// <see cref="SignalToStop"/> method.</remarks>
-        /// 
+        /// <remarks>
+        /// This method waits for the associated thread to stop by calling <see cref="Thread.Join"/> and then frees any resources associated with it by calling <see cref="Free"/>.
+        /// </remarks>
         public void WaitForStop( )
         {
             if ( thread != null )
@@ -617,17 +617,12 @@ namespace AForge.Video.DirectShow
         }
 
         /// <summary>
-        /// Stop video source.
+        /// Stops the running thread if it is currently running.
         /// </summary>
-        /// 
-        /// <remarks><para>Stops video source aborting its thread.</para>
-        /// 
-        /// <para><note>Since the method aborts background thread, its usage is highly not preferred
-        /// and should be done only if there are no other options. The correct way of stopping camera
-        /// is <see cref="SignalToStop">signaling it stop</see> and then
-        /// <see cref="WaitForStop">waiting</see> for background thread's completion.</note></para>
+        /// <remarks>
+        /// This method checks if the thread is currently running. If it is, the method aborts the thread and waits for it to stop before returning.
         /// </remarks>
-        /// 
+        /// <exception cref="ThreadStateException">Thrown if the thread is not in a valid state for the requested operation.</exception>
         public void Stop( )
         {
             if ( this.IsRunning )
@@ -638,9 +633,11 @@ namespace AForge.Video.DirectShow
         }
 
         /// <summary>
-        /// Free resource.
+        /// Frees the resources used by the thread and releases the events.
         /// </summary>
-        /// 
+        /// <remarks>
+        /// This method sets the thread to null and releases the stop event used by the thread.
+        /// </remarks>
         private void Free( )
         {
             thread = null;
@@ -651,21 +648,13 @@ namespace AForge.Video.DirectShow
         }
 
         /// <summary>
-        /// Display property window for the video capture device providing its configuration
-        /// capabilities.
+        /// Displays the property page for the specified source object in the given parent window.
         /// </summary>
-        /// 
-        /// <param name="parentWindow">Handle of parent window.</param>
-        /// 
-        /// <remarks><para><note>If you pass parent window's handle to this method, then the
-        /// displayed property page will become modal window and none of the controls from the
-        /// parent window will be accessible. In order to make it modeless it is required
-        /// to pass <see cref="IntPtr.Zero"/> as parent window's handle.
-        /// </note></para>
+        /// <param name="parentWindow">The handle to the parent window where the property page will be displayed.</param>
+        /// <param name="sourceObject">The object for which the property page is to be displayed.</param>
+        /// <remarks>
+        /// This method retrieves the ISpecifyPropertyPages interface of the source object and gets the property pages from the property bag. It then creates and displays the OlePropertyFrame for the source object using the retrieved property pages. After completion, it releases any allocated resources.
         /// </remarks>
-        /// 
-        /// <exception cref="NotSupportedException">The video source does not support configuration property page.</exception>
-        /// 
         public void DisplayPropertyPage( IntPtr parentWindow )
         {
             // check source
@@ -706,27 +695,11 @@ namespace AForge.Video.DirectShow
         }
 
         /// <summary>
-        /// Display property page of video crossbar (Analog Video Crossbar filter).
+        /// Displays the crossbar property page on the specified parent window.
         /// </summary>
-        /// 
-        /// <param name="parentWindow">Handle of parent window.</param>
-        /// 
-        /// <remarks><para>The Analog Video Crossbar filter is modeled after a general switching matrix,
-        /// with n inputs and m outputs. For example, a video card might have two external connectors:
-        /// a coaxial connector for TV, and an S-video input. These would be represented as input pins on
-        /// the filter. The displayed property page allows to configure the crossbar by selecting input
-        /// of a video card to use.</para>
-        /// 
-        /// <para><note>This method can be invoked only when video source is running (<see cref="IsRunning"/> is
-        /// <see langword="true"/>). Otherwise it generates exception.</note></para>
-        /// 
-        /// <para>Use <see cref="CheckIfCrossbarAvailable"/> method to check if running video source provides
-        /// crossbar configuration.</para>
-        /// </remarks>
-        /// 
-        /// <exception cref="ApplicationException">The video source must be running in order to display crossbar property page.</exception>
-        /// <exception cref="NotSupportedException">Crossbar configuration is not supported by currently running video source.</exception>
-        /// 
+        /// <param name="parentWindow">The handle to the parent window on which the property page will be displayed.</param>
+        /// <exception cref="ApplicationException">Thrown when the video source is not running.</exception>
+        /// <exception cref="NotSupportedException">Thrown when crossbar configuration is not supported by the currently running video source.</exception>
         public void DisplayCrossbarPropertyPage( IntPtr parentWindow )
         {
             lock ( sync )
@@ -754,16 +727,15 @@ namespace AForge.Video.DirectShow
         }
 
         /// <summary>
-        /// Check if running video source provides crossbar for configuration.
+        /// Checks if the crossbar is available and returns the result.
         /// </summary>
-        /// 
-        /// <returns>Returns <see langword="true"/> if crossbar configuration is available or
-        /// <see langword="false"/> otherwise.</returns>
-        /// 
-        /// <remarks><para>The method reports if the video source provides crossbar configuration
-        /// using <see cref="DisplayCrossbarPropertyPage"/>.</para>
+        /// <returns>True if the crossbar is available; otherwise, false.</returns>
+        /// <remarks>
+        /// This method checks if the crossbar is available by first acquiring a lock on the synchronization object <paramref name="sync"/>.
+        /// If the availability of the crossbar has not been determined yet, it checks if the system is running. If not, it creates a graph without playing to collect available inputs.
+        /// If the system is running, it waits for a maximum of 500 iterations, with a 10-millisecond sleep between each iteration, to determine the availability of the crossbar.
+        /// The method returns true if the crossbar is available; otherwise, it returns false.
         /// </remarks>
-        ///
         public bool CheckIfCrossbarAvailable( )
         {
             lock ( sync )
@@ -788,38 +760,27 @@ namespace AForge.Video.DirectShow
             }
         }
 
-
         /// <summary>
-        /// Simulates an external trigger.
+        /// Sets the flag to simulate a trigger.
         /// </summary>
-        /// 
-        /// <remarks><para>The method simulates external trigger for video cameras, which support
-        /// providing still image snapshots. The effect is equivalent as pressing camera's shutter
-        /// button - a snapshot will be provided through <see cref="SnapshotFrame"/> event.</para>
-        /// 
-        /// <para><note>The <see cref="ProvideSnapshots"/> property must be set to <see langword="true"/>
-        /// to enable receiving snapshots.</note></para>
-        /// </remarks>
-        /// 
         public void SimulateTrigger( )
         {
             needToSimulateTrigger = true;
         }
 
         /// <summary>
-        /// Sets a specified property on the camera.
+        /// Sets the specified camera property to the given value.
         /// </summary>
-        /// 
-        /// <param name="property">Specifies the property to set.</param>
-        /// <param name="value">Specifies the new value of the property.</param>
-        /// <param name="controlFlags">Specifies the desired control setting.</param>
-        /// 
-        /// <returns>Returns true on sucee or false otherwise.</returns>
-        /// 
-        /// <exception cref="ArgumentException">Video source is not specified - device moniker is not set.</exception>
-        /// <exception cref="ApplicationException">Failed creating device object for moniker.</exception>
-        /// <exception cref="NotSupportedException">The video source does not support camera control.</exception>
-        /// 
+        /// <param name="property">The camera property to be set.</param>
+        /// <param name="value">The value to set for the specified camera property.</param>
+        /// <param name="controlFlags">The flags that specify how the property should be controlled.</param>
+        /// <exception cref="ArgumentException">Thrown when the video source is not specified.</exception>
+        /// <exception cref="ApplicationException">Thrown when creating the device object for the moniker fails.</exception>
+        /// <exception cref="NotSupportedException">Thrown when the video source does not support camera control.</exception>
+        /// <returns>True if the camera property was successfully set; otherwise, false.</returns>
+        /// <remarks>
+        /// This method sets the specified camera property to the given value for the video source. It first checks if the video source is specified, then creates the source device's object and sets the camera property using the IAMCameraControl interface. If successful, it returns true; otherwise, it returns false.
+        /// </remarks>
         public bool SetCameraProperty( CameraControlProperty property, int value, CameraControlFlags controlFlags )
         {
             bool ret = true;
@@ -861,19 +822,15 @@ namespace AForge.Video.DirectShow
         }
 
         /// <summary>
-        /// Gets the current setting of a camera property.
+        /// Gets the specified camera property value and control flags.
         /// </summary>
-        /// 
-        /// <param name="property">Specifies the property to retrieve.</param>
-        /// <param name="value">Receives the value of the property.</param>
-        /// <param name="controlFlags">Receives the value indicating whether the setting is controlled manually or automatically</param>
-        /// 
-        /// <returns>Returns true on sucee or false otherwise.</returns>
-        /// 
-        /// <exception cref="ArgumentException">Video source is not specified - device moniker is not set.</exception>
-        /// <exception cref="ApplicationException">Failed creating device object for moniker.</exception>
-        /// <exception cref="NotSupportedException">The video source does not support camera control.</exception>
-        /// 
+        /// <param name="property">The camera control property to retrieve.</param>
+        /// <param name="value">When this method returns, contains the value of the camera control property.</param>
+        /// <param name="controlFlags">When this method returns, contains the control flags for the camera control property.</param>
+        /// <returns>True if the camera property value and control flags were retrieved successfully; otherwise, false.</returns>
+        /// <exception cref="ArgumentException">Thrown when the video source is not specified.</exception>
+        /// <exception cref="ApplicationException">Thrown when creating the device object for the specified moniker fails.</exception>
+        /// <exception cref="NotSupportedException">Thrown when the video source does not support camera control.</exception>
         public bool GetCameraProperty( CameraControlProperty property, out int value, out CameraControlFlags controlFlags )
         {
             bool ret = true;
@@ -915,22 +872,23 @@ namespace AForge.Video.DirectShow
         }
 
         /// <summary>
-        /// Gets the range and default value of a specified camera property.
+        /// Retrieves the range of values for a specified camera control property.
         /// </summary>
-        /// 
-        /// <param name="property">Specifies the property to query.</param>
-        /// <param name="minValue">Receives the minimum value of the property.</param>
-        /// <param name="maxValue">Receives the maximum value of the property.</param>
-        /// <param name="stepSize">Receives the step size for the property.</param>
-        /// <param name="defaultValue">Receives the default value of the property.</param>
-        /// <param name="controlFlags">Receives a member of the <see cref="CameraControlFlags"/> enumeration, indicating whether the property is controlled automatically or manually.</param>
-        /// 
-        /// <returns>Returns true on sucee or false otherwise.</returns>
-        /// 
-        /// <exception cref="ArgumentException">Video source is not specified - device moniker is not set.</exception>
-        /// <exception cref="ApplicationException">Failed creating device object for moniker.</exception>
-        /// <exception cref="NotSupportedException">The video source does not support camera control.</exception>
-        /// 
+        /// <param name="property">The camera control property for which to retrieve the range of values.</param>
+        /// <param name="minValue">When this method returns, contains the minimum value for the specified camera control property.</param>
+        /// <param name="maxValue">When this method returns, contains the maximum value for the specified camera control property.</param>
+        /// <param name="stepSize">When this method returns, contains the step size for the specified camera control property.</param>
+        /// <param name="defaultValue">When this method returns, contains the default value for the specified camera control property.</param>
+        /// <param name="controlFlags">When this method returns, contains the control flags for the specified camera control property.</param>
+        /// <exception cref="ArgumentException">Thrown when the video source is not specified.</exception>
+        /// <exception cref="ApplicationException">Thrown when creating the device object for the moniker fails.</exception>
+        /// <exception cref="NotSupportedException">Thrown when the video source does not support camera control.</exception>
+        /// <returns>True if the range retrieval was successful; otherwise, false.</returns>
+        /// <remarks>
+        /// This method retrieves the range of values for a specified camera control property from the video source.
+        /// It first checks if the video source is specified and then creates the source device's object.
+        /// If successful, it retrieves the range of values using the IAMCameraControl interface and returns true.
+        /// </remarks>
         public bool GetCameraPropertyRange( CameraControlProperty property, out int minValue, out int maxValue, out int stepSize, out int defaultValue, out CameraControlFlags controlFlags )
         {
             bool ret = true;
@@ -972,9 +930,16 @@ namespace AForge.Video.DirectShow
         }
 
         /// <summary>
-        /// Worker thread.
+        /// Worker thread for capturing video and snapshots from a device.
         /// </summary>
-        /// 
+        /// <param name="runGraph">Indicates whether to run the capture graph.</param>
+        /// <remarks>
+        /// This method initializes and configures the capture graph, source device, video grabber, and snapshot grabber.
+        /// It sets the media type, configures sample grabbers, and renders the capture pin.
+        /// If supported, it configures the snapshot pin and handles triggering and property page display.
+        /// The method also handles media events, such as device loss, and provides error information to clients if an exception occurs.
+        /// </remarks>
+        /// <exception cref="ApplicationException">Thrown if creating capture graph builder or filter graph fails.</exception>
         private void WorkerThread( )
         {
             WorkerThread( true );
@@ -1315,7 +1280,15 @@ namespace AForge.Video.DirectShow
             }
         }
 
-        // Set resolution for the specified stream configuration
+        /// <summary>
+        /// Sets the resolution of the video stream to the specified <paramref name="resolution"/>.
+        /// </summary>
+        /// <param name="streamConfig">The IAMStreamConfig interface for the video stream.</param>
+        /// <param name="resolution">The desired video resolution to be set.</param>
+        /// <remarks>
+        /// This method iterates through the device's capabilities to find the mediaType for the desired resolution.
+        /// It then sets the format of the video stream to the new mediaType if found.
+        /// </remarks>
         private void SetResolution( IAMStreamConfig streamConfig, VideoCapabilities resolution )
         {
             if ( resolution == null )
@@ -1357,7 +1330,20 @@ namespace AForge.Video.DirectShow
             }
         }
 
-        // Configure specified pin and collect its capabilities if required
+        /// <summary>
+        /// Gets the pin capabilities and configures size and rate for the specified video capture filter.
+        /// </summary>
+        /// <param name="graphBuilder">The capture graph builder.</param>
+        /// <param name="baseFilter">The video capture filter.</param>
+        /// <param name="pinCategory">The category of the pin to be configured.</param>
+        /// <param name="resolutionToSet">The video resolution to be set.</param>
+        /// <param name="capabilities">The array of video capabilities.</param>
+        /// <remarks>
+        /// This method finds the interface for the specified pin category and video media type using the capture graph builder.
+        /// It then checks if the stream configuration object is available and retrieves the video capabilities if not already provided.
+        /// If required, it sets the resolution using the SetResolution method.
+        /// If failed resolving capabilities, an empty capabilities array is created to prevent further attempts.
+        /// </remarks>
         private void GetPinCapabilitiesAndConfigureSizeAndRate( ICaptureGraphBuilder2 graphBuilder, IBaseFilter baseFilter,
             Guid pinCategory, VideoCapabilities resolutionToSet, ref VideoCapabilities[] capabilities )
         {
@@ -1432,7 +1418,18 @@ namespace AForge.Video.DirectShow
             }
         }
 
-        // Collect all video inputs of the specified crossbar
+        /// <summary>
+        /// Collects the available video inputs from the specified IAMCrossbar and returns an array of VideoInput objects.
+        /// </summary>
+        /// <param name="crossbar">The IAMCrossbar from which to collect the video inputs.</param>
+        /// <returns>An array of VideoInput objects representing the available video inputs.</returns>
+        /// <remarks>
+        /// This method locks the cacheCrossbarVideoInputs to ensure thread safety while accessing and modifying the cache.
+        /// If the video inputs for the specified deviceMoniker are already present in the cache, they are returned directly.
+        /// Otherwise, the method retrieves the number of input pins and output pins in the crossbar using the get_PinCounts method.
+        /// It then iterates through the input pins, retrieves the pin index and type using the get_CrossbarPinInfo method, and adds a new VideoInput object to the videoInputsList if the type is less than PhysicalConnectorType.AudioTuner.
+        /// The method then creates an array of VideoInput objects from the videoInputsList and adds it to the cacheCrossbarVideoInputs with the deviceMoniker as the key before returning the array.
+        /// </remarks>
         private VideoInput[] ColletCrossbarVideoInputs( IAMCrossbar crossbar )
         {
             lock ( cacheCrossbarVideoInputs )
@@ -1477,7 +1474,17 @@ namespace AForge.Video.DirectShow
             }
         }
 
-        // Get type of input connected to video output of the crossbar
+        /// <summary>
+        /// Gets the current video input from the crossbar.
+        /// </summary>
+        /// <param name="crossbar">The IAMCrossbar interface representing the crossbar device.</param>
+        /// <returns>The current video input from the crossbar.</returns>
+        /// <remarks>
+        /// This method retrieves the current video input from the specified crossbar device.
+        /// It first retrieves the number of input and output pins in the crossbar, then finds the index of the video output pin.
+        /// After that, it retrieves the index of the input pin connected to the output and creates a new VideoInput object based on the retrieved information.
+        /// If no valid video input is found, it returns the default video input.
+        /// </remarks>
         private VideoInput GetCurrentCrossbarInput( IAMCrossbar crossbar )
         {
             VideoInput videoInput = VideoInput.Default;
@@ -1523,7 +1530,14 @@ namespace AForge.Video.DirectShow
             return videoInput;
         }
 
-        // Set type of input connected to video output of the crossbar
+        /// <summary>
+        /// Sets the current crossbar input for the specified video input.
+        /// </summary>
+        /// <param name="crossbar">The IAMCrossbar interface to set the input on.</param>
+        /// <param name="videoInput">The VideoInput object representing the video input to be set.</param>
+        /// <remarks>
+        /// This method sets the current crossbar input for the specified video input by finding the index of the video output pin and the required input pin, and then connecting them if possible.
+        /// </remarks>
         private void SetCurrentCrossbarInput( IAMCrossbar crossbar, VideoInput videoInput )
         {
             if ( videoInput.Type != PhysicalConnectorType.Default )
@@ -1575,11 +1589,14 @@ namespace AForge.Video.DirectShow
         }
 
         /// <summary>
-        /// Notifies clients about new frame.
+        /// Updates the frame count and bytes received, and triggers the NewFrame event with the provided image.
         /// </summary>
-        /// 
-        /// <param name="image">New frame's image.</param>
-        /// 
+        /// <param name="image">The bitmap image received for processing.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the provided image is null.</exception>
+        /// <remarks>
+        /// This method increments the frame count and accumulates the bytes received based on the dimensions and pixel format of the provided image.
+        /// It then checks if the stop event is not signaled and if the NewFrame event handler is attached, and if so, triggers the NewFrame event with the provided image.
+        /// </remarks>
         private void OnNewFrame( Bitmap image )
         {
             framesReceived++;
@@ -1590,11 +1607,13 @@ namespace AForge.Video.DirectShow
         }
 
         /// <summary>
-        /// Notifies clients about new snapshot frame.
+        /// Handles the snapshot frame event by processing the provided <paramref name="image"/>.
         /// </summary>
-        /// 
-        /// <param name="image">New snapshot's image.</param>
-        /// 
+        /// <param name="image">The <see cref="Bitmap"/> image to be processed.</param>
+        /// <remarks>
+        /// This method calculates the time elapsed since the start and ignores the first snapshot if the elapsed time is less than 4 seconds.
+        /// If the stop event is not signaled and the SnapshotFrame event is subscribed to, it triggers the SnapshotFrame event with the provided image.
+        /// </remarks>
         private void OnSnapshotFrame( Bitmap image )
         {
             TimeSpan timeSinceStarted = DateTime.Now - startTime;
@@ -1637,13 +1656,27 @@ namespace AForge.Video.DirectShow
                 this.snapshotMode = snapshotMode;
             }
 
-            // Callback to receive samples
+            /// <summary>
+            /// Executes the sample callback function with the specified sample time and sample data.
+            /// </summary>
+            /// <param name="sampleTime">The time at which the sample is taken.</param>
+            /// <param name="sample">A pointer to the sample data.</param>
+            /// <returns>Always returns 0.</returns>
             public int SampleCB( double sampleTime, IntPtr sample )
             {
                 return 0;
             }
 
-            // Callback method that receives a pointer to the sample buffer
+            /// <summary>
+            /// Copies the image data from the buffer to a new Bitmap and notifies the parent.
+            /// </summary>
+            /// <param name="sampleTime">The sample time.</param>
+            /// <param name="buffer">The buffer containing the image data.</param>
+            /// <param name="bufferLen">The length of the buffer.</param>
+            /// <returns>Always returns 0.</returns>
+            /// <remarks>
+            /// If the parent's NewFrame event is not null, this method creates a new Bitmap with the specified width and height, copies the image data from the buffer to the Bitmap, and then notifies the parent by calling either OnSnapshotFrame or OnNewFrame based on the value of snapshotMode. The method always returns 0.
+            /// </remarks>
             public int BufferCB( double sampleTime, IntPtr buffer, int bufferLen )
             {
                 if ( parent.NewFrame != null )

@@ -17,12 +17,19 @@
         }
 
         /// <summary>
-        /// Reads floating point samples from this sample provider
+        /// Reads floating-point numbers from the source buffer and stores them in the specified buffer.
         /// </summary>
-        /// <param name="buffer">sample buffer</param>
-        /// <param name="offset">offset within sample buffer to write to</param>
-        /// <param name="count">number of samples required</param>
-        /// <returns>number of samples provided</returns>
+        /// <param name="buffer">The buffer to store the read floating-point numbers.</param>
+        /// <param name="offset">The zero-based byte offset in <paramref name="buffer"/> at which to begin storing the data.</param>
+        /// <param name="count">The number of floating-point numbers to read from the source buffer.</param>
+        /// <exception cref="System.IO.IOException">An I/O error occurs while reading from the source buffer.</exception>
+        /// <returns>The actual number of floating-point numbers read and stored in the buffer.</returns>
+        /// <remarks>
+        /// This method reads floating-point numbers from the source buffer and stores them in the specified buffer.
+        /// It ensures that the source buffer has enough space to read the required number of bytes before reading.
+        /// The method then converts the bytes to floating-point numbers and stores them in the buffer starting from the specified offset.
+        /// The method returns the actual number of floating-point numbers read and stored in the buffer, which may be less than the requested count if the end of the source buffer is reached.
+        /// </remarks>
         public override int Read(float[] buffer, int offset, int count)
         {
             int sourceBytesRequired = count*4;

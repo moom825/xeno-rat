@@ -54,6 +54,15 @@ namespace NAudio.Wave
         /// </summary>
         public override WaveFormat WaveFormat => outputFormat;
 
+        /// <summary>
+        /// Converts the input position to the corresponding output position based on the ratio of average bytes per second between input and output formats.
+        /// </summary>
+        /// <param name="inputPosition">The input position to be converted.</param>
+        /// <returns>The corresponding output position calculated based on the ratio of average bytes per second between input and output formats.</returns>
+        /// <remarks>
+        /// This method calculates the output position by multiplying the input position with the ratio of average bytes per second between the output format and the input provider's wave format.
+        /// If the calculated output position is not aligned with the output format's block align, it is adjusted to the nearest aligned position.
+        /// </remarks>
         private long InputToOutputPosition(long inputPosition)
         {
             double ratio = (double)outputFormat.AverageBytesPerSecond
@@ -66,6 +75,15 @@ namespace NAudio.Wave
             return outputPosition;
         }
 
+        /// <summary>
+        /// Converts the output position to the corresponding input position based on the audio format ratios.
+        /// </summary>
+        /// <param name="outputPosition">The output position for which the corresponding input position needs to be calculated.</param>
+        /// <returns>The input position corresponding to the given <paramref name="outputPosition"/> based on the audio format ratios.</returns>
+        /// <remarks>
+        /// This method calculates the input position based on the ratio of average bytes per second between the output and input audio formats.
+        /// It then adjusts the input position to align with the block size of the input audio format if necessary.
+        /// </remarks>
         private long OutputToInputPosition(long outputPosition)
         {
             double ratio = (double)outputFormat.AverageBytesPerSecond
@@ -115,12 +133,15 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Reads data from input stream
+        /// Reads a specified number of bytes from the input stream and writes them to the buffer.
         /// </summary>
-        /// <param name="buffer">buffer</param>
-        /// <param name="offset">offset into buffer</param>
-        /// <param name="count">Bytes required</param>
-        /// <returns>Number of bytes read</returns>
+        /// <param name="buffer">The buffer to write the data to.</param>
+        /// <param name="offset">The zero-based byte offset in <paramref name="buffer"/> at which to begin storing the data read from the current stream.</param>
+        /// <param name="count">The maximum number of bytes to read.</param>
+        /// <returns>The total number of bytes read into the buffer. This might be less than the number of bytes requested if that number of bytes are not currently available, or zero if the end of the stream is reached.</returns>
+        /// <remarks>
+        /// This method reads data from the input stream and writes it to the buffer provided. It uses a DMO (DirectX Media Object) resampler to process the input data and provide output data. The method loops until the specified number of bytes have been read or until the end of the stream is reached. It modifies the position of the stream accordingly and returns the total number of bytes read into the buffer.
+        /// </remarks>
         public override int Read(byte[] buffer, int offset, int count)
         {
             int outputBytesProvided = 0;
@@ -173,9 +194,14 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Dispose
+        /// Releases the unmanaged resources used by the <see cref="T:System.Media.DmoResampler"/> and optionally releases the managed resources.
         /// </summary>
-        /// <param name="disposing">True if disposing (not from finalizer)</param>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        /// <remarks>
+        /// This method disposes the input media buffer if it is not null and sets it to null.
+        /// It disposes the output buffer.
+        /// If the DMO resampler is not null, it sets it to null.
+        /// </remarks>
         protected override void Dispose(bool disposing)
         {
             if (inputMediaBuffer != null)

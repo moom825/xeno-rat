@@ -34,11 +34,12 @@ namespace NAudio.CoreAudioApi
                 SimpleAudioVolume = new SimpleAudioVolume(volume);
         }
 
-        #region IDisposable Members
-
         /// <summary>
-        /// Dispose
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
+        /// <exception cref="System.Runtime.InteropServices.COMException">
+        /// Thrown when an error occurs during unregistering the audio session notification.
+        /// </exception>
         public void Dispose()
         {
             if (audioSessionEventCallback != null)
@@ -174,9 +175,10 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// the grouping param for an audio session grouping
+        /// Retrieves the grouping parameter for the audio session.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The unique identifier for the grouping parameter.</returns>
+        /// <exception cref="System.Runtime.InteropServices.COMException">Thrown when an error is encountered while retrieving the grouping parameter.</exception>
         public Guid GetGroupingParam()
         {
             Marshal.ThrowExceptionForHR(audioSessionControlInterface.GetGroupingParam(out var groupingId));
@@ -185,19 +187,21 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// For chanigng the grouping param and supplying the context of said change
+        /// Sets the grouping parameter for the audio session control interface.
         /// </summary>
-        /// <param name="groupingId"></param>
-        /// <param name="context"></param>
+        /// <param name="groupingId">The identifier of the grouping parameter.</param>
+        /// <param name="context">The identifier of the context.</param>
+        /// <exception cref="System.Runtime.InteropServices.COMException">Thrown when an error occurs while setting the grouping parameter.</exception>
         public void SetGroupingParam(Guid groupingId, Guid context)
         {
             Marshal.ThrowExceptionForHR(audioSessionControlInterface.SetGroupingParam(groupingId, context));
         }
 
         /// <summary>
-        /// Registers an even client for callbacks
+        /// Registers an event client for handling audio session events.
         /// </summary>
-        /// <param name="eventClient"></param>
+        /// <param name="eventClient">The object implementing the <see cref="IAudioSessionEventsHandler"/> interface to handle the audio session events.</param>
+        /// <exception cref="MarshalDirectiveException">Thrown when an error occurs during the registration of the audio session notification.</exception>
         public void RegisterEventClient(IAudioSessionEventsHandler eventClient)
         {
             // we could have an array or list of listeners if we like
@@ -206,9 +210,13 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Unregisters an event client from receiving callbacks
+        /// Unregisters the specified audio session event client.
         /// </summary>
-        /// <param name="eventClient"></param>
+        /// <param name="eventClient">The audio session event client to be unregistered.</param>
+        /// <remarks>
+        /// If the specified <paramref name="eventClient"/> is registered, it is unregistered.
+        /// This method throws an exception if there is an error during the unregistration process.
+        /// </remarks>
         public void UnRegisterEventClient(IAudioSessionEventsHandler eventClient)
         {
             // if one is registered, let it go

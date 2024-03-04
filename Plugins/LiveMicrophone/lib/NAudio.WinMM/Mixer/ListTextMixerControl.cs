@@ -22,9 +22,9 @@ namespace NAudio.Mixer
 		}
 
 		/// <summary>
-		/// Get the details for this control
+		/// Gets the details using the provided pointer to details.
 		/// </summary>
-		/// <param name="pDetails">Memory location to read to</param>
+		/// <param name="pDetails">A pointer to the details.</param>
 		protected override void GetDetails(IntPtr pDetails) 
 		{
 		}

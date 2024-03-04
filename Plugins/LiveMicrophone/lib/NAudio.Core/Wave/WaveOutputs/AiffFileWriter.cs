@@ -18,12 +18,14 @@ namespace NAudio.Wave
         private string filename;
 
         /// <summary>
-        /// Creates an Aiff file by reading all the data from a WaveProvider
-        /// BEWARE: the WaveProvider MUST return 0 from its Read method when it is finished,
-        /// or the Aiff File will grow indefinitely.
+        /// Creates an AIFF audio file from the provided WaveStream.
         /// </summary>
-        /// <param name="filename">The filename to use</param>
-        /// <param name="sourceProvider">The source WaveProvider</param>
+        /// <param name="filename">The name of the AIFF file to be created.</param>
+        /// <param name="sourceProvider">The WaveStream providing the audio data.</param>
+        /// <remarks>
+        /// This method reads audio data from the <paramref name="sourceProvider"/> and writes it to an AIFF file specified by <paramref name="filename"/>.
+        /// The method uses a buffer to read and write the audio data in chunks, and it ensures that the entire audio data is written to the AIFF file.
+        /// </remarks>
         public static void CreateAiffFile(string filename, WaveStream sourceProvider)
         {
             using (var writer = new AiffFileWriter(filename, sourceProvider.WaveFormat))
@@ -75,6 +77,13 @@ namespace NAudio.Wave
             this.filename = filename;
         }
 
+        /// <summary>
+        /// Writes the SSND chunk header to the output stream.
+        /// </summary>
+        /// <remarks>
+        /// This method writes the "SSND" identifier to the output stream, followed by placeholder values for data size and zero offset.
+        /// It then writes the block align value after swapping its endianness.
+        /// </remarks>
         private void WriteSsndChunkHeader()
         {
             this.writer.Write(System.Text.Encoding.UTF8.GetBytes("SSND"));
@@ -84,6 +93,15 @@ namespace NAudio.Wave
             this.writer.Write(SwapEndian((int)format.BlockAlign));
         }
 
+        /// <summary>
+        /// Swaps the endianness of the input integer and returns the result as a byte array.
+        /// </summary>
+        /// <param name="n">The integer value whose endianness needs to be swapped.</param>
+        /// <returns>A byte array representing the input integer with swapped endianness.</returns>
+        /// <remarks>
+        /// This method swaps the endianness of the input integer by rearranging its bytes in reverse order to convert between little-endian and big-endian representations.
+        /// The resulting byte array contains the bytes of the input integer in the opposite order.
+        /// </remarks>
         private byte[] SwapEndian(short n)
         {
             return new byte[] { (byte)(n >> 8), (byte)(n & 0xff) };
@@ -94,6 +112,13 @@ namespace NAudio.Wave
             return new byte[] { (byte)((n >> 24) & 0xff), (byte)((n >> 16) & 0xff), (byte)((n >> 8) & 0xff), (byte)(n & 0xff), };
         }
 
+        /// <summary>
+        /// Creates a 'COMM' chunk in the WAV file.
+        /// </summary>
+        /// <remarks>
+        /// This method writes the 'COMM' chunk to the WAV file. The 'COMM' chunk contains information about the audio format, such as the number of channels, bits per sample, and sample rate.
+        /// It also includes a placeholder for the total number of samples, which is updated later when the actual audio data is written to the file.
+        /// </remarks>
         private void CreateCommChunk()
         {
             this.writer.Write(System.Text.Encoding.UTF8.GetBytes("COMM"));
@@ -154,25 +179,32 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Read is not supported for a AiffFileWriter
+        /// Throws an InvalidOperationException with a message indicating that reading from an AiffFileWriter is not allowed.
         /// </summary>
+        /// <param name="buffer">The buffer to read data into.</param>
+        /// <param name="offset">The zero-based byte offset in <paramref name="buffer"/> at which to begin storing the data read from the current stream.</param>
+        /// <param name="count">The maximum number of bytes to read.</param>
+        /// <exception cref="InvalidOperationException">Thrown to indicate that reading from an AiffFileWriter is not allowed.</exception>
         public override int Read(byte[] buffer, int offset, int count)
         {
             throw new InvalidOperationException("Cannot read from an AiffFileWriter");
         }
 
         /// <summary>
-        /// Seek is not supported for a AiffFileWriter
+        /// Throws an InvalidOperationException with a message indicating that seeking within an AiffFileWriter is not allowed.
         /// </summary>
+        /// <param name="offset">The new position within the stream.</param>
+        /// <param name="origin">Specifies the beginning, the end, or the current position as a reference point for offset, using a value of type SeekOrigin.</param>
+        /// <exception cref="InvalidOperationException">Thrown when seeking within an AiffFileWriter is attempted.</exception>
         public override long Seek(long offset, SeekOrigin origin)
         {
             throw new InvalidOperationException("Cannot seek within an AiffFileWriter");
         }
 
         /// <summary>
-        /// SetLength is not supported for AiffFileWriter
+        /// Throws an InvalidOperationException with the message "Cannot set length of an AiffFileWriter".
         /// </summary>
-        /// <param name="value"></param>
+        /// <exception cref="InvalidOperationException">Thrown when attempting to set the length of an AiffFileWriter.</exception>
         public override void SetLength(long value)
         {
             throw new InvalidOperationException("Cannot set length of an AiffFileWriter");
@@ -188,11 +220,16 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Appends bytes to the AiffFile (assumes they are already in the correct format)
+        /// Writes the specified byte array to the output stream after swapping the bytes based on the format's BitsPerSample property.
         /// </summary>
-        /// <param name="data">the buffer containing the wave data</param>
-        /// <param name="offset">the offset from which to start writing</param>
-        /// <param name="count">the number of bytes to write</param>
+        /// <param name="data">The byte array to be written to the output stream.</param>
+        /// <param name="offset">The zero-based byte offset in <paramref name="data"/> at which to begin copying bytes to the output stream.</param>
+        /// <param name="count">The number of bytes to be written to the output stream.</param>
+        /// <remarks>
+        /// This method swaps the bytes in the input byte array <paramref name="data"/> based on the format's BitsPerSample property.
+        /// It then writes the swapped byte array to the output stream starting from the specified offset and writes the specified number of bytes.
+        /// The dataChunkSize field is updated by adding the count of bytes written to the output stream.
+        /// </remarks>
         public override void Write(byte[] data, int offset, int count)
         {
             byte[] swappedData = new byte[data.Length];
@@ -212,9 +249,13 @@ namespace NAudio.Wave
         private byte[] value24 = new byte[3]; // keep this around to save us creating it every time
 
         /// <summary>
-        /// Writes a single sample to the Aiff file
+        /// Writes a sample to the audio writer based on the wave format.
         /// </summary>
-        /// <param name="sample">the sample to write (assumed floating point with 1.0f as max value)</param>
+        /// <param name="sample">The sample to be written.</param>
+        /// <exception cref="InvalidOperationException">Thrown when the wave format is not supported (only 16, 24, or 32 bit PCM or IEEE float audio data are supported).</exception>
+        /// <remarks>
+        /// This method writes the input sample to the audio writer based on the wave format. If the wave format is 16 bits per sample, it writes the sample as a 16-bit integer and updates the data chunk size by 2. If the wave format is 24 bits per sample, it writes the sample as a 24-bit integer and updates the data chunk size by 3. If the wave format is 32 bits per sample and the encoding is extensible, it writes the sample as a 32-bit unsigned integer and updates the data chunk size by 4.
+        /// </remarks>
         public void WriteSample(float sample)
         {
             if (WaveFormat.BitsPerSample == 16)
@@ -243,12 +284,16 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Writes 32 bit floating point samples to the Aiff file
-        /// They will be converted to the appropriate bit depth depending on the WaveFormat of the AIF file
+        /// Writes audio samples to the underlying stream based on the specified wave format.
         /// </summary>
-        /// <param name="samples">The buffer containing the floating point samples</param>
-        /// <param name="offset">The offset from which to start writing</param>
-        /// <param name="count">The number of floating point samples to write</param>
+        /// <param name="samples">The array of audio samples to be written.</param>
+        /// <param name="offset">The offset in the samples array at which to begin writing.</param>
+        /// <param name="count">The number of samples to write.</param>
+        /// <exception cref="InvalidOperationException">Thrown when the wave format is not supported (only 16, 24, or 32 bit PCM audio data is supported).</exception>
+        /// <remarks>
+        /// This method writes the audio samples to the underlying stream based on the specified wave format.
+        /// It handles 16, 24, and 32 bit PCM data by writing the samples in little-endian format and updating the data chunk size accordingly.
+        /// </remarks>
         public void WriteSamples(float[] samples, int offset, int count)
         {
             for (int n = 0; n < count; n++)
@@ -304,19 +349,26 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Ensures data is written to disk
+        /// Flushes the buffer of the writer.
         /// </summary>
+        /// <remarks>
+        /// This method flushes the buffer of the writer, writing any buffered data to the underlying stream.
+        /// </remarks>
         public override void Flush()
         {
             writer.Flush();
         }
 
-        #region IDisposable Members
-
         /// <summary>
-        /// Actually performs the close,making sure the header contains the correct data
+        /// Releases the unmanaged resources used by the <see cref="ClassName"/> and optionally releases the managed resources.
         /// </summary>
-        /// <param name="disposing">True if called from <see>Dispose</see></param>
+        /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        /// <exception cref="IOException">An I/O error occurs.</exception>
+        /// <remarks>
+        /// This method disposes of the unmanaged resources used by the <see cref="ClassName"/>. If <paramref name="disposing"/> is true, it also disposes of the managed resources.
+        /// The method first checks if <see cref="outStream"/> is not null, then attempts to update the header using the <see cref="UpdateHeader"/> method.
+        /// If an <see cref="IOException"/> occurs during the update, the method ensures that the <see cref="outStream"/> is disposed in a finally block to prevent resource leaks.
+        /// </remarks>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -339,8 +391,13 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Updates the header with file size information
+        /// Updates the header of the binary writer.
         /// </summary>
+        /// <param name="writer">The binary writer to update the header for.</param>
+        /// <remarks>
+        /// This method flushes the current state, seeks to position 4 in the writer, and writes the updated length of the output stream in little-endian format.
+        /// It then updates the communication chunk and sound chunk within the writer.
+        /// </remarks>
         protected virtual void UpdateHeader(BinaryWriter writer)
         {
             this.Flush();
@@ -350,12 +407,27 @@ namespace NAudio.Wave
             UpdateSsndChunk(writer);
         }
 
+        /// <summary>
+        /// Updates the communication chunk in the binary writer.
+        /// </summary>
+        /// <param name="writer">The binary writer to update.</param>
+        /// <remarks>
+        /// This method seeks to the position of the communication sample count in the writer and updates it with the calculated value.
+        /// The calculated value is obtained by swapping the endianness of the result of the expression (dataChunkSize * 8 / format.BitsPerSample / format.Channels).
+        /// </remarks>
         private void UpdateCommChunk(BinaryWriter writer)
         {
             writer.Seek((int)commSampleCountPos, SeekOrigin.Begin);
             writer.Write(SwapEndian((int)(dataChunkSize * 8 / format.BitsPerSample / format.Channels)));
         }
 
+        /// <summary>
+        /// Updates the SSND chunk in the WAV file by writing the data chunk size in little-endian format.
+        /// </summary>
+        /// <param name="writer">The BinaryWriter used to write data to the WAV file.</param>
+        /// <remarks>
+        /// This method seeks to the position of the data size in the WAV file and writes the data chunk size in little-endian format using the provided BinaryWriter.
+        /// </remarks>
         private void UpdateSsndChunk(BinaryWriter writer)
         {
             writer.Seek((int)dataSizePos, SeekOrigin.Begin);

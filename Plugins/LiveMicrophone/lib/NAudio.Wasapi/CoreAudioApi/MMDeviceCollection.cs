@@ -65,12 +65,13 @@ namespace NAudio.CoreAudioApi
             mmDeviceCollection = parent;
         }
 
-        #region IEnumerable<MMDevice> Members
-
         /// <summary>
-        /// Get Enumerator
+        /// Returns an enumerator that iterates through a collection.
         /// </summary>
-        /// <returns>Device enumerator</returns>
+        /// <returns>An enumerator object.</returns>
+        /// <remarks>
+        /// This method returns an enumerator that can iterate through the collection.
+        /// </remarks>
         public IEnumerator<MMDevice> GetEnumerator()
         {            
             for (int index = 0; index < Count; index++)

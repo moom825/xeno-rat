@@ -33,8 +33,18 @@ namespace NAudio.Wave.SampleProviders
         }
 
         /// <summary>
-        /// Reads from this sample provider
+        /// Reads data from the source into the buffer and returns the number of frames read.
         /// </summary>
+        /// <param name="buffer">The buffer to store the read data.</param>
+        /// <param name="offset">The zero-based byte offset in buffer at which to begin storing the data read from the current stream.</param>
+        /// <param name="count">The maximum number of frames to read.</param>
+        /// <exception cref="System.ArgumentNullException">Thrown when the buffer is null.</exception>
+        /// <exception cref="System.ArgumentOutOfRangeException">Thrown when offset or count is less than 0.</exception>
+        /// <returns>The number of frames read into the buffer.</returns>
+        /// <remarks>
+        /// This method reads data from the source into the buffer and performs resampling if necessary to match the requested number of frames.
+        /// It returns the actual number of frames read into the buffer after resampling.
+        /// </remarks>
         public int Read(float[] buffer, int offset, int count)
         {
             float[] inBuffer;

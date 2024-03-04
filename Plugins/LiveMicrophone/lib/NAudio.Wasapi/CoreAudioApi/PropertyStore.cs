@@ -61,10 +61,14 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Contains property guid
+        /// Checks if the collection contains the specified <paramref name="key"/>.
         /// </summary>
-        /// <param name="key">Looks for a specific key</param>
-        /// <returns>True if found</returns>
+        /// <param name="key">The <see cref="PropertyKey"/> to be checked for existence in the collection.</param>
+        /// <returns>True if the collection contains the specified <paramref name="key"/>, otherwise false.</returns>
+        /// <remarks>
+        /// This method iterates through the collection and compares each <see cref="PropertyKey"/> with the specified <paramref name="key"/>.
+        /// If a matching <see cref="PropertyKey"/> is found, the method returns true; otherwise, it returns false.
+        /// </remarks>
         public bool Contains(PropertyKey key)
         {
             for (int i = 0; i < Count; i++)
@@ -101,10 +105,11 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Gets property key at sepecified index
+        /// Retrieves the PropertyKey at the specified index.
         /// </summary>
-        /// <param name="index">Index</param>
-        /// <returns>Property key</returns>
+        /// <param name="index">The index of the PropertyKey to retrieve.</param>
+        /// <returns>The PropertyKey at the specified <paramref name="index"/>.</returns>
+        /// <exception cref="System.Runtime.InteropServices.COMException">Thrown when a COM error occurs during the retrieval process.</exception>
         public PropertyKey Get(int index)
         {
             Marshal.ThrowExceptionForHR(storeInterface.GetAt(index, out var key));
@@ -112,10 +117,11 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Gets property value at specified index
+        /// Retrieves the value at the specified index and returns it as a PropVariant.
         /// </summary>
-        /// <param name="index">Index</param>
-        /// <returns>Property value</returns>
+        /// <param name="index">The index of the value to retrieve.</param>
+        /// <returns>The value at the specified <paramref name="index"/> as a PropVariant.</returns>
+        /// <exception cref="System.Runtime.InteropServices.COMException">Thrown when an error is encountered during the retrieval of the value.</exception>
         public PropVariant GetValue(int index)
         {
             PropertyKey key = Get(index);
@@ -124,18 +130,22 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Sets property value at specified key.
+        /// Sets the value of a specified property key in the property store.
         /// </summary>
-        /// <param name="key">Key of property to set.</param>
-        /// <param name="value">Value to write.</param>
+        /// <param name="key">The property key to set the value for.</param>
+        /// <param name="value">The value to be set for the specified property key.</param>
+        /// <exception cref="System.Runtime.InteropServices.COMException">Thrown when an error occurs while setting the value in the property store.</exception>
         public void SetValue(PropertyKey key, PropVariant value)
         {
             Marshal.ThrowExceptionForHR(storeInterface.SetValue(ref key, ref value));
         }
 
         /// <summary>
-        /// Saves a property change.
+        /// Commits the changes made to the data store.
         /// </summary>
+        /// <exception cref="System.Runtime.InteropServices.COMException">
+        /// Thrown when an error occurs during the commit operation.
+        /// </exception>
         public void Commit()
         {
             Marshal.ThrowExceptionForHR(storeInterface.Commit());

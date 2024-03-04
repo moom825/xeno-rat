@@ -103,8 +103,14 @@ namespace NAudio.Wave
         public static readonly Guid DefaultWaveInGuid = new Guid("E36DC311-6D9A-11D1-A21A-00A0C9223196");
 
         /// <summary>
-        /// The device name from the registry if supported
+        /// Retrieves the name associated with the specified GUID from the registry.
         /// </summary>
+        /// <param name="guid">The GUID for which to retrieve the name.</param>
+        /// <returns>The name associated with the specified <paramref name="guid"/> in the registry, or null if not found.</returns>
+        /// <remarks>
+        /// This method retrieves the name associated with the specified <paramref name="guid"/> from the registry under the path "System\CurrentControlSet\Control\MediaCategories".
+        /// If the name is found, it is returned; otherwise, null is returned.
+        /// </remarks>
         public static string GetNameFromGuid(Guid guid)
         {
             // n.b it seems many audio drivers just return the default values, which won't be in the registry

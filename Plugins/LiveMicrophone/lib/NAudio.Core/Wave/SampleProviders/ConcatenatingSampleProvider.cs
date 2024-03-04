@@ -31,8 +31,15 @@ namespace NAudio.Wave.SampleProviders
         public WaveFormat WaveFormat => providers[0].WaveFormat;
 
         /// <summary>
-        /// Read Samples from this sample provider
+        /// Reads data from the providers into the buffer and returns the total number of bytes read.
         /// </summary>
+        /// <param name="buffer">The buffer to read the data into.</param>
+        /// <param name="offset">The zero-based byte offset in <paramref name="buffer"/> at which to begin storing the data read from the current provider.</param>
+        /// <param name="count">The maximum number of bytes to read.</param>
+        /// <returns>The total number of bytes read into the buffer.</returns>
+        /// <remarks>
+        /// This method reads data from the providers into the buffer. It iterates through the providers, reading data into the buffer until the specified count is reached or all providers have been exhausted. If a provider returns 0 bytes read, it moves to the next provider. The method returns the total number of bytes read into the buffer.
+        /// </remarks>
         public int Read(float[] buffer, int offset, int count)
         {
             var read = 0;

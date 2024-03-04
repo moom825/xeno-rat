@@ -20,23 +20,30 @@ namespace NAudio.Wave
         private readonly string filename;
 
         /// <summary>
-        /// Creates a 16 bit Wave File from an ISampleProvider
-        /// BEWARE: the source provider must not return data indefinitely
+        /// Creates a 16-bit wave file from the provided <paramref name="sourceProvider"/> and saves it with the specified <paramref name="filename"/>.
         /// </summary>
-        /// <param name="filename">The filename to write to</param>
-        /// <param name="sourceProvider">The source sample provider</param>
+        /// <param name="filename">The name of the wave file to be created.</param>
+        /// <param name="sourceProvider">The sample provider used to generate the wave file.</param>
+        /// <remarks>
+        /// This method creates a 16-bit wave file using the provided <paramref name="sourceProvider"/> by converting the samples to 16-bit PCM format.
+        /// The resulting wave file is saved with the specified <paramref name="filename"/>.
+        /// </remarks>
         public static void CreateWaveFile16(string filename, ISampleProvider sourceProvider)
         {
             CreateWaveFile(filename, new SampleToWaveProvider16(sourceProvider));
         }
 
         /// <summary>
-        /// Creates a Wave file by reading all the data from a WaveProvider
-        /// BEWARE: the WaveProvider MUST return 0 from its Read method when it is finished,
-        /// or the Wave File will grow indefinitely.
+        /// Creates a wave file with the specified filename using the provided wave provider.
         /// </summary>
-        /// <param name="filename">The filename to use</param>
-        /// <param name="sourceProvider">The source WaveProvider</param>
+        /// <param name="filename">The name of the wave file to be created.</param>
+        /// <param name="sourceProvider">The wave provider used as the source for the wave file.</param>
+        /// <exception cref="Exception">Thrown when the WAV file becomes too large.</exception>
+        /// <remarks>
+        /// This method creates a wave file with the specified filename using the provided wave provider.
+        /// It reads data from the source provider in chunks and writes it to the wave file until the end of the source provider is reached.
+        /// If the WAV file becomes too large, an exception is thrown.
+        /// </remarks>
         public static void CreateWaveFile(string filename, IWaveProvider sourceProvider)
         {
             using (var writer = new WaveFileWriter(filename, sourceProvider.WaveFormat))
@@ -55,14 +62,18 @@ namespace NAudio.Wave
                 }
             }
         }
-        
+
         /// <summary>
-        /// Writes to a stream by reading all the data from a WaveProvider
-        /// BEWARE: the WaveProvider MUST return 0 from its Read method when it is finished,
-        /// or the Wave File will grow indefinitely.
+        /// Writes the audio data from the specified <paramref name="sourceProvider"/> to the <paramref name="outStream"/> in WAV format.
         /// </summary>
-        /// <param name="outStream">The stream the method will output to</param>
-        /// <param name="sourceProvider">The source WaveProvider</param>
+        /// <param name="outStream">The output stream to write the WAV data to.</param>
+        /// <param name="sourceProvider">The audio source provider containing the audio data to be written.</param>
+        /// <exception cref="ArgumentNullException">Thrown when either <paramref name="outStream"/> or <paramref name="sourceProvider"/> is null.</exception>
+        /// <remarks>
+        /// This method writes the audio data from the <paramref name="sourceProvider"/> to the <paramref name="outStream"/> in WAV format.
+        /// It uses a buffer to read data from the <paramref name="sourceProvider"/> and write it to the <paramref name="outStream"/>.
+        /// The process continues until no more data is available from the <paramref name="sourceProvider"/>.
+        /// </remarks>
         public static void WriteWavFileToStream(Stream outStream, IWaveProvider sourceProvider)
         {
             using (var writer = new WaveFileWriter(new IgnoreDisposeStream(outStream), sourceProvider.WaveFormat)) 
@@ -115,6 +126,13 @@ namespace NAudio.Wave
             this.filename = filename;
         }
 
+        /// <summary>
+        /// Writes the data chunk header to the output stream.
+        /// </summary>
+        /// <remarks>
+        /// This method writes the "data" header to the output stream using UTF-8 encoding and then writes a placeholder for the data size.
+        /// The position of the data size placeholder is stored in <see cref="dataSizePos"/>.
+        /// </remarks>
         private void WriteDataChunkHeader()
         {
             writer.Write(System.Text.Encoding.UTF8.GetBytes("data"));
@@ -122,6 +140,12 @@ namespace NAudio.Wave
             writer.Write((int)0); // placeholder
         }
 
+        /// <summary>
+        /// Creates a fact chunk in the output stream if it does not already exist.
+        /// </summary>
+        /// <remarks>
+        /// This method checks if a fact chunk already exists in the output stream. If not, it writes the fact chunk header and initializes the sample count to 0.
+        /// </remarks>
         private void CreateFactChunk()
         {
             if (HasFactChunk())
@@ -133,6 +157,10 @@ namespace NAudio.Wave
             }
         }
 
+        /// <summary>
+        /// Checks if the wave format has a fact chunk.
+        /// </summary>
+        /// <returns>True if the wave format has a fact chunk; otherwise, false.</returns>
         private bool HasFactChunk()
         {
             return format.Encoding != WaveFormatEncoding.Pcm && 
@@ -175,25 +203,32 @@ namespace NAudio.Wave
         public override bool CanSeek => false;
 
         /// <summary>
-        /// Read is not supported for a WaveFileWriter
+        /// Throws an InvalidOperationException with the message "Cannot read from a WaveFileWriter".
         /// </summary>
+        /// <param name="buffer">The buffer to read the data into.</param>
+        /// <param name="offset">The zero-based byte offset in buffer at which to begin storing the data read from the current stream.</param>
+        /// <param name="count">The maximum number of bytes to read.</param>
+        /// <exception cref="InvalidOperationException">Thrown when an attempt is made to read from a WaveFileWriter.</exception>
         public override int Read(byte[] buffer, int offset, int count)
         {
             throw new InvalidOperationException("Cannot read from a WaveFileWriter");
         }
 
         /// <summary>
-        /// Seek is not supported for a WaveFileWriter
+        /// Throws an InvalidOperationException with the message "Cannot seek within a WaveFileWriter".
         /// </summary>
+        /// <param name="offset">The new position within the stream.</param>
+        /// <param name="origin">Specifies the beginning, the end, or the current position as a reference point for offset, using a value of type SeekOrigin.</param>
+        /// <exception cref="InvalidOperationException">Thrown when seeking within a WaveFileWriter is not allowed.</exception>
         public override long Seek(long offset, SeekOrigin origin)
         {
             throw new InvalidOperationException("Cannot seek within a WaveFileWriter");
         }
 
         /// <summary>
-        /// SetLength is not supported for WaveFileWriter
+        /// Throws an InvalidOperationException with the message "Cannot set length of a WaveFileWriter".
         /// </summary>
-        /// <param name="value"></param>
+        /// <exception cref="InvalidOperationException">Thrown when an attempt is made to set the length of a WaveFileWriter.</exception>
         public override void SetLength(long value)
         {
             throw new InvalidOperationException("Cannot set length of a WaveFileWriter");
@@ -209,11 +244,12 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Appends bytes to the WaveFile (assumes they are already in the correct format)
+        /// Writes the specified number of samples from the given array, starting at the specified offset.
         /// </summary>
-        /// <param name="data">the buffer containing the wave data</param>
-        /// <param name="offset">the offset from which to start writing</param>
-        /// <param name="count">the number of bytes to write</param>
+        /// <param name="samples">The array containing the samples to be written.</param>
+        /// <param name="offset">The zero-based index in the array at which to start writing samples.</param>
+        /// <param name="count">The number of samples to write.</param>
+        /// <exception cref="ObsoleteException">This method is obsolete. Use WriteSamples instead.</exception>
         [Obsolete("Use Write instead")]
         public void WriteData(byte[] data, int offset, int count)
         {
@@ -221,11 +257,15 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Appends bytes to the WaveFile (assumes they are already in the correct format)
+        /// Writes the specified bytes to the WAV file.
         /// </summary>
-        /// <param name="data">the buffer containing the wave data</param>
-        /// <param name="offset">the offset from which to start writing</param>
-        /// <param name="count">the number of bytes to write</param>
+        /// <param name="data">The array of bytes to be written.</param>
+        /// <param name="offset">The zero-based byte offset in <paramref name="data"/> at which to begin copying bytes to the WAV file.</param>
+        /// <param name="count">The number of bytes to be written.</param>
+        /// <exception cref="ArgumentException">Thrown when the WAV file size exceeds the maximum allowed value.</exception>
+        /// <remarks>
+        /// This method writes the specified bytes from the input array <paramref name="data"/> to the WAV file. It also updates the data chunk size accordingly.
+        /// </remarks>
         public override void Write(byte[] data, int offset, int count)
         {
             if (outStream.Length + count > UInt32.MaxValue)
@@ -235,11 +275,20 @@ namespace NAudio.Wave
         }
 
         private readonly byte[] value24 = new byte[3]; // keep this around to save us creating it every time
-        
+
         /// <summary>
-        /// Writes a single sample to the Wave file
+        /// Writes the specified audio sample to the wave file.
         /// </summary>
-        /// <param name="sample">the sample to write (assumed floating point with 1.0f as max value)</param>
+        /// <param name="sample">The audio sample to be written.</param>
+        /// <exception cref="InvalidOperationException">Thrown when the audio data format is not supported (i.e., not 16, 24, or 32 bit PCM or IEEE float).</exception>
+        /// <remarks>
+        /// This method writes the specified audio sample to the wave file based on the wave format's bits per sample and encoding.
+        /// If the wave format is 16-bit, it writes the sample as a 16-bit integer and updates the data chunk size by 2 bytes.
+        /// If the wave format is 24-bit, it converts the sample to a 24-bit integer and writes it as 3 bytes, updating the data chunk size accordingly.
+        /// If the wave format is 32-bit with extensible encoding, it writes the sample as a 32-bit integer and updates the data chunk size by 4 bytes.
+        /// If the wave format is IEEE float, it directly writes the sample as a float and updates the data chunk size by 4 bytes.
+        /// If the wave format does not match any of the supported formats, an InvalidOperationException is thrown.
+        /// </remarks>
         public void WriteSample(float sample)
         {
             if (WaveFormat.BitsPerSample == 16)
@@ -273,12 +322,15 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Writes 32 bit floating point samples to the Wave file
-        /// They will be converted to the appropriate bit depth depending on the WaveFormat of the WAV file
+        /// Writes audio samples to the output stream based on the specified format and data.
         /// </summary>
-        /// <param name="samples">The buffer containing the floating point samples</param>
-        /// <param name="offset">The offset from which to start writing</param>
-        /// <param name="count">The number of floating point samples to write</param>
+        /// <param name="samples">The array of audio samples to be written.</param>
+        /// <param name="offset">The offset in the samples array from which to start writing.</param>
+        /// <param name="count">The number of samples to write.</param>
+        /// <exception cref="InvalidOperationException">Thrown when the audio data format is not supported (only 16, 24, or 32 bit PCM or IEEE float audio data are supported).</exception>
+        /// <remarks>
+        /// This method writes the audio samples to the output stream based on the specified format and data. It handles different bit depths and encodings, updating the data chunk size accordingly for each case.
+        /// </remarks>
         public void WriteSamples(float[] samples, int offset, int count)
         {
             for (int n = 0; n < count; n++)
@@ -355,9 +407,11 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Ensures data is written to disk
-        /// Also updates header, so that WAV file will be valid up to the point currently written
+        /// Updates the header and flushes the underlying stream.
         /// </summary>
+        /// <remarks>
+        /// This method updates the header information and flushes the underlying stream to persist the changes.
+        /// </remarks>
         public override void Flush()
         {
             var pos = writer.BaseStream.Position;
@@ -365,12 +419,16 @@ namespace NAudio.Wave
             writer.BaseStream.Position = pos;
         }
 
-        #region IDisposable Members
-
         /// <summary>
-        /// Actually performs the close,making sure the header contains the correct data
+        /// Releases the unmanaged resources used by the <see cref="ClassName"/> and optionally releases the managed resources.
         /// </summary>
-        /// <param name="disposing">True if called from <see>Dispose</see></param>
+        /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        /// <exception cref="IOException">An I/O error occurs.</exception>
+        /// <remarks>
+        /// This method releases the unmanaged resources used by the <see cref="ClassName"/> and optionally releases the managed resources.
+        /// If <paramref name="disposing"/> is true, this method also releases all managed resources that this object holds.
+        /// This method is called by the public <see cref="Dispose"/> method and the <see cref="Finalize"/> method.
+        /// </remarks>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -393,8 +451,13 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Updates the header with file size information
+        /// Updates the header of the audio file by flushing the writer and updating the RIFF, FACT, and data chunks.
         /// </summary>
+        /// <param name="writer">The BinaryWriter used to write to the audio file.</param>
+        /// <remarks>
+        /// This method flushes the writer to ensure that all buffered data is written to the file.
+        /// It then updates the RIFF chunk, FACT chunk, and data chunk in the audio file.
+        /// </remarks>
         protected virtual void UpdateHeader(BinaryWriter writer)
         {
             writer.Flush();
@@ -403,18 +466,39 @@ namespace NAudio.Wave
             UpdateDataChunk(writer);
         }
 
+        /// <summary>
+        /// Updates the data chunk size in the binary writer at the specified position.
+        /// </summary>
+        /// <param name="writer">The binary writer to be updated.</param>
+        /// <remarks>
+        /// This method seeks to the specified position in the binary writer and writes the updated data chunk size as a 32-bit unsigned integer.
+        /// </remarks>
         private void UpdateDataChunk(BinaryWriter writer)
         {
             writer.Seek((int)dataSizePos, SeekOrigin.Begin);
             writer.Write((UInt32)dataChunkSize);
         }
 
+        /// <summary>
+        /// Updates the RIFF chunk in the output stream with the correct size.
+        /// </summary>
+        /// <param name="writer">The BinaryWriter used to write data to the output stream.</param>
+        /// <remarks>
+        /// This method updates the RIFF chunk in the output stream by seeking to the 4th position from the beginning and writing the correct size, which is calculated as the length of the output stream minus 8 bytes.
+        /// </remarks>
         private void UpdateRiffChunk(BinaryWriter writer)
         {
             writer.Seek(4, SeekOrigin.Begin);
             writer.Write((UInt32)(outStream.Length - 8));
         }
 
+        /// <summary>
+        /// Updates the 'fact' chunk in the WAV file with the sample count information.
+        /// </summary>
+        /// <param name="writer">The BinaryWriter used to write data to the WAV file.</param>
+        /// <remarks>
+        /// This method checks if the 'fact' chunk exists in the WAV file. If it does, it calculates the sample count based on the data chunk size, bits per sample, and number of channels, and updates the 'fact' chunk with the calculated sample count information.
+        /// </remarks>
         private void UpdateFactChunk(BinaryWriter writer)
         {
             if (HasFactChunk())

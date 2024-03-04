@@ -9,33 +9,51 @@ namespace NAudio.Dmo
     /// </summary>
     public class DmoEnumerator
     {
+
         /// <summary>
-        /// Get audio effect names
+        /// Retrieves the names of audio effects available and returns them as an enumerable collection of DmoDescriptors.
         /// </summary>
-        /// <returns>Audio effect names</returns>
+        /// <returns>An enumerable collection of DmoDescriptors representing the names of available audio effects.</returns>
+        /// <remarks>
+        /// This method retrieves the audio effects by querying the DMO category for audio effects using the DmoGuids.DMOCATEGORY_AUDIO_EFFECT constant.
+        /// It returns the names of available audio effects as DmoDescriptors, which contain information about the effects.
+        /// </remarks>
         public static IEnumerable<DmoDescriptor> GetAudioEffectNames()
         {
             return GetDmos(DmoGuids.DMOCATEGORY_AUDIO_EFFECT);
         }
 
         /// <summary>
-        /// Get audio encoder names
+        /// Retrieves the names of available audio encoders.
         /// </summary>
-        /// <returns>Audio encoder names</returns>
+        /// <returns>An IEnumerable of DmoDescriptor objects representing the available audio encoders.</returns>
+        /// <remarks>
+        /// This method retrieves the names of available audio encoders by querying the system for DMOs (DirectX Media Objects) belonging to the category of audio encoders.
+        /// It returns an IEnumerable of DmoDescriptor objects, each representing an available audio encoder.
+        /// </remarks>
         public static IEnumerable<DmoDescriptor> GetAudioEncoderNames()
         {
             return GetDmos(DmoGuids.DMOCATEGORY_AUDIO_ENCODER);
         }
 
         /// <summary>
-        /// Get audio decoder names
+        /// Retrieves the names of available audio decoders.
         /// </summary>
-        /// <returns>Audio decoder names</returns>
+        /// <returns>An IEnumerable of DmoDescriptor objects representing the available audio decoders.</returns>
+        /// <remarks>
+        /// This method retrieves the names of available audio decoders by calling the GetDmos method with the DMO category DmoGuids.DMOCATEGORY_AUDIO_DECODER.
+        /// </remarks>
         public static IEnumerable<DmoDescriptor> GetAudioDecoderNames()
         {
             return GetDmos(DmoGuids.DMOCATEGORY_AUDIO_DECODER);
         }
-        
+
+        /// <summary>
+        /// Retrieves a collection of DMO descriptors for a specified category.
+        /// </summary>
+        /// <param name="category">The GUID of the category for which DMO descriptors are to be retrieved.</param>
+        /// <returns>A collection of DMO descriptors for the specified category.</returns>
+        /// <exception cref="System.Runtime.InteropServices.COMException">Thrown when a COM error occurs while enumerating the DMOs.</exception>
         private static IEnumerable<DmoDescriptor> GetDmos(Guid category)
         {
             IEnumDmo enumDmo;

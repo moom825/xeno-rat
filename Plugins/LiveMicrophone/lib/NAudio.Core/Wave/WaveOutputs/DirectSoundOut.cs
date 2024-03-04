@@ -55,6 +55,20 @@ namespace NAudio.Wave
 
         private static List<DirectSoundDeviceInfo> devices;
 
+        /// <summary>
+        /// Callback function for enumerating DirectSound devices.
+        /// </summary>
+        /// <param name="lpGuid">A pointer to the GUID of the enumerated device.</param>
+        /// <param name="lpcstrDescription">A pointer to the description of the enumerated device.</param>
+        /// <param name="lpcstrModule">A pointer to the module name of the enumerated device, or null if not available.</param>
+        /// <param name="lpContext">A pointer to application-defined data.</param>
+        /// <returns>True if the enumeration should continue; otherwise, false.</returns>
+        /// <remarks>
+        /// This callback function is used for enumerating DirectSound devices. It creates a new DirectSoundDeviceInfo object, populates it with the provided information, and adds it to the devices collection.
+        /// If the GUID pointer is IntPtr.Zero, the device's GUID is set to Guid.Empty; otherwise, it is constructed from the provided bytes.
+        /// The description and module name are obtained from the provided pointers and assigned to the device object.
+        /// The function returns true to continue the enumeration.
+        /// </remarks>
         private static bool EnumCallback(IntPtr lpGuid, IntPtr lpcstrDescription, IntPtr lpcstrModule, IntPtr lpContext)
         {
             var device = new DirectSoundDeviceInfo();
@@ -129,7 +143,7 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Begin playback
+        /// Starts playing the audio. If the playback state is stopped, it creates a new thread to process samples and starts playing.
         /// </summary>
         public void Play()
         {
@@ -152,8 +166,13 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Stop playback
+        /// Stops the playback.
         /// </summary>
+        /// <remarks>
+        /// This method attempts to stop the playback by acquiring a lock on the <paramref name="m_LockObject"/> for 50 milliseconds using <see cref="Monitor.TryEnter(object, int)"/>.
+        /// If successful, it sets the <paramref name="playbackState"/> to <see cref="PlaybackState.Stopped"/> and releases the lock.
+        /// If unsuccessful, it aborts the <paramref name="notifyThread"/> if it exists.
+        /// </remarks>
         public void Stop()
         {
             // Try and tidy up nicely
@@ -174,8 +193,11 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Pause Playback
+        /// Pauses the playback.
         /// </summary>
+        /// <remarks>
+        /// This method pauses the playback by setting the <see cref="playbackState"/> to <see cref="PlaybackState.Paused"/>.
+        /// </remarks>
         public void Pause()
         {
             lock (m_LockObject)
@@ -185,11 +207,15 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Gets the current position in bytes from the wave output device.
-        /// (n.b. this is not the same thing as the position within your reader
-        /// stream)
+        /// Retrieves the current playback position in bytes.
         /// </summary>
-        /// <returns>Position in bytes</returns>
+        /// <returns>
+        /// The current playback position in bytes. Returns 0 if the playback state is stopped or if the secondary buffer is null.
+        /// </returns>
+        /// <remarks>
+        /// This method retrieves the current play cursor and write cursor from the secondary buffer and calculates the current playback position by adding the bytes played to the play cursor.
+        /// If the playback state is stopped or if the secondary buffer is null, the method returns 0.
+        /// </remarks>
         public long GetPosition()
         {
             if (playbackState != Wave.PlaybackState.Stopped)
@@ -223,17 +249,27 @@ namespace NAudio.Wave
             }
         }
 
-
         /// <summary>
-        /// Initialise playback
+        /// Initializes the wave stream and wave format using the provided <paramref name="waveProvider"/>.
         /// </summary>
-        /// <param name="waveProvider">The waveprovider to be played</param>
+        /// <param name="waveProvider">The wave provider to be initialized.</param>
+        /// <remarks>
+        /// This method initializes the wave stream and wave format using the provided <paramref name="waveProvider"/>.
+        /// </remarks>
         public void Init(IWaveProvider waveProvider)
         {
             this.waveStream = waveProvider;
             this.waveFormat = waveProvider.WaveFormat;
         }
 
+        /// <summary>
+        /// Initializes the DirectSound and creates primary and secondary sound buffers for audio playback.
+        /// </summary>
+        /// <remarks>
+        /// This method initializes the DirectSound by creating primary and secondary sound buffers for audio playback.
+        /// It sets the cooperative level to PRIORITY and creates the primary sound buffer for looping playback.
+        /// It also creates the secondary sound buffer with double buffering notification for audio playback.
+        /// </remarks>
         private void InitializeDirectSound()
         {
             // Open DirectSound
@@ -368,8 +404,11 @@ namespace NAudio.Wave
         public WaveFormat OutputWaveFormat => waveFormat;
 
         /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// Stops the object and releases resources, and suppresses the finalization of the object.
         /// </summary>
+        /// <remarks>
+        /// This method stops the object and releases any resources it is using. It also suppresses the finalization of the object, preventing the finalizer from being called.
+        /// </remarks>
         public void Dispose()
         {
             Stop();
@@ -377,21 +416,19 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Determines whether the SecondaryBuffer is lost.
+        /// Checks if the secondary buffer is lost and returns a boolean value indicating the result.
         /// </summary>
-        /// <returns>
-        /// 	<c>true</c> if [is buffer lost]; otherwise, <c>false</c>.
-        /// </returns>
+        /// <returns>True if the secondary buffer is lost; otherwise, false.</returns>
         private bool IsBufferLost()
         {
             return (secondaryBuffer.GetStatus() & DirectSoundBufferStatus.DSBSTATUS_BUFFERLOST) != 0 ? true : false;
         }
 
         /// <summary>
-        /// Convert ms to bytes size according to WaveFormat
+        /// Converts milliseconds to bytes based on the average bytes per second of the wave format.
         /// </summary>
-        /// <param name="ms">The ms</param>
-        /// <returns>number of byttes</returns>
+        /// <param name="ms">The time in milliseconds to be converted to bytes.</param>
+        /// <returns>The equivalent number of bytes for the given time in milliseconds, based on the wave format's average bytes per second.</returns>
         private int MsToBytes(int ms)
         {
             int bytes = ms * (waveFormat.AverageBytesPerSecond / 1000);
@@ -400,8 +437,9 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Processes the samples in a separate thread.
+        /// This method represents the playback thread function. It initializes the DirectSound, feeds the audio samples, and handles the playback state.
         /// </summary>
+        /// <exception cref="Exception">Thrown when there is an error during the playback process, such as a DirectSound buffer timeout.</exception>
         private void PlaybackThreadFunc()
         {
             // Used to determine if playback is halted
@@ -527,6 +565,14 @@ namespace NAudio.Wave
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="PlaybackStopped"/> event with the specified exception.
+        /// </summary>
+        /// <param name="e">The exception that caused the playback to stop.</param>
+        /// <remarks>
+        /// This method raises the <see cref="PlaybackStopped"/> event with the specified exception. If a synchronization context is available, the event is raised on the synchronization context; otherwise, it is raised on the current thread.
+        /// </remarks>
+        /// <exception cref="ArgumentNullException">Thrown when the specified exception is null.</exception>
         private void RaisePlaybackStopped(Exception e)
         {
             var handler = PlaybackStopped;
@@ -543,10 +589,12 @@ namespace NAudio.Wave
             }
         }
 
-
         /// <summary>
-        /// Stop playback
+        /// Stops the playback of the sound.
         /// </summary>
+        /// <remarks>
+        /// This method stops the playback of the sound by releasing the secondary buffer, stopping the secondary buffer, releasing the primary sound buffer, and releasing the DirectSound object.
+        /// </remarks>
         private void StopPlayback()
         {
             lock (this.m_LockObject)
@@ -574,18 +622,12 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Clean up the SecondaryBuffer
+        /// Cleans up the secondary buffer by filling it with silence data.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// In DirectSound, when playback is started,
-        /// the rest of the sound that was played last time is played back as noise.
-        /// This happens even if the secondary buffer is completely silenced,
-        /// so it seems that the buffer in the primary buffer or higher is not cleared.
-        /// </para>
-        /// <para>
-        /// To solve this problem fill the secondary buffer with silence data when stop playback.
-        /// </para>
+        /// If the secondary buffer is not null, this method locks the buffer, fills it with silence data, and then unlocks it.
+        /// The silence data is created as an array of bytes with a size equal to the total samples size of the buffer.
+        /// The method first locks the secondary buffer to access its memory, then copies the silence data into the buffer, and finally unlocks the buffer.
         /// </remarks>
         private void CleanUpSecondaryBuffer()
         {
@@ -618,11 +660,19 @@ namespace NAudio.Wave
             }
         }
 
-
         /// <summary>
-        /// Feeds the SecondaryBuffer with the WaveStream
+        /// Reads data from the wave stream and copies it to the secondary buffer.
+        /// If the buffer is lost, it is restored. If in Paused state, the bufferSamples are cleared.
         /// </summary>
-        /// <param name="bytesToCopy">number of bytes to feed</param>
+        /// <param name="bytesToCopy">The number of bytes to copy from the wave stream to the secondary buffer.</param>
+        /// <returns>The number of bytes actually read from the wave stream and copied to the secondary buffer.</returns>
+        /// <remarks>
+        /// This method first checks if the buffer is lost and restores it if necessary.
+        /// If in Paused state, it clears the bufferSamples.
+        /// It then reads data from the wave stream and copies it to the secondary buffer.
+        /// The method locks a portion of the SecondaryBuffer and copies the data back to it.
+        /// Finally, it unlocks the SecondaryBuffer and returns the number of bytes read from the wave stream.
+        /// </remarks>
         private int Feed(int bytesToCopy)
         {
             int bytesRead = bytesToCopy;
@@ -861,11 +911,13 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Instanciate DirectSound from the DLL
+        /// Creates a DirectSound object that represents the default sound device.
         /// </summary>
-        /// <param name="GUID">The GUID.</param>
-        /// <param name="directSound">The direct sound.</param>
-        /// <param name="pUnkOuter">The p unk outer.</param>
+        /// <param name="GUID">The GUID of the sound device.</param>
+        /// <param name="directSound">When this method returns, contains the IDirectSound interface for the created sound device.</param>
+        /// <param name="pUnkOuter">Reserved for future use. Must be <see langword="null"/>.</param>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="GUID"/> is not a valid GUID.</exception>
+        /// <exception cref="ExternalException">Thrown when an error occurred while creating the DirectSound object.</exception>
         [DllImport("dsound.dll", EntryPoint = "DirectSoundCreate", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
         static extern void DirectSoundCreate(ref Guid GUID, [Out, MarshalAs(UnmanagedType.Interface)] out IDirectSound directSound, IntPtr pUnkOuter);
 
@@ -902,17 +954,21 @@ namespace NAudio.Wave
         delegate bool DSEnumCallback(IntPtr lpGuid, IntPtr lpcstrDescription, IntPtr lpcstrModule, IntPtr lpContext);
 
         /// <summary>
-        /// The DirectSoundEnumerate function enumerates the DirectSound drivers installed in the system.
+        /// Enumerates the DirectSound drivers installed on the system and calls the specified callback function for each driver found.
         /// </summary>
-        /// <param name="lpDSEnumCallback">callback function</param>
-        /// <param name="lpContext">User context</param>
+        /// <param name="lpDSEnumCallback">A pointer to the callback function that will be called for each DirectSound driver found.</param>
+        /// <param name="lpContext">An application-defined value that will be passed to the callback function.</param>
+        /// <remarks>
+        /// This method calls the specified callback function <paramref name="lpDSEnumCallback"/> for each DirectSound driver found on the system.
+        /// The <paramref name="lpContext"/> parameter is an application-defined value that will be passed to the callback function.
+        /// </remarks>
         [DllImport("dsound.dll", EntryPoint = "DirectSoundEnumerateA", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
         static extern void DirectSoundEnumerate(DSEnumCallback lpDSEnumCallback, IntPtr lpContext);
 
         /// <summary>
-        /// Gets the HANDLE of the desktop window.
+        /// Retrieves a handle to the desktop window. The desktop window covers the entire screen. The desktop window is the area on top of which other windows are painted.
         /// </summary>
-        /// <returns>HANDLE of the Desktop window</returns>
+        /// <returns>A handle to the desktop window.</returns>
         [DllImport("user32.dll")]
         private static extern IntPtr GetDesktopWindow();
 #endregion

@@ -61,8 +61,20 @@ namespace NAudio.Wave.SampleProviders
         }
 
         /// <summary>
-        /// Read from this sample provider
+        /// Reads audio samples from the source stream into the buffer and applies pitch shifting if necessary.
         /// </summary>
+        /// <param name="buffer">The buffer to store the audio samples.</param>
+        /// <param name="offset">The zero-based byte offset in buffer at which to begin storing the data read from the current stream.</param>
+        /// <param name="count">The maximum number of bytes to be read from the current stream.</param>
+        /// <returns>The total number of bytes read into the buffer.</returns>
+        /// <remarks>
+        /// This method reads audio samples from the source stream into the buffer starting at the specified offset and up to the specified count.
+        /// If the pitch is 1f, no pitch shifting is applied, and the method returns the number of samples read.
+        /// If the wave format has one channel, the method applies pitch shifting to the mono audio samples and stores the result back in the buffer.
+        /// If the wave format has two channels, the method applies pitch shifting to the left and right audio samples separately and stores the results back in the buffer.
+        /// If the wave format has more than two channels, an exception is thrown as shifting of more than 2 channels is currently not supported.
+        /// </remarks>
+        /// <exception cref="Exception">Thrown when shifting of more than 2 channels is currently not supported.</exception>
         public int Read(float[] buffer, int offset, int count)
         {
             int sampRead = sourceStream.Read(buffer, offset, count);
@@ -128,6 +140,17 @@ namespace NAudio.Wave.SampleProviders
             set { pitch = value; }
         }
 
+        /// <summary>
+        /// Applies a limiting function to the input sample and returns the result.
+        /// </summary>
+        /// <param name="sample">The input sample to which the limiting function is applied.</param>
+        /// <returns>The result of applying the limiting function to the input <paramref name="sample"/>.</returns>
+        /// <remarks>
+        /// This method applies a limiting function to the input sample based on the predefined threshold values.
+        /// If the input sample is greater than the threshold, it applies a specific formula to limit the value within a certain range.
+        /// If the input sample is less than the negative of the threshold, it applies a different formula to limit the value within a certain range.
+        /// If the input sample falls within the threshold range, it returns the original sample.
+        /// </remarks>
         private float Limiter(float sample)
         {
             float res;

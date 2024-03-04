@@ -9,9 +9,13 @@ namespace xeno_rat_server.Forms
         private System.ComponentModel.IContainer components = null;
 
         /// <summary>
-        /// Clean up any resources being used.
+        /// Releases the unmanaged resources used by the component and optionally releases the managed resources.
         /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        /// <remarks>
+        /// This method releases the unmanaged resources used by the component and optionally releases the managed resources.
+        /// If <paramref name="disposing"/> is true, this method disposes of the managed resources.
+        /// </remarks>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -21,12 +25,12 @@ namespace xeno_rat_server.Forms
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
-
         /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
+        /// Initializes the components of the chat window.
         /// </summary>
+        /// <remarks>
+        /// This method initializes the text boxes, button, and other components of the chat window, setting their properties and event handlers.
+        /// </remarks>
         private void InitializeComponent()
         {
             this.textBox1 = new System.Windows.Forms.TextBox();

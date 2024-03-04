@@ -42,8 +42,17 @@ namespace NAudio.Wave.SampleProviders
         public WaveFormat WaveFormat { get; }
 
         /// <summary>
-        /// Reads bytes from this SampleProvider
+        /// Reads audio samples from the source provider and processes them to fill the buffer with the mixed output.
         /// </summary>
+        /// <param name="buffer">The buffer to be filled with the mixed audio samples.</param>
+        /// <param name="offset">The zero-based index in the buffer at which to begin storing the mixed audio samples.</param>
+        /// <param name="count">The number of mixed audio samples to read and process.</param>
+        /// <returns>The number of mixed audio samples read and processed, which is half the number of source samples read.</returns>
+        /// <remarks>
+        /// This method reads audio samples from the source provider, mixes them based on the left and right volume settings, and stores the mixed output in the buffer starting at the specified offset.
+        /// If the source buffer is null or smaller than required, a new buffer is created with the necessary size.
+        /// The method iterates through the source samples, applies volume mixing, and stores the mixed output in the buffer.
+        /// </remarks>
         public int Read(float[] buffer, int offset, int count)
         {
             var sourceSamplesRequired = count * 2;

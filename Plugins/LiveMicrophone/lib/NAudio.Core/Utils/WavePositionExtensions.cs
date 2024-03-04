@@ -8,9 +8,12 @@ namespace NAudio.Utils
     /// </summary>
     public static class WavePositionExtensions
     {
+
         /// <summary>
-        /// Get Position as timespan
+        /// Gets the position in time as a TimeSpan based on the current wave position.
         /// </summary>
+        /// <param name="@this">The wave position for which to get the time span.</param>
+        /// <returns>The position in time as a TimeSpan.</returns>
         public static TimeSpan GetPositionTimeSpan(this IWavePosition @this)
         {
             var pos = @this.GetPosition() / (@this.OutputWaveFormat.Channels * @this.OutputWaveFormat.BitsPerSample / 8);

@@ -23,9 +23,15 @@ namespace NAudio.Mixer
 			GetControlDetails();
 		}
 
-		/// <summary>
-		/// Gets the details for this control
-		/// </summary>
+        /// <summary>
+        /// Retrieves details of the mixer control and populates the unsignedDetails array.
+        /// </summary>
+        /// <param name="pDetails">A pointer to the details of the mixer control.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the pointer to details is null.</exception>
+        /// <remarks>
+        /// This method retrieves the details of the mixer control using the provided pointer <paramref name="pDetails"/>.
+        /// It populates the unsignedDetails array with the retrieved details for each channel.
+        /// </remarks>
         protected override void GetDetails(IntPtr pDetails)
         {
             unsignedDetails = new MixerInterop.MIXERCONTROLDETAILS_UNSIGNED[nChannels];
@@ -99,8 +105,9 @@ namespace NAudio.Mixer
         }
 
         /// <summary>
-        /// String Representation for debugging purposes
+        /// Returns a formatted string representation of the object, including the percentage value.
         /// </summary>
+        /// <returns>A string containing the base string representation followed by the percentage value.</returns>
         public override string ToString()
         {
             return String.Format("{0} {1}%", base.ToString(), Percent);

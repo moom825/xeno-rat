@@ -20,15 +20,15 @@ namespace NAudio.Dmo
         }
 
         /// <summary>
-        /// Processes a block of data.
-        /// The application supplies a pointer to a block of input data. The DMO processes the data in place.
+        /// Processes the input data in place using the specified Direct Media Object (DMO) and returns the result.
         /// </summary>
-        /// <param name="size">Size of the data, in bytes.</param>
-        /// <param name="offset">offset into buffer</param>
-        /// <param name="data">In/Out Data Buffer</param>
-        /// <param name="timeStart">Start time of the data.</param>
-        /// <param name="inPlaceFlag">DmoInplaceProcessFlags</param>
-        /// <returns>Return value when Process is executed with IMediaObjectInPlace</returns>
+        /// <param name="size">The size of the data to be processed.</param>
+        /// <param name="offset">The offset within the <paramref name="data"/> array where the processing should start.</param>
+        /// <param name="data">The input data array.</param>
+        /// <param name="timeStart">The start time for the processing operation.</param>
+        /// <param name="inPlaceFlag">The flags indicating the type of in-place processing to be performed.</param>
+        /// <returns>The result of processing the input data using the specified DMO.</returns>
+        /// <exception cref="System.Runtime.InteropServices.COMException">Thrown when an error occurs during the processing operation.</exception>
         public DmoInPlaceProcessReturn Process(int size, int offset, byte[] data, long timeStart, DmoInPlaceProcessFlags inPlaceFlag)
         {
             var pointer = Marshal.AllocHGlobal(size);
@@ -44,9 +44,10 @@ namespace NAudio.Dmo
         }
 
         /// <summary>
-        /// Creates a copy of the DMO in its current state.
+        /// Clones the current MediaObjectInPlace and returns the cloned object.
         /// </summary>
-        /// <returns>Copyed MediaObjectInPlace</returns>
+        /// <returns>A new MediaObjectInPlace that is a clone of the current object.</returns>
+        /// <exception cref="System.Runtime.InteropServices.COMException">Thrown when an error is encountered during the cloning process.</exception>
         public MediaObjectInPlace Clone()
         {
             Marshal.ThrowExceptionForHR(this.mediaObjectInPlace.Clone(out var cloneObj));
@@ -54,9 +55,10 @@ namespace NAudio.Dmo
         }
 
         /// <summary>
-        /// Retrieves the latency introduced by this DMO.
+        /// Retrieves the latency time of the media object in place.
         /// </summary>
-        /// <returns>The latency, in 100-nanosecond units</returns>
+        /// <returns>The latency time of the media object in place.</returns>
+        /// <exception cref="System.Runtime.InteropServices.COMException">Thrown when an error is encountered while retrieving the latency time.</exception>
         public long GetLatency()
         {
             Marshal.ThrowExceptionForHR(this.mediaObjectInPlace.GetLatency(out var latencyTime));
@@ -64,17 +66,22 @@ namespace NAudio.Dmo
         }
 
         /// <summary>
-        /// Get Media Object
+        /// Returns a new instance of MediaObject based on the existing mediaObjectInPlace.
         /// </summary>
-        /// <returns>Media Object</returns>
+        /// <returns>A new MediaObject instance based on the existing mediaObjectInPlace.</returns>
         public MediaObject GetMediaObject()
         {
             return new MediaObject((IMediaObject) mediaObjectInPlace);
         }
 
         /// <summary>
-        /// Dispose code
+        /// Releases the unmanaged resources used by the MediaObjectInPlace and optionally releases the managed resources.
         /// </summary>
+        /// <remarks>
+        /// This method releases the unmanaged resources used by the MediaObjectInPlace and optionally releases the managed resources.
+        /// It is a good practice to call this method when you have finished using the MediaObjectInPlace.
+        /// This method ensures that the MediaObjectInPlace is properly disposed of and releases all resources associated with it.
+        /// </remarks>
         public void Dispose()
         {
             if (mediaObjectInPlace != null)

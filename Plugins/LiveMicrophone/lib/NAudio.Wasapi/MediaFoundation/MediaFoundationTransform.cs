@@ -45,6 +45,13 @@ namespace NAudio.MediaFoundation
             outputBuffer = new byte[outputWaveFormat.AverageBytesPerSecond + outputWaveFormat.BlockAlign]; // we will grow this buffer if needed, but try to make something big enough
         }
 
+        /// <summary>
+        /// Initializes the transform for streaming by processing specific messages and setting the <paramref name="initializedForStreaming"/> flag to true.
+        /// </summary>
+        /// <remarks>
+        /// This method processes the MFT_MESSAGE_COMMAND_FLUSH, MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, and MFT_MESSAGE_NOTIFY_START_OF_STREAM messages using the <paramref name="transform"/> object.
+        /// After processing the messages, it sets the <paramref name="initializedForStreaming"/> flag to true, indicating that the transform is initialized for streaming.
+        /// </remarks>
         private void InitializeTransformForStreaming()
         {
             transform.ProcessMessage(MFT_MESSAGE_TYPE.MFT_MESSAGE_COMMAND_FLUSH, IntPtr.Zero);
@@ -54,15 +61,26 @@ namespace NAudio.MediaFoundation
         }
 
         /// <summary>
-        /// To be implemented by overriding classes. Create the transform object, set up its input and output types,
-        /// and configure any custom properties in here
+        /// Creates and returns a new IMFTransform object.
         /// </summary>
-        /// <returns>An object implementing IMFTrasform</returns>
+        /// <remarks>
+        /// This method is an abstract method that must be implemented by derived classes.
+        /// It is used to create and return a new IMFTransform object, which represents a Media Foundation transform (MFT).
+        /// An MFT is a COM object that performs media processing operations, such as decoding, encoding, or processing audio and video data.
+        /// </remarks>
         protected abstract IMFTransform CreateTransform();
 
         /// <summary>
-        /// Disposes this MediaFoundation transform
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
+        /// <remarks>
+        /// This method is called by the public <see cref="Dispose"/> method and the <see cref="Finalize"/> method.
+        /// Dispose(bool disposing) executes in two distinct scenarios.
+        /// If disposing equals true, the method has been called directly or indirectly by a user's code.
+        /// Managed and unmanaged resources can be disposed.
+        /// If disposing equals false, the method has been called by the runtime from inside the finalizer and you should not reference other objects.
+        /// Only unmanaged resources can be disposed.
+        /// </remarks>
         protected virtual void Dispose(bool disposing)
         {
             if (transform != null)
@@ -98,12 +116,15 @@ namespace NAudio.MediaFoundation
         public WaveFormat WaveFormat { get { return outputWaveFormat; } }
 
         /// <summary>
-        /// Reads data out of the source, passing it through the transform
+        /// Reads data from the input buffer and processes it using the transform, returning the number of bytes written to the output buffer.
         /// </summary>
-        /// <param name="buffer">Output buffer</param>
-        /// <param name="offset">Offset within buffer to write to</param>
-        /// <param name="count">Desired byte count</param>
-        /// <returns>Number of bytes read</returns>
+        /// <param name="buffer">The input buffer containing the data to be processed.</param>
+        /// <param name="offset">The zero-based byte offset in <paramref name="buffer"/> at which to begin reading.</param>
+        /// <param name="count">The maximum number of bytes to read from <paramref name="buffer"/>.</param>
+        /// <returns>The total number of bytes written to the output buffer.</returns>
+        /// <remarks>
+        /// This method reads data from the input buffer and processes it using the transform. It ensures that the transform is initialized for streaming and then continuously reads data from the source, processes it using the transform, and writes the processed data to the output buffer until the specified count is reached. If there are any leftover bytes from the previous read, they are first written to the output buffer. If the end of the input is reached, the method ends the stream, drains any remaining data from the transform, and clears the output buffer. The method then returns the total number of bytes written to the output buffer.
+        /// </remarks>
         public int Read(byte[] buffer, int offset, int count)
         {
             if (transform == null)
@@ -162,6 +183,13 @@ namespace NAudio.MediaFoundation
             return bytesWritten;
         }
 
+        /// <summary>
+        /// Ends the stream and drains the transform.
+        /// </summary>
+        /// <remarks>
+        /// This method sends a message to the transform to notify the end of the stream and then drains the transform by sending a command message.
+        /// It then reads from the transform until no more data is available, resetting the input and output positions as well as notifying the end of streaming.
+        /// </remarks>
         private void EndStreamAndDrain()
         {
             transform.ProcessMessage(MFT_MESSAGE_TYPE.MFT_MESSAGE_NOTIFY_END_OF_STREAM, IntPtr.Zero);
@@ -177,6 +205,9 @@ namespace NAudio.MediaFoundation
             initializedForStreaming = false;
         }
 
+        /// <summary>
+        /// Clears the output buffer by resetting the count and offset to zero.
+        /// </summary>
         private void ClearOutputBuffer()
         {
             outputBufferCount = 0;
@@ -184,11 +215,12 @@ namespace NAudio.MediaFoundation
         }
 
         /// <summary>
-        /// Attempts to read from the transform
-        /// Some useful info here:
-        /// http://msdn.microsoft.com/en-gb/library/windows/desktop/aa965264%28v=vs.85%29.aspx#process_data
+        /// Reads data from the transform and returns the length of the output buffer.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The length of the output buffer.</returns>
+        /// <remarks>
+        /// This method reads data from the transform and returns the length of the output buffer. It creates a sample and memory buffer using MediaFoundationApi, processes the output, and handles exceptions accordingly.
+        /// </remarks>
         private int ReadFromTransform()
         {
             var outputDataBuffer = new MFT_OUTPUT_DATA_BUFFER[1];
@@ -232,13 +264,28 @@ namespace NAudio.MediaFoundation
             Marshal.ReleaseComObject(outputMediaBuffer);
             return outputBufferLength;
         }
-        
+
+        /// <summary>
+        /// Converts the given number of bytes to the corresponding position in nanoseconds based on the provided WaveFormat.
+        /// </summary>
+        /// <param name="bytes">The number of bytes to be converted.</param>
+        /// <param name="waveFormat">The WaveFormat used to calculate the position.</param>
+        /// <returns>The position in nanoseconds corresponding to the given number of bytes based on the provided WaveFormat.</returns>
         private static long BytesToNsPosition(int bytes, WaveFormat waveFormat)
         {
             long nsPosition = (10000000L * bytes) / waveFormat.AverageBytesPerSecond;
             return nsPosition;
         }
 
+        /// <summary>
+        /// Reads data from the source provider and creates an IMFSample object.
+        /// </summary>
+        /// <returns>An IMFSample object containing the data read from the source provider.</returns>
+        /// <remarks>
+        /// This method reads a full second of data from the source provider and creates an IMFSample object.
+        /// It locks the media buffer, copies the source data into it, unlocks the media buffer, and sets its current length.
+        /// Then it creates a sample, adds the media buffer to it, sets the sample time and duration, and returns the sample.
+        /// </remarks>
         private IMFSample ReadFromSource()
         {
             // we always read a full second
@@ -264,6 +311,18 @@ namespace NAudio.MediaFoundation
             return sample;
         }
 
+        /// <summary>
+        /// Reads bytes from the output buffer into the provided buffer and returns the number of bytes read.
+        /// </summary>
+        /// <param name="buffer">The buffer to which the bytes will be copied.</param>
+        /// <param name="offset">The zero-based byte offset in <paramref name="buffer"/> at which to begin copying bytes.</param>
+        /// <param name="needed">The maximum number of bytes to read from the output buffer.</param>
+        /// <returns>The actual number of bytes read from the output buffer and copied into <paramref name="buffer"/>.</returns>
+        /// <remarks>
+        /// This method reads a maximum of <paramref name="needed"/> bytes from the output buffer into the provided <paramref name="buffer"/>.
+        /// If the output buffer contains fewer bytes than needed, it reads all available bytes.
+        /// The method then updates the output buffer offset and count accordingly.
+        /// </remarks>
         private int ReadFromOutputBuffer(byte[] buffer, int offset, int needed)
         {
             int bytesFromOutputBuffer = Math.Min(needed, outputBufferCount);
@@ -278,8 +337,11 @@ namespace NAudio.MediaFoundation
         }
 
         /// <summary>
-        /// Indicate that the source has been repositioned and completely drain out the transforms buffers
+        /// Repositions the object for streaming if it is initialized for streaming, by ending the stream and draining, clearing the output buffer, and reinitializing the transform for streaming.
         /// </summary>
+        /// <remarks>
+        /// This method checks if the object is initialized for streaming. If it is, it ends the stream and drains any remaining data, clears the output buffer, and reinitializes the transform for streaming.
+        /// </remarks>
         public void Reposition()
         {
             if (initializedForStreaming)

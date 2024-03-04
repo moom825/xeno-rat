@@ -37,12 +37,18 @@ namespace NAudio.Wave
         public WaveFormat OutputFormat { get { return pcmFormat; } }
 
         /// <summary>
-        /// Decompresses a frame
+        /// Decompresses the provided Mp3Frame and copies the decompressed data to the destination array starting at the specified offset.
         /// </summary>
-        /// <param name="frame">The MP3 frame</param>
-        /// <param name="dest">destination buffer</param>
-        /// <param name="destOffset">Offset within destination buffer</param>
-        /// <returns>Bytes written into destination buffer</returns>
+        /// <param name="frame">The Mp3Frame to be decompressed.</param>
+        /// <param name="dest">The destination array where the decompressed data will be copied.</param>
+        /// <param name="destOffset">The offset in the destination array where the decompressed data will be copied.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the provided Mp3Frame is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the whole MP3 frame cannot be converted.</exception>
+        /// <returns>The number of bytes copied to the destination array.</returns>
+        /// <remarks>
+        /// This method decompresses the provided Mp3Frame and copies the decompressed data to the destination array starting at the specified offset.
+        /// It also handles exceptions if the provided Mp3Frame is null or if the whole MP3 frame cannot be converted.
+        /// </remarks>
         public int DecompressFrame(Mp3Frame frame, byte[] dest, int destOffset)
         {
             if (frame == null)
@@ -61,7 +67,7 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Resets the MP3 Frame Decompressor after a reposition operation
+        /// Resets the position of the conversion stream to the beginning.
         /// </summary>
         public void Reset()
         {
@@ -69,8 +75,12 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Disposes of this MP3 frame decompressor
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
+        /// <remarks>
+        /// This method checks if the object has been disposed and disposes the conversionStream if it is not null.
+        /// It then suppresses the finalization of the object by the garbage collector.
+        /// </remarks>
         public void Dispose()
         {
             if (!disposed)

@@ -156,12 +156,17 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Reads bytes from this wave stream
+        /// Reads audio data from the source stream into the destination buffer, filling with silence if necessary, and returns the number of bytes read.
         /// </summary>
-        /// <param name="destBuffer">The destination buffer</param>
-        /// <param name="offset">Offset into the destination buffer</param>
-        /// <param name="numBytes">Number of bytes read</param>
-        /// <returns>Number of bytes read.</returns>
+        /// <param name="destBuffer">The destination buffer to write the audio data into.</param>
+        /// <param name="offset">The offset in the destination buffer at which to start writing the audio data.</param>
+        /// <param name="numBytes">The number of bytes to read from the source stream and write into the destination buffer.</param>
+        /// <returns>The total number of bytes read and written into the destination buffer, which is equal to <paramref name="numBytes"/>.</returns>
+        /// <remarks>
+        /// This method fills the destination buffer with silence if the current position is before the audio start position.
+        /// It then reads audio data from the source stream into the destination buffer, ensuring not to read beyond the source stream's length.
+        /// Finally, it fills out any remaining space in the destination buffer with zeroes and updates the position accordingly.
+        /// </remarks>
         public override int Read(byte[] destBuffer, int offset, int numBytes)
         {
             lock (lockObject)
@@ -197,9 +202,15 @@ namespace NAudio.Wave
         public override WaveFormat WaveFormat => sourceStream.WaveFormat;
 
         /// <summary>
-        /// Determines whether this channel has any data to play
-        /// to allow optimisation to not read, but bump position forward
+        /// Checks if the source stream has data available.
         /// </summary>
+        /// <param name="count">The number of bytes to check for availability.</param>
+        /// <returns>True if the source stream has the specified amount of data available; otherwise, false.</returns>
+        /// <remarks>
+        /// This method checks if the source stream has the specified amount of data available by comparing the current position and count with the audio start position and length.
+        /// If the position plus count is less than the audio start position, or if the position is greater than or equal to the length, false is returned.
+        /// Otherwise, it delegates the check to the source stream's HasData method and returns its result.
+        /// </remarks>
         public override bool HasData(int count)
         {
             if (position + count < audioStartPosition)
@@ -212,8 +223,13 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Disposes this WaveStream
+        /// Releases the unmanaged resources used by the WaveOffsetStream and optionally releases the managed resources.
         /// </summary>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        /// <remarks>
+        /// This method disposes the sourceStream if it is not null and sets it to null.
+        /// If <paramref name="disposing"/> is false, it asserts that the WaveOffsetStream was not disposed.
+        /// </remarks>
         protected override void Dispose(bool disposing)
         {
             if (disposing)

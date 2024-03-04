@@ -68,8 +68,20 @@ namespace NAudio.Dsp
         private long gRover;
 
         /// <summary>
-        /// Pitch Shift 
+        /// Performs pitch shifting on the input audio data.
         /// </summary>
+        /// <param name="pitchShift">The amount of pitch shift to be applied.</param>
+        /// <param name="numSampsToProcess">The number of samples to process.</param>
+        /// <param name="fftFrameSize">The size of the FFT frame.</param>
+        /// <param name="osamp">The oversampling factor.</param>
+        /// <param name="sampleRate">The sample rate of the input audio data.</param>
+        /// <param name="indata">The input audio data to be processed.</param>
+        /// <remarks>
+        /// This method performs pitch shifting on the input audio data using the Phase Vocoder algorithm.
+        /// It processes the input audio data in frames of size <paramref name="fftFrameSize"/> using the Short-Time Fourier Transform (STFT) technique.
+        /// The pitch shift amount is specified by <paramref name="pitchShift"/> and the oversampling factor is specified by <paramref name="osamp"/>.
+        /// The processed output is stored in the <paramref name="indata"/> array.
+        /// </remarks>
         public void PitchShift(float pitchShift, long numSampsToProcess,
             float sampleRate, float[] indata)
         {
@@ -235,10 +247,18 @@ namespace NAudio.Dsp
                 }
             }
         }
-        /// <summary>
-        /// Short Time Fourier Transform
-        /// </summary>
 
+        /// <summary>
+        /// Performs the Short Time Fourier Transform on the input FFT buffer.
+        /// </summary>
+        /// <param name="fftBuffer">The input buffer containing the data to be transformed.</param>
+        /// <param name="fftFrameSize">The size of the FFT frame.</param>
+        /// <param name="sign">The sign of the transform, usually 1 for forward transform and -1 for inverse transform.</param>
+        /// <remarks>
+        /// This method performs the Short Time Fourier Transform (STFT) on the input FFT buffer.
+        /// It rearranges the elements of the buffer and applies the STFT algorithm to transform the data.
+        /// The method modifies the original FFT buffer in place.
+        /// </remarks>
         public void ShortTimeFourierTransform(float[] fftBuffer, long fftFrameSize, long sign)
         {
             float wr, wi, arg, temp;

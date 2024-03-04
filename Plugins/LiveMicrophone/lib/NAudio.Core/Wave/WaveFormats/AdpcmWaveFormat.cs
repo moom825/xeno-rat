@@ -81,9 +81,13 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Serializes this wave format
+        /// Serializes the object to a binary writer.
         /// </summary>
-        /// <param name="writer">Binary writer</param>
+        /// <param name="writer">The binary writer to which the object is serialized.</param>
+        /// <exception cref="System.IO.IOException">An I/O error occurs.</exception>
+        /// <remarks>
+        /// This method serializes the object to the specified binary writer by writing the samples per block, number of coefficients, and the coefficients themselves.
+        /// </remarks>
         public override void Serialize(System.IO.BinaryWriter writer)
         {
             base.Serialize(writer);
@@ -96,8 +100,9 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// String Description of this WaveFormat
+        /// Returns a formatted string representing the Microsoft ADPCM format with specific details.
         /// </summary>
+        /// <returns>A string containing the Microsoft ADPCM format details including sample rate, channels, bits per sample, and samples per block.</returns>
         public override string ToString()
         {
             return String.Format("Microsoft ADPCM {0} Hz {1} channels {2} bits per sample {3} samples per block",

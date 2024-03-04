@@ -53,9 +53,13 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Binds this WaveBuffer instance to a specific byte buffer.
+        /// Binds the provided byte array to the WaveBuffer instance.
         /// </summary>
-        /// <param name="bufferToBoundTo">A byte buffer to bound the WaveBuffer to.</param>
+        /// <param name="bufferToBoundTo">The byte array to be bound to the WaveBuffer.</param>
+        /// <remarks>
+        /// This method binds the provided byte array <paramref name="bufferToBoundTo"/> to the WaveBuffer instance.
+        /// If the length of the byte array is not a multiple of 4, an ArgumentException is thrown.
+        /// </remarks>
         public void BindTo(byte[] bufferToBoundTo)
         {   
             /* WaveBuffer assumes the caller knows what they are doing. We will let this pass
@@ -203,27 +207,39 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Clears the associated buffer.
+        /// Clears the byte buffer by setting all elements to zero.
         /// </summary>
+        /// <remarks>
+        /// This method clears the byte buffer by setting all elements to zero using the Array.Clear method.
+        /// </remarks>
         public void Clear()
         {
             Array.Clear(byteBuffer, 0, byteBuffer.Length);
         }
 
         /// <summary>
-        /// Copy this WaveBuffer to a destination buffer up to ByteBufferCount bytes.
+        /// Copies the elements of the current one-dimensional array to another one-dimensional array.
         /// </summary>
+        /// <param name="destinationArray">The one-dimensional array that is the destination of the elements copied from the current array.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the destinationArray is null.</exception>
+        /// <exception cref="RankException">Thrown when the number of dimensions in the source Array is not equal to the number of dimensions in the destination array.</exception>
         public void Copy(Array destinationArray)
         {
             Array.Copy(byteBuffer, destinationArray, numberOfBytes);
         }
 
         /// <summary>
-        /// Checks the validity of the count parameters.
+        /// Checks the validity of the count and returns the new number of bytes.
         /// </summary>
-        /// <param name="argName">Name of the arg.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="sizeOfValue">The size of value.</param>
+        /// <param name="argName">The name of the argument being checked.</param>
+        /// <param name="value">The value to be checked.</param>
+        /// <param name="sizeOfValue">The size of the value.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when the count is not 4 bytes aligned or exceeds the maximum count.</exception>
+        /// <returns>The new number of bytes calculated based on the input <paramref name="value"/> and <paramref name="sizeOfValue"/>.</returns>
+        /// <remarks>
+        /// This method calculates the new number of bytes based on the input <paramref name="value"/> and <paramref name="sizeOfValue"/>.
+        /// It checks if the new number of bytes is 4 bytes aligned and within the valid range, throwing an exception if not.
+        /// </remarks>
         private int CheckValidityCount(string argName, int value, int sizeOfValue)
         {
             int newNumberOfBytes = value * sizeOfValue;

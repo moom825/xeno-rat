@@ -13,6 +13,19 @@ namespace Plugin
 {
     public class Main
     {
+
+        /// <summary>
+        /// Runs different system commands based on the input data received from the node and sends back the result.
+        /// </summary>
+        /// <param name="node">The node to communicate with.</param>
+        /// <returns>Task representing the asynchronous operation.</returns>
+        /// <remarks>
+        /// This method sends a byte array with value 3 to indicate that it has connected to the node.
+        /// It then receives data from the node and processes it to run different system commands based on the input data.
+        /// The method handles different scenarios based on the received data and executes corresponding system commands.
+        /// After executing the commands, it sends back the result to the node as a byte array with value 1 for success and 0 for failure.
+        /// If an exception occurs during the execution of system commands, it sends back a byte array with value 0 to indicate failure.
+        /// </remarks>
         public async Task Run(Node node)
         {
             await node.SendAsync(new byte[] { 3 });//indicate that it has connected

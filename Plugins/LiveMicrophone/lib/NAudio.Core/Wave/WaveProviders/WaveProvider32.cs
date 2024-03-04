@@ -32,18 +32,26 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Allows you to specify the sample rate and channels for this WaveProvider
-        /// (should be initialised before you pass it to a wave player)
+        /// Sets the wave format using the specified sample rate and number of channels.
         /// </summary>
+        /// <param name="sampleRate">The sample rate for the wave format.</param>
+        /// <param name="channels">The number of channels for the wave format.</param>
         public void SetWaveFormat(int sampleRate, int channels)
         {
             this.waveFormat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, channels);
         }
 
         /// <summary>
-        /// Implements the Read method of IWaveProvider by delegating to the abstract
-        /// Read method taking a float array
+        /// Reads a specified number of samples from the buffer starting at the given offset and returns the number of samples read.
         /// </summary>
+        /// <param name="buffer">The buffer containing the samples to be read.</param>
+        /// <param name="offset">The offset within the buffer at which to start reading.</param>
+        /// <param name="sampleCount">The number of samples to read from the buffer.</param>
+        /// <returns>The number of samples read from the buffer.</returns>
+        /// <remarks>
+        /// This method reads a specified number of samples from the buffer starting at the given offset.
+        /// It returns the actual number of samples read, which may be less than the requested sample count if the end of the buffer is reached.
+        /// </remarks>
         public int Read(byte[] buffer, int offset, int count)
         {
             WaveBuffer waveBuffer = new WaveBuffer(buffer);

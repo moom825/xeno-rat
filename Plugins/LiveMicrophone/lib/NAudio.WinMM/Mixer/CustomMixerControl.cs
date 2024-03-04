@@ -20,9 +20,12 @@ namespace NAudio.Mixer
 		}
 
 		/// <summary>
-		/// Get the data for this custom control
+		/// Gets the details using the provided pointer to details.
 		/// </summary>
-		/// <param name="pDetails">pointer to memory to receive data</param>
+		/// <param name="pDetails">A pointer to the details.</param>
+		/// <remarks>
+		/// This method is responsible for retrieving the details using the provided pointer to details.
+		/// </remarks>
 		protected override void GetDetails(IntPtr pDetails)
 		{
 		}

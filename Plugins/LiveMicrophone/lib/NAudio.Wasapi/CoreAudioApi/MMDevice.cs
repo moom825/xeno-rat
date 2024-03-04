@@ -49,45 +49,82 @@ namespace NAudio.CoreAudioApi
         private static Guid IID_IAudioClient = new Guid("1CB9AD4C-DBFA-4c32-B178-C2F568A703B2");
         private static Guid IDD_IAudioSessionManager = new Guid("BFA971F1-4D5E-40BB-935E-967039BFBEE4");
         private static Guid IDD_IDeviceTopology = new Guid("2A07407E-6497-4A18-9787-32F79BD0D98F");
-        // ReSharper restore InconsistentNaming
-        #endregion
 
-        #region Init
         /// <summary>
-        /// Initializes the device's property store.
+        /// Retrieves the property information of the device using the specified storage access mode.
         /// </summary>
-        /// <param name="stgmAccess">The storage-access mode to open store for.</param>
-        /// <remarks>Administrative client is required for Write and ReadWrite modes.</remarks>
+        /// <param name="stgmAccess">The storage access mode. Default is set to StorageAccessMode.Read.</param>
+        /// <exception cref="System.Runtime.InteropServices.COMException">Thrown when an error occurs while opening the property store.</exception>
+        /// <remarks>
+        /// This method retrieves the property information of the device by opening the property store with the specified storage access mode.
+        /// The property information is then stored in the property store for further use.
+        /// </remarks>
         public void GetPropertyInformation(StorageAccessMode stgmAccess = StorageAccessMode.Read)
         {
             Marshal.ThrowExceptionForHR(deviceInterface.OpenPropertyStore(stgmAccess, out var propstore));
             propertyStore = new PropertyStore(propstore);
         }
 
+        /// <summary>
+        /// Retrieves the audio client associated with the device interface.
+        /// </summary>
+        /// <returns>An instance of <see cref="AudioClient"/> representing the audio client associated with the device interface.</returns>
+        /// <exception cref="MarshalDirectiveException">Thrown when an HRESULT indicates a failed COM method call.</exception>
+        /// <remarks>
+        /// This method retrieves the audio client associated with the device interface by activating it using the specified class context.
+        /// It then returns a new instance of the <see cref="AudioClient"/> class representing the retrieved audio client.
+        /// </remarks>
         private AudioClient GetAudioClient()
         {
             Marshal.ThrowExceptionForHR(deviceInterface.Activate(ref IID_IAudioClient, ClsCtx.ALL, IntPtr.Zero, out var result));
             return new AudioClient(result as IAudioClient);
         }
 
+        /// <summary>
+        /// Retrieves the audio meter information from the device interface and initializes the AudioMeterInformation object.
+        /// </summary>
+        /// <exception cref="System.Runtime.InteropServices.COMException">Thrown when a call to the underlying COM component fails.</exception>
         private void GetAudioMeterInformation()
         {
             Marshal.ThrowExceptionForHR(deviceInterface.Activate(ref IID_IAudioMeterInformation, ClsCtx.ALL, IntPtr.Zero, out var result));
             audioMeterInformation = new AudioMeterInformation(result as IAudioMeterInformation);
         }
 
+        /// <summary>
+        /// Retrieves the audio endpoint volume.
+        /// </summary>
+        /// <remarks>
+        /// This method retrieves the audio endpoint volume by activating the device interface using the specified IID_IAudioEndpointVolume and ClsCtx.ALL.
+        /// It then initializes the audioEndpointVolume property with the retrieved IAudioEndpointVolume object.
+        /// </remarks>
+        /// <exception cref="System.Runtime.InteropServices.COMException">
+        /// Thrown when an error occurs during the activation of the device interface.
+        /// </exception>
         private void GetAudioEndpointVolume()
         {
             Marshal.ThrowExceptionForHR(deviceInterface.Activate(ref IID_IAudioEndpointVolume, ClsCtx.ALL, IntPtr.Zero, out var result));
             audioEndpointVolume = new AudioEndpointVolume(result as IAudioEndpointVolume);
         }
 
+        /// <summary>
+        /// Retrieves the audio session manager for the device interface.
+        /// </summary>
+        /// <exception cref="System.Runtime.InteropServices.COMException">
+        /// Thrown when a call to the COM component fails.
+        /// </exception>
         private void GetAudioSessionManager()
         {
             Marshal.ThrowExceptionForHR(deviceInterface.Activate(ref IDD_IAudioSessionManager, ClsCtx.ALL, IntPtr.Zero, out var result));
             audioSessionManager = new AudioSessionManager(result as IAudioSessionManager);
         }
 
+        /// <summary>
+        /// Retrieves the device topology and initializes the DeviceTopology object.
+        /// </summary>
+        /// <exception cref="MarshalDirectiveException">Thrown when an error occurs while activating the device interface.</exception>
+        /// <remarks>
+        /// This method retrieves the device topology by activating the device interface using the specified class context and initializes the DeviceTopology object with the result.
+        /// </remarks>
         private void GetDeviceTopology()
         {
             Marshal.ThrowExceptionForHR(deviceInterface.Activate(ref IDD_IDeviceTopology, ClsCtx.ALL, IntPtr.Zero, out var result));
@@ -302,19 +339,23 @@ namespace NAudio.CoreAudioApi
         {
             deviceInterface = realDevice;
         }
-        #endregion
 
         /// <summary>
-        /// To string
+        /// Returns the friendly name of the object as a string.
         /// </summary>
+        /// <returns>The friendly name of the object as a string.</returns>
         public override string ToString()
         {
             return FriendlyName;
         }
 
         /// <summary>
-        /// Dispose
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
+        /// <remarks>
+        /// This method disposes of the <see cref="audioEndpointVolume"/> and <see cref="audioSessionManager"/> objects if they are not null.
+        /// It also suppresses the finalization of the current object to prevent the finalizer from being called.
+        /// </remarks>
         public void Dispose()
         {
             this.audioEndpointVolume?.Dispose();

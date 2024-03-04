@@ -17,9 +17,12 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Gets a pointer to the buffer
+        /// Retrieves a pointer to the buffer that is ready for the next capture.
         /// </summary>
-        /// <returns>Pointer to the buffer</returns>
+        /// <param name="numFramesToRead">When this method returns, contains the number of frames available in the captured buffer.</param>
+        /// <param name="bufferFlags">When this method returns, contains flags indicating the status of the captured buffer.</param>
+        /// <returns>A pointer to the buffer that is ready for the next capture.</returns>
+        /// <exception cref="System.Runtime.InteropServices.COMException">Thrown when an error is encountered while retrieving the buffer.</exception>
         public IntPtr GetBuffer(
             out int numFramesToRead,
             out AudioClientBufferFlags bufferFlags,
@@ -45,8 +48,10 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Gets the size of the next packet
+        /// Retrieves the size of the next audio packet and returns the number of frames in the packet.
         /// </summary>
+        /// <returns>The number of frames in the next audio packet.</returns>
+        /// <exception cref="System.Runtime.InteropServices.COMException">Thrown when an error occurs while retrieving the next packet size.</exception>
         public int GetNextPacketSize()
         {
             Marshal.ThrowExceptionForHR(audioCaptureClientInterface.GetNextPacketSize(out var numFramesInNextPacket));
@@ -54,17 +59,21 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Release buffer
+        /// Releases the buffer containing audio data after writing a specified number of frames.
         /// </summary>
-        /// <param name="numFramesWritten">Number of frames written</param>
+        /// <param name="numFramesWritten">The number of frames that have been written to the buffer.</param>
+        /// <exception cref="System.Runtime.InteropServices.COMException">Thrown when an error occurs during the release of the buffer.</exception>
         public void ReleaseBuffer(int numFramesWritten)
         {
             Marshal.ThrowExceptionForHR(audioCaptureClientInterface.ReleaseBuffer(numFramesWritten));
         }
 
         /// <summary>
-        /// Release the COM object
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
+        /// <remarks>
+        /// This method releases the unmanaged resources used by the <see cref="audioCaptureClientInterface"/> and suppresses the finalization of the current object.
+        /// </remarks>
         public void Dispose()
         {
             if (audioCaptureClientInterface != null)

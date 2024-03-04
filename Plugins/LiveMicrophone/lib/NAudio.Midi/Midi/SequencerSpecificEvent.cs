@@ -33,8 +33,9 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Creates a deep clone of this MIDI event.
+        /// Clones the current MidiEvent and returns a new instance of SequencerSpecificEvent with the same data and absolute time.
         /// </summary>
+        /// <returns>A new instance of SequencerSpecificEvent with the same data and absolute time as the current MidiEvent.</returns>
         public override MidiEvent Clone() => new SequencerSpecificEvent((byte[])data.Clone(), AbsoluteTime);
 
         /// <summary>
@@ -54,9 +55,13 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Describes this MIDI text event
+        /// Returns a string representation of the object.
         /// </summary>
-        /// <returns>A string describing this event</returns>
+        /// <returns>A string containing the hexadecimal representation of the data array elements concatenated with a space.</returns>
+        /// <remarks>
+        /// This method overrides the base ToString method and appends the hexadecimal representation of each element in the data array to the string builder.
+        /// The resulting string is then returned after removing the trailing space.
+        /// </remarks>
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
@@ -71,10 +76,13 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Calls base class export first, then exports the data 
-        /// specific to this event
-        /// <seealso cref="MidiEvent.Export">MidiEvent.Export</seealso>
+        /// Exports the data to a binary writer, updating the <paramref name="absoluteTime"/> and writing the data.
         /// </summary>
+        /// <param name="absoluteTime">The reference to the absolute time.</param>
+        /// <param name="writer">The binary writer to which the data is exported.</param>
+        /// <remarks>
+        /// This method updates the <paramref name="absoluteTime"/> and writes the data to the specified binary writer.
+        /// </remarks>
         public override void Export(ref long absoluteTime, BinaryWriter writer)
         {
             base.Export(ref absoluteTime, writer);

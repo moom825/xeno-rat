@@ -24,9 +24,17 @@ namespace NAudio.Codecs
     /// </summary>
     public class G722Codec
     {
+
         /// <summary>
-        /// hard limits to 16 bit samples
+        /// Converts an integer amplitude to a 16-bit signed integer, saturating the result if necessary.
         /// </summary>
+        /// <param name="amp">The integer amplitude to be converted.</param>
+        /// <returns>
+        /// The 16-bit signed integer equivalent of <paramref name="amp"/>.
+        /// If <paramref name="amp"/> is within the range of a 16-bit signed integer, the return value is equal to <paramref name="amp"/>.
+        /// If <paramref name="amp"/> is greater than the maximum value of a 16-bit signed integer, the return value is Int16.MaxValue.
+        /// If <paramref name="amp"/> is less than the minimum value of a 16-bit signed integer, the return value is Int16.MinValue.
+        /// </returns>
         static short Saturate(int amp)
         {
             short amp16;
@@ -40,6 +48,17 @@ namespace NAudio.Codecs
             return Int16.MinValue;
         }
 
+        /// <summary>
+        /// Performs various operations related to G722 codec state for a specific band and input value.
+        /// </summary>
+        /// <param name="s">The G722 codec state.</param>
+        /// <param name="band">The specific band for which the operations are performed.</param>
+        /// <param name="d">The input value for the operations.</param>
+        /// <remarks>
+        /// This method performs multiple operations related to the G722 codec state for a specific band and input value.
+        /// It includes operations such as RECONS, PARREC, UPPOL2, UPPOL1, UPZERO, DELAYA, FILTEP, FILTEZ, and PREDIC.
+        /// The method modifies the G722 codec state <paramref name="s"/> in place.
+        /// </remarks>
         static void Block4(G722CodecState s, int band, int d)
         {
             int wd1;
@@ -146,13 +165,18 @@ namespace NAudio.Codecs
         static readonly int[] ihp = { 0, 3, 2 };
 
         /// <summary>
-        /// Decodes a buffer of G722
+        /// Decodes the input G722 data and returns the decoded output in the output buffer.
         /// </summary>
-        /// <param name="state">Codec state</param>
-        /// <param name="outputBuffer">Output buffer (to contain decompressed PCM samples)</param>
-        /// <param name="inputG722Data"></param>
-        /// <param name="inputLength">Number of bytes in input G722 data to decode</param>
-        /// <returns>Number of samples written into output buffer</returns>
+        /// <param name="state">The G722 codec state.</param>
+        /// <param name="outputBuffer">The buffer to store the decoded output.</param>
+        /// <param name="inputG722Data">The input G722 data to be decoded.</param>
+        /// <param name="inputLength">The length of the input G722 data.</param>
+        /// <returns>The length of the decoded output.</returns>
+        /// <remarks>
+        /// This method decodes the input G722 data using the G722 codec state and stores the decoded output in the output buffer.
+        /// It iterates through the input G722 data, unpacks the code bits, and performs decoding operations based on the bits per sample.
+        /// The decoded output is stored in the output buffer, and the length of the decoded output is returned.
+        /// </remarks>
         public int Decode(G722CodecState state, short[] outputBuffer, byte[] inputG722Data, int inputLength)
         {
             int dlowt;
@@ -316,13 +340,18 @@ namespace NAudio.Codecs
         }
 
         /// <summary>
-        /// Encodes a buffer of G722
+        /// Encodes the input PCM samples using the G.722 algorithm and stores the result in the output buffer.
         /// </summary>
-        /// <param name="state">Codec state</param>
-        /// <param name="outputBuffer">Output buffer (to contain encoded G722)</param>
-        /// <param name="inputBuffer">PCM 16 bit samples to encode</param>
-        /// <param name="inputBufferCount">Number of samples in the input buffer to encode</param>
-        /// <returns>Number of encoded bytes written into output buffer</returns>
+        /// <param name="state">The G722CodecState object containing the codec state information.</param>
+        /// <param name="outputBuffer">The byte array to store the encoded output.</param>
+        /// <param name="inputBuffer">The short array containing the input PCM samples.</param>
+        /// <param name="inputBufferCount">The number of input PCM samples in the input buffer.</param>
+        /// <returns>The number of bytes written to the output buffer.</returns>
+        /// <remarks>
+        /// This method encodes the input PCM samples using the G.722 algorithm. It processes the input samples, applies quantization, and packs the encoded bits into the output buffer.
+        /// The encoding process involves various steps such as applying the QMF (Quadrature Mirror Filter), quantization, scaling, and packing the encoded bits.
+        /// The method modifies the output buffer in place and returns the number of bytes written to the buffer.
+        /// </remarks>
         public int Encode(G722CodecState state, byte[] outputBuffer, short[] inputBuffer, int inputBufferCount)
         {
             int dlow;

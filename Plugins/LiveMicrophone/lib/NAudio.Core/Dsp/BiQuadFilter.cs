@@ -43,10 +43,14 @@ namespace NAudio.Dsp
         private float y2;
 
         /// <summary>
-        /// Passes a single sample through the filter
+        /// Transforms the input sample using the given coefficients and returns the result.
         /// </summary>
-        /// <param name="inSample">Input sample</param>
-        /// <returns>Output sample</returns>
+        /// <param name="inSample">The input sample to be transformed.</param>
+        /// <returns>The transformed result based on the input sample and coefficients.</returns>
+        /// <remarks>
+        /// This method computes the result by applying the given coefficients (a0, a1, a2, a3, a4) to the input sample and previous input/output values (x1, x2, y1, y2).
+        /// It then updates the internal state variables (x1, x2, y1, y2) for the next transformation.
+        /// </remarks>
         public float Transform(float inSample)
         {
             // compute result
@@ -63,6 +67,24 @@ namespace NAudio.Dsp
             return y1;
         }
 
+        /// <summary>
+        /// Precomputes the coefficients for the given parameters.
+        /// </summary>
+        /// <param name="aa0">The value of aa0.</param>
+        /// <param name="aa1">The value of aa1.</param>
+        /// <param name="aa2">The value of aa2.</param>
+        /// <param name="b0">The value of b0.</param>
+        /// <param name="b1">The value of b1.</param>
+        /// <param name="b2">The value of b2.</param>
+        /// <remarks>
+        /// This method precomputes the coefficients a0, a1, a2, a3, and a4 based on the input parameters aa0, aa1, aa2, b0, b1, and b2.
+        /// The coefficients are computed using the formulas:
+        /// a0 = b0/aa0
+        /// a1 = b1/aa0
+        /// a2 = b2/aa0
+        /// a3 = aa1/aa0
+        /// a4 = aa2/aa0
+        /// </remarks>
         private void SetCoefficients(double aa0, double aa1, double aa2, double b0, double b1, double b2)
         {
             // precompute the coefficients
@@ -74,11 +96,17 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// Set this up as a low pass filter
+        /// Sets the coefficients for a low-pass filter based on the given sample rate, cutoff frequency, and Q value.
         /// </summary>
-        /// <param name="sampleRate">Sample Rate</param>
-        /// <param name="cutoffFrequency">Cut-off Frequency</param>
-        /// <param name="q">Bandwidth</param>
+        /// <param name="sampleRate">The sample rate of the input signal.</param>
+        /// <param name="cutoffFrequency">The cutoff frequency of the filter.</param>
+        /// <param name="q">The Q value of the filter.</param>
+        /// <remarks>
+        /// This method calculates the coefficients for a low-pass filter based on the given sample rate, cutoff frequency, and Q value using the following transfer function:
+        /// H(s) = 1 / (s^2 + s/Q + 1)
+        /// where s = jw (j is the imaginary unit and w is the frequency in radians per second).
+        /// The coefficients are then set using the SetCoefficients method to be used in the filter implementation.
+        /// </remarks>
         public void SetLowPassFilter(float sampleRate, float cutoffFrequency, float q)
         {
             // H(s) = 1 / (s^2 + s/Q + 1)
@@ -96,12 +124,18 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// Set this up as a peaking EQ
+        /// Sets the coefficients for a peaking equalizer filter based on the given parameters.
         /// </summary>
-        /// <param name="sampleRate">Sample Rate</param>
-        /// <param name="centreFrequency">Centre Frequency</param>
-        /// <param name="q">Bandwidth (Q)</param>
-        /// <param name="dbGain">Gain in decibels</param>
+        /// <param name="sampleRate">The sample rate of the audio signal.</param>
+        /// <param name="centreFrequency">The center frequency of the peaking equalizer filter.</param>
+        /// <param name="q">The Q factor of the peaking equalizer filter.</param>
+        /// <param name="dbGain">The gain in decibels of the peaking equalizer filter.</param>
+        /// <remarks>
+        /// This method calculates the coefficients for a peaking equalizer filter based on the given parameters using the following formulas:
+        /// H(s) = (s^2 + s*(A/Q) + 1) / (s^2 + s/(A*Q) + 1)
+        /// where s = e^(j*w), w = 2 * π * centreFrequency / sampleRate, A = 10^(dbGain / 40), and alpha = sin(w0) / (2 * q).
+        /// The coefficients are then set using the SetCoefficients method.
+        /// </remarks>
         public void SetPeakingEq(float sampleRate, float centreFrequency, float q, float dbGain)
         {
             // H(s) = (s^2 + s*(A/Q) + 1) / (s^2 + s/(A*Q) + 1)
@@ -121,8 +155,16 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// Set this as a high pass filter
+        /// Sets the coefficients for a high-pass filter based on the provided sample rate, cutoff frequency, and Q value.
         /// </summary>
+        /// <param name="sampleRate">The sample rate of the input signal.</param>
+        /// <param name="cutoffFrequency">The cutoff frequency of the high-pass filter.</param>
+        /// <param name="q">The Q value of the high-pass filter.</param>
+        /// <remarks>
+        /// This method calculates the coefficients for a high-pass filter based on the provided sample rate, cutoff frequency, and Q value using the following transfer function:
+        /// H(s) = s^2 / (s^2 + s/Q + 1)
+        /// The coefficients are then set using the SetCoefficients method.
+        /// </remarks>
         public void SetHighPassFilter(float sampleRate, float cutoffFrequency, float q)
         {
             // H(s) = s^2 / (s^2 + s/Q + 1)
@@ -140,8 +182,12 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// Create a low pass filter
+        /// Creates a low-pass filter with the specified sample rate, cutoff frequency, and Q value.
         /// </summary>
+        /// <param name="sampleRate">The sample rate of the audio signal.</param>
+        /// <param name="cutoffFrequency">The cutoff frequency of the filter.</param>
+        /// <param name="q">The Q value of the filter.</param>
+        /// <returns>A low-pass filter with the specified parameters.</returns>
         public static BiQuadFilter LowPassFilter(float sampleRate, float cutoffFrequency, float q)
         {
             var filter = new BiQuadFilter();
@@ -150,8 +196,12 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// Create a High pass filter
+        /// Creates a high-pass filter with the specified sample rate, cutoff frequency, and Q value.
         /// </summary>
+        /// <param name="sampleRate">The sample rate of the audio signal.</param>
+        /// <param name="cutoffFrequency">The cutoff frequency of the high-pass filter.</param>
+        /// <param name="q">The Q value of the high-pass filter.</param>
+        /// <returns>A high-pass filter with the specified parameters.</returns>
         public static BiQuadFilter HighPassFilter(float sampleRate, float cutoffFrequency, float q)
         {
             var filter = new BiQuadFilter();
@@ -160,8 +210,16 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// Create a bandpass filter with constant skirt gain
+        /// Creates a BiQuad filter for a band-pass filter with constant skirt gain.
         /// </summary>
+        /// <param name="sampleRate">The sample rate of the audio signal.</param>
+        /// <param name="centreFrequency">The center frequency of the band-pass filter.</param>
+        /// <param name="q">The quality factor of the filter.</param>
+        /// <returns>A BiQuadFilter object representing the band-pass filter with constant skirt gain.</returns>
+        /// <remarks>
+        /// This method calculates the coefficients for a band-pass filter with constant skirt gain using the given sample rate, center frequency, and quality factor.
+        /// The coefficients are used to create a BiQuadFilter object, which can then be used to process audio signals.
+        /// </remarks>
         public static BiQuadFilter BandPassFilterConstantSkirtGain(float sampleRate, float centreFrequency, float q)
         {
             // H(s) = s / (s^2 + s/Q + 1)  (constant skirt gain, peak gain = Q)
@@ -180,8 +238,16 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// Create a bandpass filter with constant peak gain
+        /// Returns a BiQuadFilter for a band-pass filter with constant 0 dB peak gain.
         /// </summary>
+        /// <param name="sampleRate">The sample rate of the audio signal.</param>
+        /// <param name="centreFrequency">The center frequency of the band-pass filter.</param>
+        /// <param name="q">The Q factor of the band-pass filter.</param>
+        /// <returns>A BiQuadFilter for the specified band-pass filter.</returns>
+        /// <remarks>
+        /// This method calculates the coefficients for a band-pass filter with constant 0 dB peak gain using the input sample rate, center frequency, and Q factor.
+        /// The coefficients are then used to create a BiQuadFilter instance, which represents the band-pass filter.
+        /// </remarks>
         public static BiQuadFilter BandPassFilterConstantPeakGain(float sampleRate, float centreFrequency, float q)
         {
             // H(s) = (s/Q) / (s^2 + s/Q + 1)      (constant 0 dB peak gain)
@@ -200,8 +266,12 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// Creates a notch filter
+        /// Creates a notch filter using the given sample rate, center frequency, and quality factor.
         /// </summary>
+        /// <param name="sampleRate">The sample rate of the input signal.</param>
+        /// <param name="centreFrequency">The center frequency of the notch filter.</param>
+        /// <param name="q">The quality factor of the notch filter.</param>
+        /// <returns>A BiQuadFilter representing the notch filter.</returns>
         public static BiQuadFilter NotchFilter(float sampleRate, float centreFrequency, float q)
         {
             // H(s) = (s^2 + 1) / (s^2 + s/Q + 1)
@@ -220,8 +290,17 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// Creaes an all pass filter
+        /// Creates an all-pass filter using the specified sample rate, center frequency, and Q value.
         /// </summary>
+        /// <param name="sampleRate">The sample rate of the audio signal.</param>
+        /// <param name="centreFrequency">The center frequency of the filter.</param>
+        /// <param name="q">The Q value of the filter.</param>
+        /// <returns>A <see cref="BiQuadFilter"/> representing the all-pass filter.</returns>
+        /// <remarks>
+        /// This method calculates the coefficients for an all-pass filter based on the provided sample rate, center frequency, and Q value.
+        /// The all-pass filter is defined by the transfer function H(s) = (s^2 - s/Q + 1) / (s^2 + s/Q + 1), where s is the Laplace transform variable.
+        /// The method computes the coefficients b0, b1, b2, a0, a1, and a2 using the provided parameters and returns a new <see cref="BiQuadFilter"/> instance initialized with these coefficients.
+        /// </remarks>
         public static BiQuadFilter AllPassFilter(float sampleRate, float centreFrequency, float q)
         {
             //H(s) = (s^2 - s/Q + 1) / (s^2 + s/Q + 1)
@@ -240,8 +319,13 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// Create a Peaking EQ
+        /// Creates a peaking equalization filter with the specified parameters.
         /// </summary>
+        /// <param name="sampleRate">The sample rate of the audio signal.</param>
+        /// <param name="centreFrequency">The center frequency of the peaking filter.</param>
+        /// <param name="q">The Q factor of the peaking filter.</param>
+        /// <param name="dbGain">The gain of the peaking filter in decibels.</param>
+        /// <returns>A BiQuadFilter configured as a peaking equalization filter.</returns>
         public static BiQuadFilter PeakingEQ(float sampleRate, float centreFrequency, float q, float dbGain)
         {
             var filter = new BiQuadFilter();
@@ -250,15 +334,17 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// H(s) = A * (s^2 + (sqrt(A)/Q)*s + A)/(A*s^2 + (sqrt(A)/Q)*s + 1)
+        /// Calculates the coefficients for a low-shelf filter based on the given parameters and returns a BiQuadFilter object.
         /// </summary>
-        /// <param name="sampleRate"></param>
-        /// <param name="cutoffFrequency"></param>
-        /// <param name="shelfSlope">a "shelf slope" parameter (for shelving EQ only).  
-        /// When S = 1, the shelf slope is as steep as it can be and remain monotonically
-        /// increasing or decreasing gain with frequency.  The shelf slope, in dB/octave, 
-        /// remains proportional to S for all other values for a fixed f0/Fs and dBgain.</param>
-        /// <param name="dbGain">Gain in decibels</param>
+        /// <param name="sampleRate">The sample rate of the audio signal.</param>
+        /// <param name="cutoffFrequency">The cutoff frequency of the filter.</param>
+        /// <param name="shelfSlope">The slope of the shelf.</param>
+        /// <param name="dbGain">The gain in decibels for the shelf.</param>
+        /// <returns>A BiQuadFilter object representing the calculated filter coefficients.</returns>
+        /// <remarks>
+        /// This method calculates the coefficients for a low-shelf filter based on the given parameters using the formulas derived from the analog prototype.
+        /// The coefficients are used to create a BiQuadFilter object that can be applied to an audio signal for low-shelf filtering.
+        /// </remarks>
         public static BiQuadFilter LowShelf(float sampleRate, float cutoffFrequency, float shelfSlope, float dbGain)
         {
             var w0 = 2 * Math.PI * cutoffFrequency / sampleRate;
@@ -278,13 +364,29 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// H(s) = A * (A*s^2 + (sqrt(A)/Q)*s + 1)/(s^2 + (sqrt(A)/Q)*s + A)
+        /// Calculates the coefficients for a high-shelf filter using the given parameters and returns a BiQuadFilter object.
         /// </summary>
-        /// <param name="sampleRate"></param>
-        /// <param name="cutoffFrequency"></param>
-        /// <param name="shelfSlope"></param>
-        /// <param name="dbGain"></param>
-        /// <returns></returns>
+        /// <param name="sampleRate">The sample rate of the audio signal.</param>
+        /// <param name="cutoffFrequency">The cutoff frequency of the filter.</param>
+        /// <param name="shelfSlope">The slope of the shelf.</param>
+        /// <param name="dbGain">The gain in decibels for the shelf filter.</param>
+        /// <returns>A BiQuadFilter object with the calculated coefficients for the high-shelf filter.</returns>
+        /// <remarks>
+        /// This method calculates the coefficients for a high-shelf filter using the given parameters based on the following formulas:
+        /// - w0 = 2 * π * cutoffFrequency / sampleRate
+        /// - cosw0 = Cos(w0)
+        /// - sinw0 = Sin(w0)
+        /// - a = 10^(dbGain / 40)
+        /// - alpha = sinw0 / 2 * Sqrt((a + 1 / a) * (1 / shelfSlope - 1) + 2)
+        /// - temp = 2 * Sqrt(a) * alpha
+        /// - b0 = a * ((a + 1) + (a - 1) * cosw0 + temp)
+        /// - b1 = -2 * a * ((a - 1) + (a + 1) * cosw0)
+        /// - b2 = a * ((a + 1) + (a - 1) * cosw0 - temp)
+        /// - a0 = (a + 1) - (a - 1) * cosw0 + temp
+        /// - a1 = 2 * ((a - 1) - (a + 1) * cosw0)
+        /// - a2 = (a + 1) - (a - 1) * cosw0 - temp
+        /// The calculated coefficients are used to create a BiQuadFilter object, which is then returned.
+        /// </remarks>
         public static BiQuadFilter HighShelf(float sampleRate, float cutoffFrequency, float shelfSlope, float dbGain)
         {
             var w0 = 2 * Math.PI * cutoffFrequency / sampleRate;

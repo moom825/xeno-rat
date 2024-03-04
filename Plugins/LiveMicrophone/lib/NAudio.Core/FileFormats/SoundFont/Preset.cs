@@ -35,8 +35,9 @@ namespace NAudio.SoundFont
         public Zone[] Zones { get; set; }
 
         /// <summary>
-        /// <see cref="Object.ToString"/>
+        /// Returns a string representation of the object in the format "{Bank}-{PatchNumber} {Name}".
         /// </summary>
+        /// <returns>A string representing the object in the format "{Bank}-{PatchNumber} {Name}"</returns>
         public override string ToString()
         {
             return $"{Bank}-{PatchNumber} {Name}";

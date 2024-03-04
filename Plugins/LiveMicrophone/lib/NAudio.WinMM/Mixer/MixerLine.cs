@@ -50,9 +50,11 @@ namespace NAudio.Mixer
         }
 
         /// <summary>
-        /// Creates a new Mixer Source
+        /// Retrieves the mixer ID associated with the specified wave input device.
         /// </summary>
-        /// <param name="waveInDevice">Wave In Device</param>
+        /// <param name="waveInDevice">The identifier of the wave input device.</param>
+        /// <returns>The mixer ID corresponding to the specified wave input device.</returns>
+        /// <exception cref="MmException">Thrown when an error occurs while retrieving the mixer ID.</exception>
         public static int GetMixerIdForWaveIn(int waveInDevice)
         {
             int mixerId = -1;
@@ -228,8 +230,11 @@ namespace NAudio.Mixer
         }
 
         /// <summary>
-        /// Gets the specified source
+        /// Retrieves the mixer line at the specified source index.
         /// </summary>
+        /// <param name="sourceIndex">The index of the source to retrieve.</param>
+        /// <returns>The mixer line at the specified <paramref name="sourceIndex"/>.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="sourceIndex"/> is less than 0 or greater than or equal to the total source count.</exception>
         public MixerLine GetSource(int sourceIndex) 
         {
             if(sourceIndex < 0 || sourceIndex >= SourceCount) 
@@ -276,8 +281,9 @@ namespace NAudio.Mixer
         }
 
         /// <summary>
-        /// Describes this Mixer Line (for diagnostic purposes)
+        /// Returns a formatted string representing the object's name, type description, number of controls, and ID.
         /// </summary>
+        /// <returns>A string containing the object's name, type description, number of controls, and ID.</returns>
         public override string ToString()
         {
             return String.Format("{0} {1} ({2} controls, ID={3})", 

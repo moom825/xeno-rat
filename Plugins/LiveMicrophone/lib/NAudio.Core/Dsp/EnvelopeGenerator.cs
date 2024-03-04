@@ -117,6 +117,16 @@ namespace NAudio.Dsp
             }
         }
 
+        /// <summary>
+        /// Calculates the coefficient using the given rate and target ratio and returns the result.
+        /// </summary>
+        /// <param name="rate">The rate used in the calculation.</param>
+        /// <param name="targetRatio">The target ratio used in the calculation.</param>
+        /// <returns>The calculated coefficient based on the provided <paramref name="rate"/> and <paramref name="targetRatio"/>.</returns>
+        /// <remarks>
+        /// This method calculates the coefficient using the formula:
+        /// coefficient = (float)Math.Exp(-Math.Log((1.0f + targetRatio) / targetRatio) / rate).
+        /// </remarks>
         private static float CalcCoef(float rate, float targetRatio)
         {
             return (float)Math.Exp(-Math.Log((1.0f + targetRatio) / targetRatio) / rate);
@@ -139,8 +149,13 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// Sets the attack curve
+        /// Sets the target ratio for attack and updates the attack base.
         /// </summary>
+        /// <param name="targetRatio">The target ratio for attack.</param>
+        /// <remarks>
+        /// If the <paramref name="targetRatio"/> is less than 0.000000001f, it is set to 0.000000001f (-180 dB).
+        /// The <paramref name="targetRatio"/> is then assigned to <see cref="targetRatioAttack"/> and the <see cref="attackBase"/> is updated using the formula: (1.0f + targetRatioAttack) * (1.0f - attackCoef).
+        /// </remarks>
         void SetTargetRatioAttack(float targetRatio)
         {
             if (targetRatio < 0.000000001f)
@@ -150,8 +165,14 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// Sets the decay release curve
+        /// Sets the target ratio for decay and release and calculates the decay and release bases.
         /// </summary>
+        /// <param name="targetRatio">The target ratio for decay and release.</param>
+        /// <remarks>
+        /// If the <paramref name="targetRatio"/> is less than 0.000000001f, it is set to 0.000000001f (-180 dB).
+        /// The decay base is calculated as (sustainLevel - targetRatioDecayRelease) * (1.0f - decayCoef).
+        /// The release base is calculated as -targetRatioDecayRelease * (1.0f - releaseCoef).
+        /// </remarks>
         void SetTargetRatioDecayRelease(float targetRatio)
         {
             if (targetRatio < 0.000000001f)
@@ -162,9 +183,14 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// Read the next volume multiplier from the envelope generator
+        /// Processes the envelope state and returns the output value.
         /// </summary>
-        /// <returns>A volume multiplier</returns>
+        /// <returns>The output value after processing the envelope state.</returns>
+        /// <remarks>
+        /// This method processes the envelope state based on the current state and coefficients for attack, decay, sustain, and release.
+        /// It updates the output value according to the state transitions and coefficient calculations.
+        /// The method returns the final output value after processing the envelope state.
+        /// </remarks>
         public float Process()
         {
             switch (state)
@@ -202,9 +228,12 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// Trigger the gate
+        /// Sets the envelope state based on the gate condition.
         /// </summary>
-        /// <param name="gate">If true, enter attack phase, if false enter release phase (unless already idle)</param>
+        /// <param name="gate">The condition to set the envelope state. If true, sets the state to <see cref="EnvelopeState.Attack"/>; otherwise, sets the state to <see cref="EnvelopeState.Release"/> if the current state is not <see cref="EnvelopeState.Idle"/>.</param>
+        /// <remarks>
+        /// This method sets the envelope state based on the gate condition. If the gate is true, it sets the state to attack. If the gate is false and the current state is not idle, it sets the state to release.
+        /// </remarks>
         public void Gate(bool gate)
         {
             if (gate)
@@ -225,7 +254,7 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// Reset to idle state
+        /// Resets the state of the envelope and sets the output to 0.0f.
         /// </summary>
         public void Reset()
         {
@@ -234,8 +263,9 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// Get the current output level
+        /// Gets the output value.
         /// </summary>
+        /// <returns>The output value.</returns>
         public float GetOutput()
         {
             return output;

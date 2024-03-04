@@ -85,6 +85,15 @@ namespace NAudio.Wave
             OutputWaveFormat = audioClient.MixFormat; // allow the user to query the default format for shared mode streams
         }
 
+        /// <summary>
+        /// Retrieves the default audio endpoint for the specified data flow and role.
+        /// </summary>
+        /// <exception cref="NotSupportedException">Thrown when the operating system version is less than 6, indicating that WASAPI is supported only on Windows Vista and above.</exception>
+        /// <returns>The default audio endpoint for the specified data flow and role.</returns>
+        /// <remarks>
+        /// This method retrieves the default audio endpoint for the specified data flow and role using the Windows Audio Session API (WASAPI).
+        /// If the operating system version is less than 6, a <see cref="NotSupportedException"/> is thrown, indicating that WASAPI is supported only on Windows Vista and above.
+        /// </remarks>
         static MMDevice GetDefaultAudioEndpoint()
         {
             if (Environment.OSVersion.Version.Major < 6)
@@ -95,6 +104,15 @@ namespace NAudio.Wave
             return enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Console);
         }
 
+        /// <summary>
+        /// Plays the audio using the specified source provider and handles resampling if needed.
+        /// </summary>
+        /// <remarks>
+        /// This method plays the audio using the specified source provider. If resampling is needed, it handles the resampling using the DMO stream.
+        /// It fills the buffer with audio data and starts the audio client. It then continuously checks for available buffer space and fills the buffer accordingly.
+        /// If an exception occurs during the process, it is caught and handled, and the playback is stopped.
+        /// </remarks>
+        /// <exception cref="Exception">Thrown if an error occurs during the playback process.</exception>
         private void PlayThread()
         {
             ResamplerDmoStream resamplerDmoStream = null;
@@ -172,6 +190,14 @@ namespace NAudio.Wave
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="PlaybackStopped"/> event with the specified exception.
+        /// </summary>
+        /// <param name="e">The exception that caused the playback to stop.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="e"/> is null.</exception>
+        /// <remarks>
+        /// This method raises the <see cref="PlaybackStopped"/> event with the specified exception. If a synchronization context is available, the event is raised on the synchronization context; otherwise, it is raised on the current thread.
+        /// </remarks>
         private void RaisePlaybackStopped(Exception e)
         {
             var handler = PlaybackStopped;
@@ -188,6 +214,16 @@ namespace NAudio.Wave
             }
         }
 
+        /// <summary>
+        /// Fills the buffer with audio data from the specified playback provider.
+        /// </summary>
+        /// <param name="playbackProvider">The IWaveProvider from which to read audio data.</param>
+        /// <param name="frameCount">The number of audio frames to read and fill into the buffer.</param>
+        /// <remarks>
+        /// This method fills the buffer with audio data from the specified <paramref name="playbackProvider"/>.
+        /// It then releases the buffer after filling it with the audio data.
+        /// If the <paramref name="playbackProvider"/> returns 0 on read, the playback state is set to Stopped.
+        /// </remarks>
         private void FillBuffer(IWaveProvider playbackProvider, int frameCount)
         {
             var buffer = renderClient.GetBuffer(frameCount);
@@ -213,6 +249,19 @@ namespace NAudio.Wave
             }
         }
 
+        /// <summary>
+        /// Gets the fallback WaveFormat to be used in case the provided format is not supported, based on the supported formats by the audio device.
+        /// </summary>
+        /// <returns>
+        /// The WaveFormat to be used as a fallback, based on the supported formats by the audio device.
+        /// </returns>
+        /// <remarks>
+        /// This method first tries the provided sample rate, then the device's sample rate, and finally 44.1kHz and 48kHz if not already included in the list of sample rates to try.
+        /// It also considers the provided channel count, the device's channel count, and 2 channels if not already included in the list of channel counts to try.
+        /// Additionally, it includes the provided bit depth, 32-bit depth, 24-bit depth, and 16-bit depth if not already included in the list of bit depths to try.
+        /// The method iterates through the combinations of sample rates, channel counts, and bit depths to find a supported WaveFormat by the audio device, and returns it as a fallback.
+        /// If no supported format is found, a NotSupportedException is thrown with the message "Can't find a supported format to use".
+        /// </remarks>
         private WaveFormat GetFallbackFormat()
         {
             var deviceSampleRate = audioClient.MixFormat.SampleRate;
@@ -252,11 +301,14 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Gets the current position in bytes from the wave output device.
-        /// (n.b. this is not the same thing as the position within your reader
-        /// stream)
+        /// Gets the current playback position in bytes.
         /// </summary>
-        /// <returns>Position in bytes</returns>
+        /// <returns>
+        /// The current playback position in bytes.
+        /// </returns>
+        /// <remarks>
+        /// This method retrieves the current playback position in bytes based on the current state of the audio playback. If the playback state is stopped, the position is 0. If the playback state is playing, the position is obtained from the audio clock client's adjusted position. If the playback state is paused, the position is obtained using the audio clock client's GetPosition method. The position is then calculated in bytes based on the output wave format's average bytes per second and the audio clock client's frequency.
+        /// </remarks>
         public long GetPosition()
         {
             ulong pos;
@@ -279,10 +331,10 @@ namespace NAudio.Wave
         /// </summary>
         public WaveFormat OutputWaveFormat { get; private set; }
 
-#region IWavePlayer Members
-
         /// <summary>
-        /// Begin Playback
+        /// Starts playing the audio if the current playback state is not already playing.
+        /// If the playback state is stopped, it starts a new thread to play the audio and sets the playback state to playing.
+        /// If the playback state is not stopped, it sets the playback state to playing.
         /// </summary>
         public void Play()
         {
@@ -302,8 +354,13 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Stop playback and flush buffers
+        /// Stops the playback if it is currently running.
         /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown when the playback state is not <see cref="PlaybackState.Stopped"/>.</exception>
+        /// <remarks>
+        /// This method stops the playback if it is currently running by setting the <see cref="playbackState"/> to <see cref="PlaybackState.Stopped"/>.
+        /// It also waits for the play thread to join and sets it to null.
+        /// </remarks>
         public void Stop()
         {
             if (playbackState != PlaybackState.Stopped)
@@ -315,8 +372,12 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Stop playback without flushing buffers
+        /// Pauses the playback if it is currently playing.
         /// </summary>
+        /// <remarks>
+        /// This method pauses the playback if the current state is set to <see cref="PlaybackState.Playing"/>.
+        /// If the playback is not in the playing state, this method does nothing.
+        /// </remarks>
         public void Pause()
         {
             if (playbackState == PlaybackState.Playing)
@@ -326,9 +387,14 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Initialize for playing the specified wave stream
+        /// Initializes the audio output with the specified <paramref name="waveProvider"/>.
         /// </summary>
-        /// <param name="waveProvider">IWaveProvider to play</param>
+        /// <param name="waveProvider">The wave provider to be used for audio output.</param>
+        /// <remarks>
+        /// This method initializes the audio output with the provided <paramref name="waveProvider"/>. It sets the output wave format based on the wave provider's wave format.
+        /// If the <paramref name="shareMode"/> is set to Exclusive, it checks if the format is supported and performs necessary fallbacks if required.
+        /// If using EventSync, the setup is specific with shareMode and latency settings.
+        /// </remarks>
         public void Init(IWaveProvider waveProvider)
         {
             long latencyRefTimes = latencyMilliseconds * 10000;
@@ -488,13 +554,12 @@ namespace NAudio.Wave
             }
         }
 
-#endregion
-
-#region IDisposable Members
-
         /// <summary>
-        /// Dispose
+        /// Disposes the audio client and stops the rendering if it is currently running.
         /// </summary>
+        /// <remarks>
+        /// This method disposes the audio client and stops the rendering if it is currently running. It also sets the audio client and render client to null after disposal.
+        /// </remarks>
         public void Dispose()
         {
             if (audioClient != null)

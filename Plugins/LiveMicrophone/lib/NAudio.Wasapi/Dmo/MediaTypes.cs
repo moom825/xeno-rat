@@ -54,7 +54,17 @@ namespace NAudio.Dmo
             "Video",
         };
 
-
+        /// <summary>
+        /// Returns the media type name for the given major type.
+        /// </summary>
+        /// <param name="majorType">The major type for which the media type name is to be retrieved.</param>
+        /// <returns>The media type name corresponding to the specified <paramref name="majorType"/>.</returns>
+        /// <exception cref="ArgumentException">Thrown when the specified <paramref name="majorType"/> is not found in the MajorTypes array.</exception>
+        /// <remarks>
+        /// This method iterates through the MajorTypes array to find a match for the given <paramref name="majorType"/>.
+        /// If a match is found, the corresponding media type name is returned.
+        /// If no match is found, an ArgumentException is thrown with the message "Major Type not found".
+        /// </remarks>
         public static string GetMediaTypeName(Guid majorType)
         {
             for (int index = 0; index < MajorTypes.Length; index++)

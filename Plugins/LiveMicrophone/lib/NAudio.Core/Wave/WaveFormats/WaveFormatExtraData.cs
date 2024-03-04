@@ -36,6 +36,14 @@ namespace NAudio.Wave
             ReadExtraData(reader);
         }
 
+        /// <summary>
+        /// Reads extra data from the provided BinaryReader if the extra size is greater than 0.
+        /// </summary>
+        /// <param name="reader">The BinaryReader from which to read the extra data.</param>
+        /// <remarks>
+        /// This method reads extra data from the provided BinaryReader if the extra size is greater than 0.
+        /// The extra data is read into the internal extraData array.
+        /// </remarks>
         internal void ReadExtraData(BinaryReader reader)
         {
             if (this.extraSize > 0)
@@ -45,8 +53,14 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Writes this structure to a BinaryWriter
+        /// Serializes the object and writes the data to a binary writer.
         /// </summary>
+        /// <param name="writer">The binary writer to which the data is written.</param>
+        /// <exception cref="InvalidOperationException">Thrown when the object is not in a valid state for serialization.</exception>
+        /// <remarks>
+        /// This method first calls the base class's serialization method to write the base data to the binary writer.
+        /// If the extra size is greater than 0, it writes the extra data to the binary writer.
+        /// </remarks>
         public override void Serialize(BinaryWriter writer)
         {
             base.Serialize(writer);

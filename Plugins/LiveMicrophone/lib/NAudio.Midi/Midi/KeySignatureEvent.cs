@@ -37,8 +37,9 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Creates a deep clone of this MIDI event.
+        /// Creates a new instance of the KeySignatureEvent with the same property values as the current instance.
         /// </summary>
+        /// <returns>A new KeySignatureEvent that is a copy of the current instance.</returns>
         public override MidiEvent Clone() => (KeySignatureEvent)MemberwiseClone();
 
         /// <summary>
@@ -52,19 +53,23 @@ namespace NAudio.Midi
         public int MajorMinor => majorMinor;
 
         /// <summary>
-        /// Describes this event
+        /// Returns a formatted string representation of the object.
         /// </summary>
-        /// <returns>String describing the event</returns>
+        /// <returns>A string that represents the object, including the base string representation, sharps/flats, and major/minor information.</returns>
         public override string ToString()
         {
             return String.Format("{0} {1} {2}", base.ToString(), SharpsFlats, majorMinor);
         }
 
         /// <summary>
-        /// Calls base class export first, then exports the data 
-        /// specific to this event
-        /// <seealso cref="MidiEvent.Export">MidiEvent.Export</seealso>
+        /// Exports the object's data to a binary writer.
         /// </summary>
+        /// <param name="absoluteTime">The absolute time value.</param>
+        /// <param name="writer">The binary writer to which the data is exported.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the binary writer is null.</exception>
+        /// <remarks>
+        /// This method exports the sharpsFlats and majorMinor properties to the specified binary writer.
+        /// </remarks>
         public override void Export(ref long absoluteTime, BinaryWriter writer)
         {
             base.Export(ref absoluteTime, writer);
