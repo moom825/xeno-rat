@@ -18,6 +18,12 @@ namespace Plugin
     public class Main
     {
 
+        /// <summary>
+        /// Creates a snapshot of the specified processes, heaps, modules, and threads.
+        /// </summary>
+        /// <param name="dwFlags">The type of the snapshot to be taken.</param>
+        /// <param name="th32ProcessID">The process identifier of the process to be included in the snapshot.</param>
+        /// <returns>An opaque handle to the snapshot on success; otherwise, it returns IntPtr.Zero.</returns>
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern IntPtr CreateToolhelp32Snapshot(uint dwFlags, uint th32ProcessID);
 
@@ -37,10 +43,26 @@ namespace Plugin
             public string szExeFile;
         }
 
+        /// <summary>
+        /// Retrieves information about the first process encountered in a system snapshot.
+        /// </summary>
+        /// <param name="hSnapshot">A handle to the snapshot returned from a previous call to <see cref="CreateToolhelp32Snapshot"/>.</param>
+        /// <param name="lppe">A reference to a <see cref="PROCESSENTRY32"/> structure. It contains process information.</param>
+        /// <returns>
+        /// Returns true if the first entry of the process list is copied to the buffer specified by <paramref name="lppe"/>.
+        /// If no processes are found or if the function fails, it returns false. To get extended error information, call <see cref="Marshal.GetLastWin32Error"/>.
+        /// </returns>
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool Process32First(IntPtr hSnapshot, ref PROCESSENTRY32 lppe);
 
+        /// <summary>
+        /// Retrieves information about the next process recorded in a system snapshot.
+        /// </summary>
+        /// <param name="hSnapshot">A handle to the snapshot returned from a previous call to <see cref="CreateToolhelp32Snapshot"/>.</param>
+        /// <param name="lppe">A reference to a <see cref="PROCESSENTRY32"/> structure. It contains process information.</param>
+        /// <returns>True if the next entry of the process list is copied into the <paramref name="lppe"/> structure; otherwise, false.</returns>
+        /// <exception cref="Win32Exception">Thrown when an error occurs during the call to the Windows API function.</exception>
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool Process32Next(IntPtr hSnapshot, ref PROCESSENTRY32 lppe);
@@ -90,6 +112,16 @@ namespace Plugin
                 FileDescription = GetFileDescription(filePath);
             }
 
+            /// <summary>
+            /// Gets the description of the file from the specified file path.
+            /// </summary>
+            /// <param name="filePath">The path of the file for which the description is to be retrieved.</param>
+            /// <returns>The description of the file, or "Unknown" if the file path is null or empty, or if an error occurs while retrieving the file description.</returns>
+            /// <remarks>
+            /// This method retrieves the file version information using the <see cref="System.Diagnostics.FileVersionInfo.GetVersionInfo(string)"/> method.
+            /// If the file description is null, it returns "Unknown".
+            /// If an exception occurs during the process, it also returns "Unknown".
+            /// </remarks>
             private  string GetFileDescription(string filePath)
             {
                 if (string.IsNullOrEmpty(filePath))
@@ -112,6 +144,17 @@ namespace Plugin
                 }
             }
         }
+
+        /// <summary>
+        /// Retrieves the file paths of all running processes and returns them as a dictionary with process IDs as keys and file paths as values.
+        /// </summary>
+        /// <returns>A dictionary containing process IDs as keys and file paths as values.</returns>
+        /// <remarks>
+        /// This method asynchronously retrieves the file paths of all running processes using Windows Management Instrumentation (WMI).
+        /// It queries the Win32_Process class to obtain information about running processes, including their process IDs, descriptions, executable paths, and command lines.
+        /// If the executable path is not available, it attempts to extract it from the command line. If still unavailable, it looks up the path in a predefined dictionary.
+        /// The method handles ManagementException if the WMI query fails and disposes of the resources used for the query.
+        /// </remarks>
         private async Task<Dictionary<int, string>> GetAllProcessFilePathsAsync()
         {
             return await Task.Run(() =>
@@ -160,7 +203,16 @@ namespace Plugin
             });
         }
 
-
+        /// <summary>
+        /// Retrieves the file paths of all running processes and returns them in a dictionary with process IDs as keys and file paths as values.
+        /// </summary>
+        /// <returns>A dictionary containing process IDs as keys and file paths as values.</returns>
+        /// <remarks>
+        /// This method uses WMI (Windows Management Instrumentation) to query information about running processes and retrieve their file paths.
+        /// It iterates through the retrieved ManagementObjects, extracts process ID, description, executable path, and command line information, and populates the dictionary with process IDs as keys and corresponding file paths as values.
+        /// If the executable path is null, it attempts to retrieve the path from the command line. If the path is still not found, it looks up the path in a predefined dictionary of known Windows process paths.
+        /// The method handles ManagementException if the WMI query fails and disposes of the ManagementObjectSearcher and ManagementObjectCollection to release resources.
+        /// </remarks>
         private Dictionary<int, string> GetAllProcessFilePaths()
         {
             var processFilePaths = new Dictionary<int, string>();
@@ -209,6 +261,16 @@ namespace Plugin
             return processFilePaths;
         }
 
+        /// <summary>
+        /// Extracts the file path from the given command line input.
+        /// </summary>
+        /// <param name="commandLine">The command line input from which the file path needs to be extracted.</param>
+        /// <returns>The file path extracted from the command line input. Returns an empty string if no file path is found.</returns>
+        /// <remarks>
+        /// This method extracts the file path from the provided command line input by searching for the first token that ends with .exe or .dll.
+        /// It splits the command line by whitespace and iterates through the tokens to find the file path.
+        /// If no file path is found, it returns an empty string.
+        /// </remarks>
         private  string ExtractFilePathFromCommandLine(string commandLine)
         {
             // Extract the file path from the command line using custom logic
@@ -235,6 +297,19 @@ namespace Plugin
             return filePath;
         }
 
+        /// <summary>
+        /// Builds a process tree based on the input processes and their file paths.
+        /// </summary>
+        /// <param name="processes">An array of Process objects representing the processes to be included in the tree.</param>
+        /// <param name="processFilePaths">A dictionary containing the file paths for the processes, with the process ID as the key.</param>
+        /// <returns>A dictionary representing the process tree, where the key is the process ID and the value is the corresponding ProcessNode.</returns>
+        /// <remarks>
+        /// This method builds a process tree by creating a ProcessNode for each process in the input array and then linking them based on their parent-child relationships.
+        /// If a process has a parent, it is added as a child to the corresponding parent node in the tree.
+        /// The file path for each process is retrieved from the processFilePaths dictionary and used to initialize the ProcessNode.
+        /// </remarks>
+        /// <exception cref="ArgumentNullException">Thrown if either the processes array or the processFilePaths dictionary is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if there is a problem retrieving the parent process ID asynchronously.</exception>
         private async Task<Dictionary<int, ProcessNode>> BuildProcessTree(Process[] processes, Dictionary<int, string> processFilePaths)
         {
             var processMap = new Dictionary<int, ProcessNode>();
@@ -260,6 +335,23 @@ namespace Plugin
 
             return processMap;
         }
+
+        /// <summary>
+        /// Asynchronously retrieves the parent process ID for the given process.
+        /// </summary>
+        /// <param name="process">The process for which to retrieve the parent process ID.</param>
+        /// <returns>
+        /// The parent process ID of the specified <paramref name="process"/>.
+        /// If the parent process ID is not found, -1 is returned as the default value.
+        /// </returns>
+        /// <exception cref="Win32Exception">
+        /// Thrown when an error occurs while retrieving the parent process ID using Win32 API functions.
+        /// </exception>
+        /// <remarks>
+        /// This method asynchronously retrieves the parent process ID for the given <paramref name="process"/> using Win32 API functions.
+        /// It creates a snapshot of the current processes, iterates through the snapshot to find the parent process ID of the specified process, and returns the result.
+        /// If an error occurs during the process retrieval, a <see cref="Win32Exception"/> is thrown with the corresponding error code.
+        /// </remarks>
         private async Task<int> GetParentProcessIdAsync(Process process)
         {
             return await Task.Run(() =>
@@ -292,6 +384,16 @@ namespace Plugin
             });
         }
 
+        /// <summary>
+        /// Retrieves the parent process ID of the specified process.
+        /// </summary>
+        /// <param name="process">The process for which the parent process ID needs to be retrieved.</param>
+        /// <exception cref="Win32Exception">Thrown when an error occurs while retrieving the parent process ID.</exception>
+        /// <returns>The parent process ID of the specified <paramref name="process"/>. Returns -1 if the parent process ID is not found.</returns>
+        /// <remarks>
+        /// This method retrieves the parent process ID of the specified <paramref name="process"/> by using the Windows API function CreateToolhelp32Snapshot to create a snapshot of the system and then iterating through the processes to find the parent process ID.
+        /// If an error occurs during the retrieval process, a Win32Exception is thrown with the corresponding error code.
+        /// </remarks>
         private int GetParentProcessId(Process process)
         {
             IntPtr snapshotHandle = CreateToolhelp32Snapshot(2 /* TH32CS_SNAPPROCESS */, 0);
@@ -321,6 +423,15 @@ namespace Plugin
             return -1; // Default value if parent process ID is not found
         }
 
+        /// <summary>
+        /// Gets the root processes from the provided process map.
+        /// </summary>
+        /// <param name="processMap">The dictionary containing process nodes with their respective IDs.</param>
+        /// <returns>A list of root process nodes.</returns>
+        /// <remarks>
+        /// This method iterates through the process nodes in the input <paramref name="processMap"/> and identifies the ones that do not have a parent process in the map.
+        /// It then adds these root process nodes to a new list and returns it.
+        /// </remarks>
         private  List<ProcessNode> GetRootProcesses(Dictionary<int, ProcessNode> processMap)
         {
             var rootProcesses = new List<ProcessNode>();
@@ -336,6 +447,16 @@ namespace Plugin
             return rootProcesses;
         }
 
+        /// <summary>
+        /// Serializes the list of process nodes into a byte array.
+        /// </summary>
+        /// <param name="processList">The list of process nodes to be serialized.</param>
+        /// <returns>A byte array representing the serialized process list.</returns>
+        /// <remarks>
+        /// This method serializes the input list of process nodes into a byte array using the BinaryWriter class and MemoryStream class.
+        /// It first writes the count of process nodes and then serializes each process node using the SerializeProcessNode method.
+        /// The resulting byte array represents the serialized process list and is returned as the output of this method.
+        /// </remarks>
         private  byte[] SerializeProcessList(List<ProcessNode> processList)
         {
             byte[] done;
@@ -356,6 +477,15 @@ namespace Plugin
             return done;
         }
 
+        /// <summary>
+        /// Serializes the process node and writes it to the binary writer.
+        /// </summary>
+        /// <param name="node">The process node to be serialized.</param>
+        /// <param name="writer">The binary writer to which the serialized data is written.</param>
+        /// <remarks>
+        /// This method serializes the process node by writing its PID, number of children, file path, file description, and name to the binary writer.
+        /// It then recursively serializes each child node by calling itself for each child in the node's children collection.
+        /// </remarks>
         private void SerializeProcessNode(ProcessNode node, BinaryWriter writer)
         {
             writer.Write(node.PID);
@@ -369,6 +499,14 @@ namespace Plugin
                 SerializeProcessNode(child, writer);
             }
         }
+
+        /// <summary>
+        /// Disposes all the processes in the input array.
+        /// </summary>
+        /// <param name="processes">The array of processes to be disposed.</param>
+        /// <remarks>
+        /// This method iterates through each process in the input array and disposes of it using the Dispose method.
+        /// </remarks>
         private void disposeAllProcess(Process[] processes) 
         {
             foreach (Process i in processes) 
@@ -379,6 +517,19 @@ namespace Plugin
 
         private bool paused = false;
 
+        /// <summary>
+        /// Asynchronously receives data from the specified node and processes it accordingly.
+        /// </summary>
+        /// <param name="node">The node from which to receive data.</param>
+        /// <exception cref="Exception">Thrown when an error occurs during the data processing.</exception>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <remarks>
+        /// This method continuously receives data from the specified <paramref name="node"/> while it is connected.
+        /// If the received data is null, the method returns.
+        /// If the length of the received data is 1, it sets the <c>paused</c> flag to true if the data is 1, otherwise sets it to false.
+        /// If the length of the received data is 4, it attempts to retrieve a process using the received data as the process ID.
+        /// If successful, it kills the retrieved process and disposes of it.
+        /// </remarks>
         public async Task RecvThread(Node node) 
         {
             while (node.Connected())
@@ -420,6 +571,19 @@ namespace Plugin
                 }
             }
         }
+
+        /// <summary>
+        /// Asynchronously runs the node and sends process information to the connected node.
+        /// </summary>
+        /// <param name="node">The node to be run.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the input node is null.</exception>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <remarks>
+        /// This method sends a byte array with value 3 to indicate that it has connected.
+        /// It then continuously receives data from the node and processes it.
+        /// While the node is connected, it retrieves the list of processes, builds a process tree, and sends the root processes to the connected node.
+        /// If the method is paused, it delays for 500 milliseconds before continuing.
+        /// </remarks>
         public async Task Run(Node node)
         {
             await node.SendAsync(new byte[] { 3 });//indicate that it has connected

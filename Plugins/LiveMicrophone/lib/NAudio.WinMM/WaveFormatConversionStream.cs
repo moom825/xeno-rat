@@ -32,10 +32,11 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Creates a stream that can convert to PCM
+        /// Creates a PCM stream from the given source stream.
         /// </summary>
-        /// <param name="sourceStream">The source stream</param>
-        /// <returns>A PCM stream</returns>
+        /// <param name="sourceStream">The input wave stream.</param>
+        /// <returns>A PCM stream converted from the <paramref name="sourceStream"/>.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the suggested output format is invalid and no target format is explicitly provided.</exception>
         public static WaveStream CreatePcmStream(WaveStream sourceStream)
         {
             if (sourceStream.WaveFormat.Encoding == WaveFormatEncoding.Pcm)
@@ -80,8 +81,13 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Converts source bytes to destination bytes
+        /// Estimates the destination value from the given source value.
         /// </summary>
+        /// <param name="source">The source value for estimation.</param>
+        /// <returns>The estimated destination value based on the given <paramref name="source"/>.</returns>
+        /// <remarks>
+        /// This method is marked as obsolete and can be unreliable. It is not encouraged to use this method.
+        /// </remarks>
         [Obsolete("can be unreliable, use of this method not encouraged")]
         public int SourceToDest(int source)
         {
@@ -89,6 +95,11 @@ namespace NAudio.Wave
             //return conversionStream.SourceToDest(source);
         }
 
+        /// <summary>
+        /// Estimates the destination position based on the source position.
+        /// </summary>
+        /// <param name="source">The source position for estimation.</param>
+        /// <returns>The estimated destination position based on the source position.</returns>
         private long EstimateSourceToDest(long source)
         {
             var dest = ((source * targetFormat.AverageBytesPerSecond) / sourceStream.WaveFormat.AverageBytesPerSecond);
@@ -96,15 +107,24 @@ namespace NAudio.Wave
             return dest;
         }
 
+        /// <summary>
+        /// Estimates the source position corresponding to the given destination position.
+        /// </summary>
+        /// <param name="dest">The destination position for which the corresponding source position needs to be estimated.</param>
+        /// <returns>The estimated source position corresponding to the given destination position.</returns>
         private long EstimateDestToSource(long dest)
         {
             var source = ((dest * sourceStream.WaveFormat.AverageBytesPerSecond) / targetFormat.AverageBytesPerSecond);
             source -= (source % sourceStream.WaveFormat.BlockAlign);
             return (int)source;
         }
+
         /// <summary>
-        /// Converts destination bytes to source bytes
+        /// Converts the destination value to the source value using the EstimateDestToSource method and returns the result.
         /// </summary>
+        /// <param name="dest">The destination value to be converted to the source value.</param>
+        /// <returns>The converted source value from the given <paramref name="dest"/>.</returns>
+        /// <exception cref="ObsoleteException">This method is obsolete and can be unreliable. Use of this method is not encouraged.</exception>
         [Obsolete("can be unreliable, use of this method not encouraged")]
         public int DestToSource(int dest)
         {
@@ -135,12 +155,12 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// 
+        /// Reads a sequence of bytes from the current stream and advances the position within the stream by the number of bytes read.
         /// </summary>
-        /// <param name="buffer">Buffer to read into</param>
-        /// <param name="offset">Offset within buffer to write to</param>
-        /// <param name="count">Number of bytes to read</param>
-        /// <returns>Bytes read</returns>
+        /// <param name="buffer">An array of bytes. When this method returns, the buffer contains the specified byte array with the values between offset and (offset + count - 1) replaced by the bytes read from the current source.</param>
+        /// <param name="offset">The zero-based byte offset in buffer at which to begin storing the data read from the current stream.</param>
+        /// <param name="count">The maximum number of bytes to be read from the current stream.</param>
+        /// <returns>The total number of bytes read into the buffer. This can be less than the number of bytes requested if that many bytes are not currently available, or zero if the end of the stream is reached before any bytes are read.</returns>
         public override int Read(byte[] buffer, int offset, int count)
         {
             var bytesRead = conversionProvider.Read(buffer, offset, count);
@@ -149,9 +169,15 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Disposes this stream
+        /// Releases the unmanaged resources used by the WaveFormatConversionStream and optionally releases the managed resources.
         /// </summary>
-        /// <param name="disposing">true if the user called this</param>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        /// <exception cref="ObjectDisposedException">Thrown if the WaveFormatConversionStream has already been disposed.</exception>
+        /// <remarks>
+        /// This method releases the unmanaged resources used by the WaveFormatConversionStream and optionally releases the managed resources.
+        /// If <paramref name="disposing"/> is true, this method disposes the sourceStream and conversionProvider.
+        /// If <paramref name="disposing"/> is false, this method checks if the WaveFormatConversionStream has already been disposed and asserts if not.
+        /// </remarks>
         protected override void Dispose(bool disposing)
         {
             if (!isDisposed)

@@ -10,12 +10,22 @@ namespace NAudio.Midi
     /// </summary>
     public class MidiEventComparer : IComparer<MidiEvent>
     {
-        #region IComparer<MidiEvent> Members
 
         /// <summary>
-        /// Compares two MidiEvents
-        /// Sorts by time, with EndTrack always sorted to the end
+        /// Compares two MidiEvent objects based on their absolute time and returns a value indicating their relative order.
         /// </summary>
+        /// <param name="x">The first MidiEvent to compare.</param>
+        /// <param name="y">The second MidiEvent to compare.</param>
+        /// <returns>
+        /// A signed integer that indicates the relative order of the objects being compared.
+        /// Less than 0: <paramref name="x"/> is less than <paramref name="y"/>.
+        /// 0: <paramref name="x"/> is equal to <paramref name="y"/>.
+        /// Greater than 0: <paramref name="x"/> is greater than <paramref name="y"/>.
+        /// </returns>
+        /// <remarks>
+        /// This method compares the absolute time of the input MidiEvent objects. If the absolute times are equal, it further sorts the MetaEvent before note events, except for the EndTrack event.
+        /// The method returns a negative value if <paramref name="x"/> is to be placed before <paramref name="y"/>, zero if they are equal, and a positive value if <paramref name="x"/> is to be placed after <paramref name="y"/>.
+        /// </remarks>
         public int Compare(MidiEvent x, MidiEvent y)
         {
             long xTime = x.AbsoluteTime;

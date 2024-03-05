@@ -1,7 +1,7 @@
 // AForge Direct Show Library
 // AForge.NET framework
 //
-// Copyright © Andrew Kirillov, 2008
+// Copyright Â© Andrew Kirillov, 2008
 // andrew.kirillov@gmail.com
 //
 
@@ -54,13 +54,11 @@ namespace AForge.Video.DirectShow
         }
 
         /// <summary>
-        /// Compare the object with another instance of this class.
+        /// Compares the current FilterInfo object with another object and returns an integer that indicates whether the current object precedes, follows, or occurs in the same position in the sort order as the other object.
         /// </summary>
-        /// 
-        /// <param name="value">Object to compare with.</param>
-        /// 
-        /// <returns>A signed number indicating the relative values of this instance and <b>value</b>.</returns>
-        /// 
+        /// <param name="value">The object to compare with this instance.</param>
+        /// <returns>A signed integer that indicates the relative position of this instance and <paramref name="value"/> in the sort order.</returns>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="value"/> is not a FilterInfo object.</exception>
         public int CompareTo( object value )
         {
             FilterInfo f = (FilterInfo) value;
@@ -72,15 +70,14 @@ namespace AForge.Video.DirectShow
         }
 
         /// <summary>
-        /// Create an instance of the filter.
+        /// Creates a filter object based on the provided filter moniker.
         /// </summary>
-        /// 
-        /// <param name="filterMoniker">Filter's moniker string.</param>
-        /// 
-        /// <returns>Returns filter's object, which implements <b>IBaseFilter</b> interface.</returns>
-        /// 
-        /// <remarks>The returned filter's object should be released using <b>Marshal.ReleaseComObject()</b>.</remarks>
-        /// 
+        /// <param name="filterMoniker">The moniker string representing the filter.</param>
+        /// <returns>The filter object created based on the provided moniker.</returns>
+        /// <remarks>
+        /// This method creates a bind context and attempts to convert the filter moniker string to a moniker.
+        /// It then retrieves the device base filter using the moniker and returns the filter object.
+        /// </remarks>
         public static object CreateFilter( string filterMoniker )
         {
             // filter's object
@@ -108,9 +105,11 @@ namespace AForge.Video.DirectShow
             return filterObject;
         }
 
-        //
-        // Get moniker string of the moniker
-        //
+        /// <summary>
+        /// Retrieves the display name of the specified moniker.
+        /// </summary>
+        /// <param name="moniker">The moniker for which the display name is to be retrieved.</param>
+        /// <returns>The display name of the specified <paramref name="moniker"/>.</returns>
         private string GetMonikerString( IMoniker moniker )
         {
             string str;
@@ -118,9 +117,12 @@ namespace AForge.Video.DirectShow
             return str;
         }
 
-        //
-        // Get filter name represented by the moniker
-        //
+        /// <summary>
+        /// Retrieves the name associated with the given moniker string.
+        /// </summary>
+        /// <param name="monikerString">The moniker string to retrieve the name for.</param>
+        /// <returns>The name associated with the given moniker string.</returns>
+        /// <exception cref="System.Runtime.InteropServices.COMException">Thrown when there is an error in creating the bind context or converting the moniker's string to a moniker.</exception>
         private string GetName( IMoniker moniker )
         {
             Object bagObj = null;

@@ -98,8 +98,13 @@ namespace NAudio.SoundFont
         public SampleHeader[] SampleHeaders => sampleHeaders.SampleHeaders;
 
         /// <summary>
-        /// <see cref="Object.ToString"/>
+        /// Returns a string representation of the preset headers and instruments.
         /// </summary>
+        /// <returns>A string containing the preset headers and instruments.</returns>
+        /// <remarks>
+        /// This method constructs a string representation of the preset headers and instruments by iterating through each preset and instrument and appending their string representations to the result.
+        /// The resulting string contains the preset headers followed by the instruments.
+        /// </remarks>
         public override string ToString() 
 		{
 			StringBuilder sb = new StringBuilder();

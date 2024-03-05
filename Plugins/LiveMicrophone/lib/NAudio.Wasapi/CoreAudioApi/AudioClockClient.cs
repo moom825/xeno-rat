@@ -45,8 +45,12 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Get Position
+        /// Retrieves the current position of the audio clock and the corresponding QPC (QueryPerformanceCounter) position.
         /// </summary>
+        /// <param name="position">When this method returns, contains the current position of the audio clock.</param>
+        /// <param name="qpcPosition">When this method returns, contains the corresponding QPC position.</param>
+        /// <returns>True if the position was successfully retrieved; otherwise, False.</returns>
+        /// <exception cref="System.Runtime.InteropServices.COMException">Thrown when an error occurs while retrieving the position.</exception>
         public bool GetPosition(out ulong position, out ulong qpcPosition)
         {
             var hr = audioClockClientInterface.GetPosition(out position, out qpcPosition);
@@ -98,11 +102,12 @@ namespace NAudio.CoreAudioApi
         /// </summary>
         public bool CanAdjustPosition => Stopwatch.IsHighResolution;
 
-        #region IDisposable Members
-
         /// <summary>
-        /// Dispose
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
+        /// <remarks>
+        /// This method releases the unmanaged resources used by the <see cref="audioClockClientInterface"/> and suppresses the finalization of the current object.
+        /// </remarks>
         public void Dispose()
         {
             if (audioClockClientInterface != null)

@@ -61,8 +61,16 @@ namespace NAudio.Wave.SampleProviders
         }
 
         /// <summary>
-        /// Reads audio from this sample provider
+        /// Reads audio samples from the source, processes them using the ADSR envelope generator, and returns the number of samples read.
         /// </summary>
+        /// <param name="buffer">The buffer to store the audio samples.</param>
+        /// <param name="offset">The zero-based offset in the buffer at which to begin storing the data.</param>
+        /// <param name="count">The maximum number of samples to read.</param>
+        /// <returns>The number of samples read from the source after processing with the ADSR envelope generator.</returns>
+        /// <remarks>
+        /// If the ADSR envelope generator is in the idle state, indicating that the audio has finished, this method returns 0.
+        /// This method reads audio samples from the source into the buffer, processes each sample using the ADSR envelope generator, and then returns the total number of samples read.
+        /// </remarks>
         public int Read(float[] buffer, int offset, int count)
         {
             if (adsr.State == EnvelopeGenerator.EnvelopeState.Idle) return 0; // we've finished
@@ -75,8 +83,11 @@ namespace NAudio.Wave.SampleProviders
         }
 
         /// <summary>
-        /// Enters the Release phase
+        /// Stops the ADSR envelope by setting the gate to false.
         /// </summary>
+        /// <remarks>
+        /// This method stops the Attack-Decay-Sustain-Release (ADSR) envelope by setting the gate to false, causing the envelope to release.
+        /// </remarks>
         public void Stop()
         {
             adsr.Gate(false);

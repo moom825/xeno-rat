@@ -13,10 +13,14 @@ namespace NAudio.MediaFoundation
     public static class MediaFoundationApi
     {
         private static bool initialized;
-        
+
         /// <summary>
-        /// initializes MediaFoundation - only needs to be called once per process
+        /// Initializes the Media Foundation platform if not already initialized.
         /// </summary>
+        /// <remarks>
+        /// This method checks if the Media Foundation platform is already initialized. If not, it initializes the platform by calling <see cref="MediaFoundationInterop.MFStartup"/>.
+        /// The method first checks the Media Foundation SDK version and the operating system version to determine the appropriate startup parameters.
+        /// </remarks>
         public static void Startup()
         {
             if (!initialized)
@@ -32,10 +36,15 @@ namespace NAudio.MediaFoundation
         }
 
         /// <summary>
-        /// Enumerate the installed MediaFoundation transforms in the specified category
+        /// Enumerates and returns a collection of IMFActivate interfaces for the specified category.
         /// </summary>
-        /// <param name="category">A category from MediaFoundationTransformCategories</param>
-        /// <returns></returns>
+        /// <param name="category">The category for which to enumerate the IMFActivate interfaces.</param>
+        /// <returns>A collection of IMFActivate interfaces for the specified category.</returns>
+        /// <remarks>
+        /// This method uses MediaFoundationInterop.MFTEnumEx to enumerate the IMFActivate interfaces for the specified category.
+        /// It then iterates through the interfaces, marshals them, and yields each interface in the collection.
+        /// Finally, it frees the memory allocated for the interfacesPointer using Marshal.FreeCoTaskMem.
+        /// </remarks>
         public static IEnumerable<IMFActivate> EnumerateTransforms(Guid category)
         {
             MediaFoundationInterop.MFTEnumEx(category, _MFT_ENUM_FLAG.MFT_ENUM_FLAG_ALL,
@@ -56,8 +65,11 @@ namespace NAudio.MediaFoundation
         }
 
         /// <summary>
-        /// uninitializes MediaFoundation
+        /// Shuts down the Media Foundation platform if it has been initialized.
         /// </summary>
+        /// <remarks>
+        /// This method checks if the Media Foundation platform has been initialized. If it has been initialized, it shuts down the platform using the MFShutdown method and sets the initialized flag to false.
+        /// </remarks>
         public static void Shutdown()
         {
             if (initialized)
@@ -68,8 +80,12 @@ namespace NAudio.MediaFoundation
         }
 
         /// <summary>
-        /// Creates a Media type
+        /// Creates a new instance of IMFMediaType.
         /// </summary>
+        /// <returns>A new instance of IMFMediaType.</returns>
+        /// <remarks>
+        /// This method creates a new instance of IMFMediaType using the Media Foundation API MFCreateMediaType function.
+        /// </remarks>
         public static IMFMediaType CreateMediaType()
         {
             MediaFoundationInterop.MFCreateMediaType(out IMFMediaType mediaType);
@@ -77,8 +93,15 @@ namespace NAudio.MediaFoundation
         }
 
         /// <summary>
-        /// Creates a media type from a WaveFormat
+        /// Creates a new IMFMediaType object from the provided WaveFormat.
         /// </summary>
+        /// <param name="waveFormat">The WaveFormat to initialize the IMFMediaType with.</param>
+        /// <returns>The IMFMediaType object initialized with the provided WaveFormat.</returns>
+        /// <remarks>
+        /// This method initializes a new IMFMediaType object using the provided WaveFormat.
+        /// It first creates a new IMFMediaType object, then initializes it with the provided WaveFormat using MediaFoundationInterop.MFInitMediaTypeFromWaveFormatEx method.
+        /// If an exception occurs during the initialization process, the created IMFMediaType object is released before rethrowing the exception.
+        /// </remarks>
         public static IMFMediaType CreateMediaTypeFromWaveFormat(WaveFormat waveFormat)
         {
             var mediaType = CreateMediaType();
@@ -95,10 +118,14 @@ namespace NAudio.MediaFoundation
         }
 
         /// <summary>
-        /// Creates a memory buffer of the specified size
+        /// Creates a memory buffer of the specified size and returns it.
         /// </summary>
-        /// <param name="bufferSize">Memory buffer size in bytes</param>
-        /// <returns>The memory buffer</returns>
+        /// <param name="bufferSize">The size of the memory buffer to be created.</param>
+        /// <returns>The memory buffer of size <paramref name="bufferSize"/>.</returns>
+        /// <remarks>
+        /// This method creates a memory buffer of the specified size using Media Foundation's MFCreateMemoryBuffer function.
+        /// The created memory buffer is then returned for further use.
+        /// </remarks>
         public static IMFMediaBuffer CreateMemoryBuffer(int bufferSize)
         {
             MediaFoundationInterop.MFCreateMemoryBuffer(bufferSize, out IMFMediaBuffer buffer);
@@ -106,9 +133,9 @@ namespace NAudio.MediaFoundation
         }
 
         /// <summary>
-        /// Creates a sample object
+        /// Creates a new Media Foundation sample.
         /// </summary>
-        /// <returns>The sample object</returns>
+        /// <returns>A new instance of <see cref="IMFSample"/> representing the Media Foundation sample.</returns>
         public static IMFSample CreateSample()
         {
             MediaFoundationInterop.MFCreateSample(out IMFSample sample);
@@ -116,10 +143,13 @@ namespace NAudio.MediaFoundation
         }
 
         /// <summary>
-        /// Creates a new attributes store
+        /// Creates a new instance of IMFAttributes with the specified initial size.
         /// </summary>
-        /// <param name="initialSize">Initial size</param>
-        /// <returns>The attributes store</returns>
+        /// <param name="initialSize">The initial size of the attributes.</param>
+        /// <returns>A new instance of IMFAttributes with the specified initial size.</returns>
+        /// <remarks>
+        /// This method creates a new instance of IMFAttributes with the specified initial size using the MFCreateAttributes method from the Media Foundation Interop library.
+        /// </remarks>
         public static IMFAttributes CreateAttributes(int initialSize)
         {
             MediaFoundationInterop.MFCreateAttributes(out IMFAttributes attributes, initialSize);
@@ -127,11 +157,11 @@ namespace NAudio.MediaFoundation
         }
 
         /// <summary>
-        /// Creates a media foundation byte stream based on a stream object
-        /// (usable with WinRT streams)
+        /// Creates an IMFByteStream from the given stream object.
         /// </summary>
-        /// <param name="stream">The input stream</param>
-        /// <returns>A media foundation byte stream</returns>
+        /// <param name="stream">The stream object to create the IMFByteStream from.</param>
+        /// <returns>The IMFByteStream created from the input <paramref name="stream"/>.</returns>
+        /// <exception cref="ArgumentException">Thrown when the input <paramref name="stream"/> is not of type IStream in desktop apps.</exception>
         public static IMFByteStream CreateByteStream(object stream)
         {
             // n.b. UWP apps should use MediaFoundationInterop.MFCreateMFByteStreamOnStreamEx(stream, out byteStream);
@@ -149,10 +179,13 @@ namespace NAudio.MediaFoundation
         }
 
         /// <summary>
-        /// Creates a source reader based on a byte stream
+        /// Creates a source reader from the specified byte stream.
         /// </summary>
-        /// <param name="byteStream">The byte stream</param>
-        /// <returns>A media foundation source reader</returns>
+        /// <param name="byteStream">The byte stream from which to create the source reader.</param>
+        /// <returns>The source reader created from the specified byte stream.</returns>
+        /// <remarks>
+        /// This method creates a source reader from the provided byte stream using Media Foundation interop.
+        /// </remarks>
         public static IMFSourceReader CreateSourceReaderFromByteStream(IMFByteStream byteStream)
         {
             MediaFoundationInterop.MFCreateSourceReaderFromByteStream(byteStream, null, out IMFSourceReader reader);

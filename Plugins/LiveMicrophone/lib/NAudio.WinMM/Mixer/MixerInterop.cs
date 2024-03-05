@@ -17,43 +17,126 @@ namespace NAudio.Mixer
         public const Int32 MIXER_SHORT_NAME_CHARS = 16;
         public const Int32 MIXER_LONG_NAME_CHARS = 64;
 
-        // http://msdn.microsoft.com/en-us/library/dd757304%28VS.85%29.aspx
+        /// <summary>
+        /// Retrieves the number of multimedia mixer devices present in the system.
+        /// </summary>
+        /// <returns>The number of multimedia mixer devices present in the system.</returns>
         [DllImport("winmm.dll", CharSet = CharSet.Ansi)]
         public static extern Int32 mixerGetNumDevs();
 
-        // http://msdn.microsoft.com/en-us/library/dd757308%28VS.85%29.aspx
+        /// <summary>
+        /// Opens a specified mixer device and returns a handle to the device.
+        /// </summary>
+        /// <param name="hMixer">When this method returns, contains a handle to the opened mixer device.</param>
+        /// <param name="uMxId">The identifier of the mixer device to open.</param>
+        /// <param name="dwCallback">Reserved; must be IntPtr.Zero.</param>
+        /// <param name="dwInstance">Reserved; must be IntPtr.Zero.</param>
+        /// <param name="dwOpenFlags">Flags that specify options for opening the mixer device.</param>
+        /// <returns>An MmResult value that specifies the result of the operation.</returns>
+        /// <exception cref="MmException">Thrown when an error occurs while opening the mixer device.</exception>
         [DllImport("winmm.dll", CharSet = CharSet.Ansi)]
         public static extern MmResult mixerOpen(out IntPtr hMixer, int uMxId, IntPtr dwCallback, IntPtr dwInstance, MixerFlags dwOpenFlags);
 
-        // http://msdn.microsoft.com/en-us/library/dd757292%28VS.85%29.aspx
+        /// <summary>
+        /// Closes the specified mixer device.
+        /// </summary>
+        /// <param name="hMixer">Handle to the mixer device to be closed.</param>
+        /// <returns>An MmResult value indicating the result of the operation.</returns>
+        /// <remarks>
+        /// This method closes the specified mixer device identified by the handle <paramref name="hMixer"/>.
+        /// </remarks>
         [DllImport("winmm.dll", CharSet = CharSet.Ansi)]
         public static extern MmResult mixerClose(IntPtr hMixer);
 
-        // http://msdn.microsoft.com/en-us/library/dd757299%28VS.85%29.aspx
+        /// <summary>
+        /// Retrieves details about a specified audio mixer control.
+        /// </summary>
+        /// <param name="hMixer">Handle to the audio mixer device.</param>
+        /// <param name="mixerControlDetails">Reference to a <see cref="MIXERCONTROLDETAILS"/> structure that will receive the control details.</param>
+        /// <param name="dwDetailsFlags">Flags specifying the details to retrieve.</param>
+        /// <returns>An <see cref="MmResult"/> value indicating the success or failure of the operation.</returns>
+        /// <remarks>
+        /// This method retrieves details about a specified audio mixer control identified by the <paramref name="mixerControlDetails"/> parameter.
+        /// The details retrieved are determined by the flags specified in the <paramref name="dwDetailsFlags"/> parameter.
+        /// </remarks>
         [DllImport("winmm.dll", CharSet = CharSet.Ansi)]
         public static extern MmResult mixerGetControlDetails(IntPtr hMixer, ref MIXERCONTROLDETAILS mixerControlDetails, MixerFlags dwDetailsFlags);
 
-        // http://msdn.microsoft.com/en-us/library/dd757300%28VS.85%29.aspx
+        /// <summary>
+        /// Retrieves the capabilities of a specified mixer device.
+        /// </summary>
+        /// <param name="nMixerID">The handle to the mixer device to get the capabilities for.</param>
+        /// <param name="mixerCaps">A reference to a <see cref="MIXERCAPS"/> structure that will receive the capabilities of the mixer device.</param>
+        /// <param name="mixerCapsSize">The size of the <paramref name="mixerCaps"/> structure in bytes.</param>
+        /// <returns>An <see cref="MmResult"/> value indicating the success or failure of the operation.</returns>
+        /// <remarks>
+        /// This method retrieves the capabilities of the specified mixer device identified by <paramref name="nMixerID"/>.
+        /// The capabilities are stored in the <paramref name="mixerCaps"/> structure, and the size of the structure must be specified in <paramref name="mixerCapsSize"/>.
+        /// If successful, the method returns <see cref="MmResult.MMSYSERR_NOERROR"/>; otherwise, it returns an error code indicating the cause of failure.
+        /// </remarks>
         [DllImport("winmm.dll", CharSet = CharSet.Ansi)]
         public static extern MmResult mixerGetDevCaps(IntPtr nMixerID, ref MIXERCAPS mixerCaps, Int32 mixerCapsSize);
 
-        // http://msdn.microsoft.com/en-us/library/dd757301%28VS.85%29.aspx
+        /// <summary>
+        /// Retrieves the identifier of a mixer device associated with the specified mixer handle.
+        /// </summary>
+        /// <param name="hMixer">The handle to the mixer device.</param>
+        /// <param name="mixerID">When this method returns, contains the identifier of the mixer device.</param>
+        /// <param name="dwMixerIDFlags">Flags specifying how the mixer identifier should be retrieved.</param>
+        /// <returns>An MmResult value indicating the success or failure of the operation.</returns>
         [DllImport("winmm.dll", CharSet = CharSet.Ansi)]
         public static extern MmResult mixerGetID(IntPtr hMixer, out Int32 mixerID, MixerFlags dwMixerIDFlags);
 
-        // http://msdn.microsoft.com/en-us/library/dd757302%28VS.85%29.aspx
+        /// <summary>
+        /// Retrieves the controls for a specified audio mixer line.
+        /// </summary>
+        /// <param name="hMixer">Handle to the mixer device.</param>
+        /// <param name="mixerLineControls">Reference to a <see cref="MIXERLINECONTROLS"/> structure that specifies the controls to retrieve.</param>
+        /// <param name="dwControlFlags">Flags that specify the control types to retrieve.</param>
+        /// <returns>An <see cref="MmResult"/> value indicating the result of the operation.</returns>
+        /// <remarks>
+        /// This method retrieves the controls for the specified audio mixer line using the specified handle to the mixer device.
+        /// The controls to retrieve are specified by the <paramref name="mixerLineControls"/> parameter, and the types of controls to retrieve are specified by the <paramref name="dwControlFlags"/> parameter.
+        /// </remarks>
         [DllImport("winmm.dll", CharSet = CharSet.Ansi)]
         public static extern MmResult mixerGetLineControls(IntPtr hMixer, ref MIXERLINECONTROLS mixerLineControls, MixerFlags dwControlFlags);
 
-        // http://msdn.microsoft.com/en-us/library/dd757303%28VS.85%29.aspx
+        /// <summary>
+        /// Retrieves information about a specified audio mixer line.
+        /// </summary>
+        /// <param name="hMixer">Handle to the mixer device.</param>
+        /// <param name="mixerLine">Reference to a MIXERLINE structure that will receive the line information.</param>
+        /// <param name="dwInfoFlags">Flags specifying the information to retrieve.</param>
+        /// <returns>Returns an MmResult value indicating the success or failure of the operation.</returns>
+        /// <remarks>
+        /// This method retrieves information about a specified audio mixer line identified by the <paramref name="mixerLine"/> parameter.
+        /// The information retrieved is determined by the <paramref name="dwInfoFlags"/> parameter, which specifies the type of information to retrieve.
+        /// The retrieved information is stored in the <paramref name="mixerLine"/> structure.
+        /// </remarks>
         [DllImport("winmm.dll", CharSet = CharSet.Ansi)]
         public static extern MmResult mixerGetLineInfo(IntPtr hMixer, ref MIXERLINE mixerLine, MixerFlags dwInfoFlags);
 
-        // http://msdn.microsoft.com/en-us/library/dd757307%28VS.85%29.aspx
+        /// <summary>
+        /// Sends a message to a specified mixer device.
+        /// </summary>
+        /// <param name="hMixer">Handle to the mixer device.</param>
+        /// <param name="nMessage">The message to send to the mixer device.</param>
+        /// <param name="dwParam1">Message-specific parameter.</param>
+        /// <param name="dwParam2">Message-specific parameter.</param>
+        /// <returns>The result of the message sent to the mixer device.</returns>
+        /// <remarks>
+        /// This method sends a message to the specified mixer device using the parameters provided.
+        /// </remarks>
         [DllImport("winmm.dll", CharSet = CharSet.Ansi)]
         public static extern MmResult mixerMessage(IntPtr hMixer, UInt32 nMessage, IntPtr dwParam1, IntPtr dwParam2);
 
-        // http://msdn.microsoft.com/en-us/library/dd757309%28VS.85%29.aspx
+        /// <summary>
+        /// Sets the details of a specified audio mixer control.
+        /// </summary>
+        /// <param name="hMixer">Handle to the audio mixer device.</param>
+        /// <param name="mixerControlDetails">Reference to a MIXERCONTROLDETAILS structure that specifies the details to set.</param>
+        /// <param name="dwDetailsFlags">Flags that define the details to set.</param>
+        /// <returns>The result of the operation as an MmResult value.</returns>
         [DllImport("winmm.dll", CharSet = CharSet.Ansi)]
         public static extern MmResult mixerSetControlDetails(IntPtr hMixer, ref MIXERCONTROLDETAILS mixerControlDetails, MixerFlags dwDetailsFlags);
 

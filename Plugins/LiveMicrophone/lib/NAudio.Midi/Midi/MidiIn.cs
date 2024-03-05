@@ -50,18 +50,28 @@ namespace NAudio.Midi
             this.callback = new MidiInterop.MidiInCallback(Callback);
             MmException.Try(MidiInterop.midiInOpen(out hMidiIn, (IntPtr) deviceNo,this.callback,IntPtr.Zero,MidiInterop.CALLBACK_FUNCTION),"midiInOpen");
         }
-        
+
         /// <summary>
-        /// Closes this MIDI in device
+        /// Closes the current object by calling the Dispose method.
         /// </summary>
+        /// <remarks>
+        /// This method calls the Dispose method to release resources used by the current object.
+        /// </remarks>
         public void Close() 
         {
             Dispose();
         }
 
         /// <summary>
-        /// Closes this MIDI in device
+        /// Releases the unmanaged resources used by the MidiIn class and optionally releases the managed resources.
         /// </summary>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        /// <remarks>
+        /// This method releases the unmanaged resources used by the MidiIn class and optionally releases the managed resources.
+        /// If disposing is true, this method disposes of all managed and unmanaged resources.
+        /// If disposing is false, this method releases only the unmanaged resources.
+        /// If the SysexBufferHeaders array has elements, it resets the MIDI input device, frees up all created and allocated buffers for incoming Sysex messages, and closes the MIDI input device handle.
+        /// </remarks>
         public void Dispose() 
         {
             GC.KeepAlive(callback);
@@ -70,34 +80,41 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Start the MIDI in device
+        /// Starts the MIDI input device.
         /// </summary>
+        /// <exception cref="MmException">Thrown when an error occurs while starting the MIDI input device.</exception>
         public void Start()
         {
             MmException.Try(MidiInterop.midiInStart(hMidiIn), "midiInStart");
         }
 
         /// <summary>
-        /// Stop the MIDI in device
+        /// Stops the MIDI input device.
         /// </summary>
+        /// <exception cref="MmException">Thrown when an error occurs while stopping the MIDI input device.</exception>
         public void Stop()
         {
             MmException.Try(MidiInterop.midiInStop(hMidiIn), "midiInStop");
         }
 
         /// <summary>
-        /// Reset the MIDI in device
+        /// Resets the MIDI input device to its default state.
         /// </summary>
+        /// <exception cref="MmException">Thrown when an error occurs while resetting the MIDI input device.</exception>
         public void Reset()
         {
             MmException.Try(MidiInterop.midiInReset(hMidiIn), "midiInReset");
         }
 
         /// <summary>
-        /// Create a number of buffers and make them available to receive incoming Sysex messages
+        /// Creates sysex buffers for MIDI input.
         /// </summary>
-        /// <param name="bufferSize">The size of each buffer, ideally large enough to hold a complete message from the device</param>
-        /// <param name="numberOfBuffers">The number of buffers needed to handle incoming Midi while busy</param>
+        /// <param name="bufferSize">The size of each buffer.</param>
+        /// <param name="numberOfBuffers">The number of buffers to create.</param>
+        /// <remarks>
+        /// This method creates sysex buffers for MIDI input. It allocates memory for each buffer, prepares the header, and adds the buffer to the MIDI input device.
+        /// </remarks>
+        /// <exception cref="MmException">Thrown when there is an error in preparing or adding the buffer to the MIDI input device.</exception>
         public void CreateSysexBuffers(int bufferSize, int numberOfBuffers)
         {
             SysexBufferHeaders = new IntPtr[numberOfBuffers];
@@ -121,6 +138,21 @@ namespace NAudio.Midi
             }
         }
 
+        /// <summary>
+        /// Callback function for handling MIDI input messages.
+        /// </summary>
+        /// <param name="midiInHandle">Handle to the MIDI input device.</param>
+        /// <param name="message">The type of MIDI input message received.</param>
+        /// <param name="userData">User-defined data passed to the callback function.</param>
+        /// <param name="messageParameter1">The first parameter associated with the MIDI input message.</param>
+        /// <param name="messageParameter2">The second parameter associated with the MIDI input message.</param>
+        /// <remarks>
+        /// This callback function is used to handle different types of MIDI input messages received from the MIDI input device.
+        /// It switches on the type of message received and performs specific actions based on the message type.
+        /// If the message type is Data, it raises the MessageReceived event with the packed MIDI message and milliseconds since MidiInStart as parameters.
+        /// If the message type is Error, it raises the ErrorReceived event with the invalid MIDI message as a parameter.
+        /// If the message type is LongData, it processes the pointer to MIDI header and milliseconds since MidiInStart to raise the SysexMessageReceived event with the sysex message bytes and milliseconds as parameters.
+        /// </remarks>
         private void Callback(IntPtr midiInHandle, MidiInterop.MidiInMessage message, IntPtr userData, IntPtr messageParameter1, IntPtr messageParameter2)
         {
             switch(message)
@@ -174,8 +206,11 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Gets the MIDI in device info
+        /// Retrieves the capabilities of the specified MIDI input device.
         /// </summary>
+        /// <param name="midiInDeviceNumber">The number of the MIDI input device for which to retrieve the capabilities.</param>
+        /// <returns>The capabilities of the specified MIDI input device.</returns>
+        /// <exception cref="MmException">Thrown when an error occurs while retrieving the device capabilities.</exception>
         public static MidiInCapabilities DeviceInfo(int midiInDeviceNumber)
         {
             MidiInCapabilities caps = new MidiInCapabilities();

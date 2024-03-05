@@ -15,8 +15,12 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Connects this connector to a connector in another device-topology object
+        /// Connects to another connector.
         /// </summary>
+        /// <param name="other">The connector to connect to.</param>
+        /// <remarks>
+        /// This method establishes a connection to the specified <paramref name="other"/> connector by connecting to its interface.
+        /// </remarks>
         public void ConnectTo(Connector other)
         {
             connectorInterface.ConnectTo(other.connectorInterface);
@@ -47,8 +51,11 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Disconnects this connector from it's connected connector (if connected)
+        /// Disconnects from the current connection.
         /// </summary>
+        /// <remarks>
+        /// This method calls the <see cref="connectorInterface.Disconnect"/> method to disconnect from the current connection.
+        /// </remarks>
         public void Disconnect()
         {
             connectorInterface.Disconnect();

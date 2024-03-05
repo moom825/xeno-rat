@@ -74,10 +74,13 @@ namespace NAudio.Mixer
 				return caps.wPid;
 			}
 		}
-		
-		/// <summary>Retrieve the specified MixerDestination object</summary>
-        /// <param name="destinationIndex">The ID of the destination to use.
-		/// Should be between 0 and DestinationCount - 1</param>
+
+		/// <summary>
+		/// Retrieves the destination mixer line at the specified index.
+		/// </summary>
+		/// <param name="destinationIndex">The index of the destination mixer line to retrieve.</param>
+		/// <returns>The destination mixer line at the specified <paramref name="destinationIndex"/>.</returns>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="destinationIndex"/> is less than 0 or greater than or equal to the total number of destinations.</exception>
 		public MixerLine GetDestination(int destinationIndex) 
 		{
 			if(destinationIndex < 0 || destinationIndex >= DestinationCount) 

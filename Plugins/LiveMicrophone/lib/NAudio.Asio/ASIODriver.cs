@@ -24,9 +24,14 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Gets the ASIO driver names installed.
+        /// Retrieves the names of ASIO drivers installed on the system.
         /// </summary>
-        /// <returns>a list of driver names. Use this name to GetAsioDriverByName</returns>
+        /// <returns>An array of strings containing the names of the ASIO drivers installed on the system.</returns>
+        /// <remarks>
+        /// This method retrieves the names of ASIO drivers by accessing the registry key "SOFTWARE\\ASIO" under the Local Machine hive.
+        /// It initializes an empty string array and populates it with the names of the subkeys under the "SOFTWARE\\ASIO" registry key.
+        /// If the registry key does not exist or is inaccessible, an empty array is returned.
+        /// </remarks>
         public static string[] GetAsioDriverNames()
         {
             var regKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\ASIO");
@@ -40,10 +45,11 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Instantiate a AsioDriver given its name.
+        /// Retrieves the ASIO driver with the specified name.
         /// </summary>
-        /// <param name="name">The name of the driver</param>
-        /// <returns>an AsioDriver instance</returns>
+        /// <param name="name">The name of the ASIO driver to retrieve.</param>
+        /// <returns>The ASIO driver with the specified <paramref name="name"/>.</returns>
+        /// <exception cref="ArgumentException">Thrown when the specified <paramref name="name"/> does not exist in the registry.</exception>
         public static AsioDriver GetAsioDriverByName(String name)
         {
             var regKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\ASIO\\" + name);
@@ -56,10 +62,10 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Instantiate the ASIO driver by GUID.
+        /// Retrieves an ASIO driver based on the specified GUID.
         /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <returns>an AsioDriver instance</returns>
+        /// <param name="guid">The GUID of the ASIO driver to retrieve.</param>
+        /// <returns>An instance of the <see cref="AsioDriver"/> class initialized with the specified GUID.</returns>
         public static AsioDriver GetAsioDriverByGuid(Guid guid)
         {
             var driver = new AsioDriver();
@@ -68,10 +74,14 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Inits the AsioDriver..
+        /// Initializes the ASIO driver with the specified system handle.
         /// </summary>
-        /// <param name="sysHandle">The sys handle.</param>
-        /// <returns></returns>
+        /// <param name="sysHandle">A pointer to the system handle.</param>
+        /// <returns>True if the initialization is successful; otherwise, false.</returns>
+        /// <remarks>
+        /// This method initializes the ASIO driver using the provided system handle.
+        /// It calls the 'init' method of the ASIO driver VTable and returns true if the return value is 1, indicating successful initialization.
+        /// </remarks>
         public bool Init(IntPtr sysHandle)
         {
             int ret = asioDriverVTable.init(pAsioComObject, sysHandle);
@@ -79,9 +89,9 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Gets the name of the driver.
+        /// Retrieves the name of the ASIO driver.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The name of the ASIO driver.</returns>
         public string GetDriverName() 
         {
             var name = new StringBuilder(256);
@@ -90,17 +100,17 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Gets the driver version.
+        /// Gets the version of the driver.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The version of the driver.</returns>
         public int GetDriverVersion() {
             return asioDriverVTable.getDriverVersion(pAsioComObject);
         }
 
         /// <summary>
-        /// Gets the error message.
+        /// Retrieves the error message from the ASIO driver and returns it as a string.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The error message retrieved from the ASIO driver.</returns>
         public string GetErrorMessage()
         {
             var errorMessage = new StringBuilder(256);
@@ -109,60 +119,79 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Starts this instance.
+        /// Starts the ASIO driver.
         /// </summary>
+        /// <remarks>
+        /// This method calls the start function of the ASIO driver's VTable to initiate the driver.
+        /// </remarks>
+        /// <exception cref="Exception">
+        /// Throws an exception if there is an error while starting the ASIO driver.
+        /// </exception>
         public void Start()
         {
             HandleException(asioDriverVTable.start(pAsioComObject),"start");
         }
 
         /// <summary>
-        /// Stops this instance.
+        /// Stops the ASIO driver and returns any error that occurred during the operation.
         /// </summary>
+        /// <returns>An AsioError object representing any error that occurred during the stop operation.</returns>
         public AsioError Stop()
         {
             return asioDriverVTable.stop(pAsioComObject);
         }
 
         /// <summary>
-        /// Gets the number of channels.
+        /// Retrieves the number of input and output channels available.
         /// </summary>
-        /// <param name="numInputChannels">The num input channels.</param>
-        /// <param name="numOutputChannels">The num output channels.</param>
+        /// <param name="numInputChannels">The number of input channels available.</param>
+        /// <param name="numOutputChannels">The number of output channels available.</param>
+        /// <exception cref="Exception">Thrown if there is an error retrieving the channels.</exception>
         public void GetChannels(out int numInputChannels, out int numOutputChannels)
         {
             HandleException(asioDriverVTable.getChannels(pAsioComObject, out numInputChannels, out numOutputChannels), "getChannels");
         }
 
         /// <summary>
-        /// Gets the latencies (n.b. does not throw an exception)
+        /// Retrieves the input and output latencies of the ASIO driver.
         /// </summary>
-        /// <param name="inputLatency">The input latency.</param>
-        /// <param name="outputLatency">The output latency.</param>
+        /// <param name="inputLatency">The variable to store the input latency.</param>
+        /// <param name="outputLatency">The variable to store the output latency.</param>
+        /// <returns>An <see cref="AsioError"/> representing the result of the operation.</returns>
+        /// <remarks>
+        /// This method retrieves the input and output latencies of the ASIO driver by calling the <c>getLatencies</c> method of the ASIO driver's VTable.
+        /// The input and output latencies are stored in the <paramref name="inputLatency"/> and <paramref name="outputLatency"/> variables, respectively.
+        /// </remarks>
         public AsioError GetLatencies(out int inputLatency, out int outputLatency)
         {
             return asioDriverVTable.getLatencies(pAsioComObject, out inputLatency, out outputLatency);
         }
 
         /// <summary>
-        /// Gets the size of the buffer.
+        /// Retrieves the buffer size information from the ASIO driver.
         /// </summary>
-        /// <param name="minSize">Size of the min.</param>
-        /// <param name="maxSize">Size of the max.</param>
-        /// <param name="preferredSize">Size of the preferred.</param>
-        /// <param name="granularity">The granularity.</param>
+        /// <param name="minSize">The minimum buffer size supported by the ASIO driver.</param>
+        /// <param name="maxSize">The maximum buffer size supported by the ASIO driver.</param>
+        /// <param name="preferredSize">The preferred buffer size suggested by the ASIO driver.</param>
+        /// <param name="granularity">The granularity of buffer size adjustments supported by the ASIO driver.</param>
+        /// <remarks>
+        /// This method retrieves the buffer size information from the ASIO driver using the ASIO driver's <paramref name="pAsioComObject"/>.
+        /// It handles exceptions using the <see cref="HandleException"/> method and passes the retrieved buffer size information to the out parameters.
+        /// </remarks>
+        /// <exception cref="Exception">
+        /// Throws an exception if there is an error while retrieving the buffer size information from the ASIO driver.
+        /// </exception>
         public void GetBufferSize(out int minSize, out int maxSize, out int preferredSize, out int granularity)
         {
             HandleException(asioDriverVTable.getBufferSize(pAsioComObject, out minSize, out maxSize, out preferredSize, out granularity), "getBufferSize");
         }
 
         /// <summary>
-        /// Determines whether this instance can use the specified sample rate.
+        /// Checks if the specified sample rate is supported by the ASIO driver.
         /// </summary>
-        /// <param name="sampleRate">The sample rate.</param>
-        /// <returns>
-        /// 	<c>true</c> if this instance [can sample rate] the specified sample rate; otherwise, <c>false</c>.
-        /// </returns>
+        /// <param name="sampleRate">The sample rate to be checked.</param>
+        /// <returns>True if the sample rate is supported; otherwise, false.</returns>
+        /// <exception cref="AsioException">Thrown when an error occurs while checking the sample rate.</exception>
         public bool CanSampleRate(double sampleRate)
         {
             var error = asioDriverVTable.canSampleRate(pAsioComObject, sampleRate);
@@ -179,9 +208,16 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Gets the sample rate.
+        /// Retrieves the sample rate from the ASIO driver.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The sample rate retrieved from the ASIO driver.</returns>
+        /// <remarks>
+        /// This method retrieves the sample rate from the ASIO driver using the ASIO driver's <paramref name="getSampleRate"/> function.
+        /// It handles any exceptions that may occur during the retrieval process and returns the retrieved sample rate.
+        /// </remarks>
+        /// <exception cref="Exception">
+        /// Thrown if there is an error while retrieving the sample rate from the ASIO driver.
+        /// </exception>
         public double GetSampleRate()
         {
             double sampleRate;
@@ -190,49 +226,65 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Sets the sample rate.
+        /// Sets the sample rate for the ASIO driver.
         /// </summary>
-        /// <param name="sampleRate">The sample rate.</param>
+        /// <param name="sampleRate">The sample rate to be set.</param>
+        /// <remarks>
+        /// This method sets the sample rate for the ASIO driver using the provided <paramref name="sampleRate"/>.
+        /// </remarks>
+        /// <exception cref="AsioException">Thrown if there is an error setting the sample rate.</exception>
         public void SetSampleRate(double sampleRate)
         {
             HandleException(asioDriverVTable.setSampleRate(pAsioComObject, sampleRate), "setSampleRate");
         }
 
         /// <summary>
-        /// Gets the clock sources.
+        /// Retrieves the clock sources and outputs the result in the <paramref name="clocks"/> parameter.
         /// </summary>
-        /// <param name="clocks">The clocks.</param>
-        /// <param name="numSources">The num sources.</param>
+        /// <param name="clocks">The output parameter that will contain the retrieved clock sources.</param>
+        /// <param name="numSources">The number of clock sources to retrieve.</param>
+        /// <remarks>
+        /// This method retrieves the clock sources from the ASIO driver and stores the result in the <paramref name="clocks"/> parameter.
+        /// </remarks>
+        /// <exception cref="Exception">
+        /// Throws an exception if there is an error while retrieving the clock sources from the ASIO driver.
+        /// </exception>
         public void GetClockSources(out long clocks, int numSources)
         {
             HandleException(asioDriverVTable.getClockSources(pAsioComObject, out clocks,numSources), "getClockSources");
         }
 
         /// <summary>
-        /// Sets the clock source.
+        /// Sets the clock source for the ASIO driver.
         /// </summary>
-        /// <param name="reference">The reference.</param>
+        /// <param name="reference">The reference value for setting the clock source.</param>
+        /// <exception cref="Exception">Thrown when an error occurs while setting the clock source.</exception>
+        /// <remarks>
+        /// This method sets the clock source for the ASIO driver using the provided <paramref name="reference"/> value.
+        /// </remarks>
         public void SetClockSource(int reference)
         {
             HandleException(asioDriverVTable.setClockSource(pAsioComObject, reference), "setClockSources");
         }
 
         /// <summary>
-        /// Gets the sample position.
+        /// Retrieves the current sample position and timestamp.
         /// </summary>
-        /// <param name="samplePos">The sample pos.</param>
-        /// <param name="timeStamp">The time stamp.</param>
+        /// <param name="samplePos">The current sample position.</param>
+        /// <param name="timeStamp">The timestamp associated with the sample position.</param>
+        /// <exception cref="Exception">Thrown if there is an error retrieving the sample position and timestamp.</exception>
         public void GetSamplePosition(out long samplePos, ref Asio64Bit timeStamp)
         {
             HandleException(asioDriverVTable.getSamplePosition(pAsioComObject, out samplePos, ref timeStamp), "getSamplePosition");
         }
 
         /// <summary>
-        /// Gets the channel info.
+        /// Retrieves the information about the specified channel.
         /// </summary>
-        /// <param name="channelNumber">The channel number.</param>
-        /// <param name="trueForInputInfo">if set to <c>true</c> [true for input info].</param>
-        /// <returns>Channel Info</returns>
+        /// <param name="channelNumber">The number of the channel for which information is to be retrieved.</param>
+        /// <param name="trueForInputInfo">A boolean value indicating whether to retrieve input information (true) or output information (false).</param>
+        /// <returns>The <see cref="AsioChannelInfo"/> object containing the information about the specified channel.</returns>
+        /// <exception cref="AsioException">Thrown if there is an error while retrieving the channel information.</exception>
         public AsioChannelInfo GetChannelInfo(int channelNumber, bool trueForInputInfo)
         {
             var info = new AsioChannelInfo {channel = channelNumber, isInput = trueForInputInfo};
@@ -241,12 +293,17 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Creates the buffers.
+        /// Creates buffers for audio input and output.
         /// </summary>
-        /// <param name="bufferInfos">The buffer infos.</param>
-        /// <param name="numChannels">The num channels.</param>
-        /// <param name="bufferSize">Size of the buffer.</param>
-        /// <param name="callbacks">The callbacks.</param>
+        /// <param name="bufferInfos">Pointer to buffer information.</param>
+        /// <param name="numChannels">The number of audio channels.</param>
+        /// <param name="bufferSize">The size of the buffer.</param>
+        /// <param name="callbacks">Reference to the AsioCallbacks structure.</param>
+        /// <exception cref="AsioException">Thrown if there is an error creating the buffers.</exception>
+        /// <remarks>
+        /// This method creates buffers for audio input and output using the provided buffer information, number of channels, buffer size, and AsioCallbacks structure.
+        /// It allocates memory for the callbacks, marshals the structure, and handles any exceptions that may occur during the buffer creation process.
+        /// </remarks>
         public void CreateBuffers(IntPtr bufferInfos, int numChannels, int bufferSize, ref AsioCallbacks callbacks)
         {
             // next two lines suggested by droidi on codeplex issue tracker
@@ -256,8 +313,12 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Disposes the buffers.
+        /// Disposes the ASIO buffers and frees the allocated memory.
         /// </summary>
+        /// <returns>The result of disposing the ASIO buffers.</returns>
+        /// <remarks>
+        /// This method disposes the ASIO buffers and frees the allocated memory.
+        /// </remarks>
         public AsioError DisposeBuffers()
         {
             AsioError result = asioDriverVTable.disposeBuffers(pAsioComObject);
@@ -266,45 +327,59 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Controls the panel.
+        /// Opens the control panel for the ASIO driver.
         /// </summary>
+        /// <remarks>
+        /// This method opens the control panel for the ASIO driver using the ASIO driver VTable.
+        /// </remarks>
+        /// <exception cref="Exception">
+        /// Throws an exception if there is an error while opening the control panel.
+        /// </exception>
         public void ControlPanel()
         {
             HandleException(asioDriverVTable.controlPanel(pAsioComObject), "controlPanel");
         }
 
         /// <summary>
-        /// Futures the specified selector.
+        /// Calls the ASIO driver's future function with the specified selector and options.
         /// </summary>
-        /// <param name="selector">The selector.</param>
-        /// <param name="opt">The opt.</param>
+        /// <param name="selector">The selector for the future function.</param>
+        /// <param name="opt">The options to be passed to the future function.</param>
+        /// <exception cref="AsioException">Thrown if there is an error calling the ASIO driver's future function.</exception>
         public void Future(int selector, IntPtr opt)
         {
             HandleException(asioDriverVTable.future(pAsioComObject, selector, opt), "future");
         }
 
         /// <summary>
-        /// Notifies OutputReady to the AsioDriver.
+        /// Checks if the output is ready and returns an AsioError.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>An AsioError indicating the status of the output readiness.</returns>
         public AsioError OutputReady()
         {
             return asioDriverVTable.outputReady(pAsioComObject);
         }
 
         /// <summary>
-        /// Releases this instance.
+        /// Releases the COM object associated with the ASIO driver.
         /// </summary>
+        /// <remarks>
+        /// This method releases the COM object <paramref name="pAsioComObject"/> associated with the ASIO driver.
+        /// </remarks>
         public void ReleaseComAsioDriver()
         {
             Marshal.Release(pAsioComObject);
         }
 
         /// <summary>
-        /// Handles the exception. Throws an exception based on the error.
+        /// Handles the exception for the ASIO method.
         /// </summary>
-        /// <param name="error">The error to check.</param>
-        /// <param name="methodName">Method name</param>
+        /// <param name="error">The ASIO error code.</param>
+        /// <param name="methodName">The name of the ASIO method being called.</param>
+        /// <exception cref="AsioException">Thrown when the ASIO error code is not ASE_OK or ASE_SUCCESS. The exception message contains the error code, method name, and error message.</exception>
+        /// <remarks>
+        /// This method handles the exception for the ASIO method by checking the error code. If the error code is not ASE_OK or ASE_SUCCESS, it creates and throws an AsioException with the error code, method name, and error message.
+        /// </remarks>
         private void HandleException(AsioError error, string methodName)
         {
             if (error != AsioError.ASE_OK && error != AsioError.ASE_SUCCESS)
@@ -317,9 +392,16 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Inits the vTable method from GUID. This is a tricky part of this class.
+        /// Initializes the ASIO driver from the given GUID and sets up the virtual table for method calls.
         /// </summary>
-        /// <param name="asioGuid">The ASIO GUID.</param>
+        /// <param name="asioGuid">The GUID of the ASIO driver to be initialized.</param>
+        /// <exception cref="COMException">Thrown when unable to instantiate ASIO. Check if STAThread is set.</exception>
+        /// <remarks>
+        /// This method initializes the ASIO driver by querying the virtual table at index 3 and setting up the virtual table for method calls.
+        /// It uses CoCreateInstance instead of built-in COM-Class instantiation, as the AsioDriver expects the ASIOGuid used for both COM Object and COM interface.
+        /// The CoCreateInstance works only in STAThread mode.
+        /// The method modifies the original ASIO Com Object in place by attaching internal delegates to call the methods on the COM Object.
+        /// </remarks>
         private void InitFromGuid(Guid asioGuid)
         {
             const uint CLSCTX_INPROC_SERVER = 1;
@@ -452,6 +534,15 @@ namespace NAudio.Wave.Asio
             public ASIOoutputReady outputReady = null;
         }
 
+        /// <summary>
+        /// Creates a new instance of a COM object with the specified class identifier (CLSID).
+        /// </summary>
+        /// <param name="clsid">The CLSID of the object to be created.</param>
+        /// <param name="inner">A pointer to the controlling IUnknown interface if the object is being created as part of an aggregate, or IntPtr.Zero otherwise.</param>
+        /// <param name="context">The execution context in which the code is to run.</param>
+        /// <param name="uuid">The IID of the interface on the object that the caller wants to communicate with.</param>
+        /// <param name="rReturnedComObject">When this method returns, contains a reference to the created object.</param>
+        /// <returns>An HRESULT value indicating success or failure.</returns>
         [DllImport("ole32.Dll")]
         private static extern int CoCreateInstance(ref Guid clsid,
            IntPtr inner,

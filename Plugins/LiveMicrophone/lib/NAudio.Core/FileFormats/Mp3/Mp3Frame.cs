@@ -44,10 +44,18 @@ namespace NAudio.Wave
         private const int MaxFrameLength = 16*1024;
 
         /// <summary>
-        /// Reads an MP3 frame from a stream
+        /// Loads an MP3 frame from the given input stream and returns the frame.
         /// </summary>
-        /// <param name="input">input stream</param>
-        /// <returns>A valid MP3 frame, or null if none found</returns>
+        /// <param name="input">The input stream from which to load the MP3 frame.</param>
+        /// <param name="readData">A boolean value indicating whether to read the frame data from the input stream.</param>
+        /// <returns>The loaded MP3 frame.</returns>
+        /// <remarks>
+        /// This method reads the header bytes from the input stream and validates them to identify an MP3 frame.
+        /// If the header is not valid, it shifts down by one and tries again until a valid header is found.
+        /// Once a valid header is found, it reads the frame data from the input stream based on the frame length.
+        /// If <paramref name="readData"/> is false, it skips reading the frame data and moves the input stream position accordingly.
+        /// </remarks>
+        /// <exception cref="EndOfStreamException">Thrown when an unexpected end of stream is encountered before the frame is complete.</exception>
         public static Mp3Frame LoadFromStream(Stream input)
         {
             return LoadFromStream(input, true);
@@ -118,9 +126,16 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// checks if the four bytes represent a valid header,
-        /// if they are, will parse the values into Mp3Frame
+        /// Checks if the provided header bytes and Mp3Frame are valid and returns a boolean value indicating the result.
         /// </summary>
+        /// <param name="headerBytes">The header bytes of the Mp3Frame.</param>
+        /// <param name="frame">The Mp3Frame to be validated.</param>
+        /// <returns>True if the header bytes and Mp3Frame are valid; otherwise, false.</returns>
+        /// <remarks>
+        /// This method checks if the provided header bytes and Mp3Frame are valid according to the MPEG audio format specifications.
+        /// It validates various properties of the Mp3Frame such as MPEG version, layer, bit rate, sample rate, channel mode, frame length, etc.
+        /// If any of the properties are invalid, the method returns false; otherwise, it returns true.
+        /// </remarks>
         private static bool IsValidHeader(byte[] headerBytes, Mp3Frame frame)
         {
             if ((headerBytes[0] == 0xFF) && ((headerBytes[1] & 0xE0) == 0xE0))

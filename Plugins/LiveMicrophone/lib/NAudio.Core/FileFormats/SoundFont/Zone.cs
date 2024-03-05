@@ -13,8 +13,9 @@ namespace NAudio.SoundFont
         internal ushort modulatorCount;
 
         /// <summary>
-        /// <see cref="Object.ToString"/>
+        /// Returns a formatted string representing the zone, generator count and index, modulator count and index.
         /// </summary>
+        /// <returns>A string containing the zone, generator count and index, modulator count and index.</returns>
         public override string ToString()
         {
             return String.Format("Zone {0} Gens:{1} {2} Mods:{3}", generatorCount, generatorIndex,

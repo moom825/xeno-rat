@@ -282,8 +282,11 @@ namespace NAudio.Dmo.Effect
         }
 
         /// <summary>
-        /// Dispose code
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
+        /// <remarks>
+        /// This method disposes the <see cref="mediaObjectInPlace"/> and <see cref="mediaObject"/> if they are not null.
+        /// </remarks>
         public void Dispose()
         {
             mediaObjectInPlace?.Dispose();

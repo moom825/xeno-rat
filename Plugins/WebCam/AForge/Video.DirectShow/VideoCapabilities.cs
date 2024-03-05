@@ -2,7 +2,7 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2009-2013
+// Copyright Â© AForge.NET, 2009-2013
 // contacts@aforgenet.com
 //
 
@@ -57,7 +57,16 @@ namespace AForge.Video.DirectShow
 
         internal VideoCapabilities( ) { }
 
-        // Retrieve capabilities of a video device
+        /// <summary>
+        /// Retrieves video capabilities from the specified video stream configuration.
+        /// </summary>
+        /// <param name="videoStreamConfig">The IAMStreamConfig object representing the video stream configuration.</param>
+        /// <returns>An array of VideoCapabilities representing the capabilities of the video device.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="videoStreamConfig"/> is null.</exception>
+        /// <exception cref="NotSupportedException">Thrown when the video device does not report capabilities or when unable to retrieve video device capabilities due to a larger VideoStreamConfigCaps structure requirement.</exception>
+        /// <remarks>
+        /// This method retrieves and groups video capabilities from the specified video stream configuration. It ensures that the device reports capabilities and creates a dictionary to group capabilities with similar parameters. It then constructs an array of VideoCapabilities from the grouped capabilities and returns it.
+        /// </remarks>
         static internal VideoCapabilities[] FromStreamConfig( IAMStreamConfig videoStreamConfig )
         {
             if ( videoStreamConfig == null )
@@ -164,13 +173,10 @@ namespace AForge.Video.DirectShow
         }
 
         /// <summary>
-        /// Check if the video capability equals to the specified object.
+        /// Determines whether the current VideoCapabilities object is equal to another VideoCapabilities object.
         /// </summary>
-        /// 
-        /// <param name="obj">Object to compare with.</param>
-        /// 
-        /// <returns>Returns true if both are equal are equal or false otherwise.</returns>
-        /// 
+        /// <param name="vc2">The VideoCapabilities object to compare with the current object.</param>
+        /// <returns>True if the specified VideoCapabilities object is equal to the current VideoCapabilities object; otherwise, false.</returns>
         public override bool Equals( object obj )
         {
             return Equals( obj as VideoCapabilities );
@@ -195,10 +201,9 @@ namespace AForge.Video.DirectShow
         }
 
         /// <summary>
-        /// Get hash code of the object.
+        /// Computes the hash code for the current instance.
         /// </summary>
-        /// 
-        /// <returns>Returns hash code ot the object </returns>
+        /// <returns>A 32-bit signed integer hash code.</returns>
         public override int GetHashCode( )
         {
             return FrameSize.GetHashCode( ) ^ BitCount;

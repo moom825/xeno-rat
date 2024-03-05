@@ -111,6 +111,12 @@ namespace NAudio.Dmo
             "SPDIF_TAG_241h",
             "MP3"
         };
+
+        /// <summary>
+        /// Gets the name of the audio sub type based on the provided GUID.
+        /// </summary>
+        /// <param name="subType">The GUID of the audio sub type.</param>
+        /// <returns>The name of the audio sub type corresponding to the provided <paramref name="subType"/>. If no matching sub type is found, the method returns the string representation of the input <paramref name="subType"/>.</returns>
         public static string GetAudioSubtypeName(Guid subType)
         {
             for (int index = 0; index < AudioSubTypes.Length; index++)

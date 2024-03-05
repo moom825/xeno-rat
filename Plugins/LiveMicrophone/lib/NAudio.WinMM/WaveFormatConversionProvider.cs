@@ -40,7 +40,7 @@ namespace NAudio.Wave
         public WaveFormat WaveFormat { get; }
 
         /// <summary>
-        /// Indicates that a reposition has taken place, and internal buffers should be reset
+        /// Repositions the conversion stream and resets leftover bytes and offsets.
         /// </summary>
         public void Reposition()
         {
@@ -51,12 +51,17 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Reads bytes from this stream
+        /// Reads data from the input buffer and returns the number of bytes read.
         /// </summary>
-        /// <param name="buffer">Buffer to read into</param>
-        /// <param name="offset">Offset in buffer to read into</param>
-        /// <param name="count">Number of bytes to read</param>
-        /// <returns>Number of bytes read</returns>
+        /// <param name="buffer">The input buffer to read data from.</param>
+        /// <param name="offset">The zero-based byte offset in <paramref name="buffer"/> at which to begin reading.</param>
+        /// <param name="count">The maximum number of bytes to read.</param>
+        /// <returns>The total number of bytes read into the buffer.</returns>
+        /// <remarks>
+        /// This method reads data from the input buffer and returns the total number of bytes read into the buffer. It ensures that the count is a multiple of the block align, and if not, it adjusts the count to read complete blocks.
+        /// The method then proceeds to copy any leftover destination bytes, followed by converting one full source buffer and saving any leftover bytes for the next call to Read.
+        /// The method returns the total number of bytes read into the buffer.
+        /// </remarks>
         public int Read(byte[] buffer, int offset, int count)
         {
             int bytesRead = 0;
@@ -141,9 +146,11 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Disposes this stream
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
-        /// <param name="disposing">true if the user called this</param>
+        /// <remarks>
+        /// This method calls the Dispose(Boolean) method, passing in 'true', and suppresses the finalization of the object.
+        /// </remarks>
         protected virtual void Dispose(bool disposing)
         {
             if (!isDisposed)

@@ -17,8 +17,12 @@ namespace NAudio.Wave
         public SilenceProvider(WaveFormat wf) { WaveFormat = wf; }
 
         /// <summary>
-        /// Read silence from into the buffer
+        /// Clears the specified range of elements in the <paramref name="buffer"/> array and returns the number of elements cleared.
         /// </summary>
+        /// <param name="buffer">The array containing the elements to be cleared.</param>
+        /// <param name="offset">The zero-based starting index of the range of elements to clear.</param>
+        /// <param name="count">The number of elements to clear.</param>
+        /// <returns>The number of elements cleared, which is equal to <paramref name="count"/>.</returns>
         public int Read(byte[] buffer, int offset, int count)
         {
             Array.Clear(buffer, offset, count);

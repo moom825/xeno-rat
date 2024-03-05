@@ -24,8 +24,12 @@ namespace NAudio.Wave.SampleProviders
         }
 
         /// <summary>
-        /// Reads from this provider
+        /// Reads audio samples from the buffer and returns the number of bytes read.
         /// </summary>
+        /// <param name="buffer">The input buffer containing audio samples.</param>
+        /// <param name="offset">The zero-based byte offset in <paramref name="buffer"/> at which to begin reading.</param>
+        /// <param name="count">The number of bytes to read from <paramref name="buffer"/>.</param>
+        /// <returns>The number of bytes read from the buffer, which is a multiple of 4 due to the audio sample size.</returns>
         public int Read(byte[] buffer, int offset, int count)
         {
             int samplesNeeded = count / 4;

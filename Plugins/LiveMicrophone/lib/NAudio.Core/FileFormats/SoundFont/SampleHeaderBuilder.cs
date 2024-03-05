@@ -5,6 +5,26 @@ namespace NAudio.SoundFont
 {
     class SampleHeaderBuilder : StructureBuilder<SampleHeader>
     {
+
+        /// <summary>
+        /// Reads and returns a SampleHeader from the provided BinaryReader.
+        /// </summary>
+        /// <param name="br">The BinaryReader used to read the SampleHeader.</param>
+        /// <returns>The SampleHeader read from the BinaryReader.</returns>
+        /// <remarks>
+        /// This method reads data from the provided BinaryReader to populate a SampleHeader object with the following properties:
+        /// - SampleName: A string representing the sample name.
+        /// - Start: A 32-bit unsigned integer representing the start position.
+        /// - End: A 32-bit unsigned integer representing the end position.
+        /// - StartLoop: A 32-bit unsigned integer representing the start loop position.
+        /// - EndLoop: A 32-bit unsigned integer representing the end loop position.
+        /// - SampleRate: A 32-bit unsigned integer representing the sample rate.
+        /// - OriginalPitch: An 8-bit unsigned integer representing the original pitch.
+        /// - PitchCorrection: An 8-bit signed integer representing the pitch correction.
+        /// - SampleLink: A 16-bit unsigned integer representing the sample link.
+        /// - SFSampleLink: An enumeration representing the SoundFont sample link.
+        /// The method then adds the populated SampleHeader to a collection and returns it.
+        /// </remarks>
         public override SampleHeader Read(BinaryReader br)
         {
             SampleHeader sh = new SampleHeader();
@@ -24,12 +44,23 @@ namespace NAudio.SoundFont
             return sh;
         }
 
+        /// <summary>
+        /// Writes the sample header to the specified binary writer.
+        /// </summary>
+        /// <param name="bw">The binary writer to write to.</param>
+        /// <param name="sampleHeader">The sample header to be written.</param>
         public override void Write(BinaryWriter bw, SampleHeader sampleHeader)
         {
         }
 
         public override int Length => 46;
 
+        /// <summary>
+        /// Removes the last element from the list.
+        /// </summary>
+        /// <remarks>
+        /// This method removes the last element from the list <paramref name="data"/>.
+        /// </remarks>
         internal void RemoveEOS()
         {
             data.RemoveAt(data.Count - 1);

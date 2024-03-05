@@ -7,9 +7,16 @@ namespace NAudio.SoundFont
     /// </summary>
     class SFVersionBuilder : StructureBuilder<SFVersion>
     {
+
         /// <summary>
-        /// Reads a SoundFont Version structure
+        /// Reads a version from the binary reader and adds it to the data collection.
         /// </summary>
+        /// <param name="br">The binary reader from which to read the version.</param>
+        /// <returns>The version read from the binary reader.</returns>
+        /// <remarks>
+        /// This method reads the major and minor version numbers from the binary reader and creates a new SFVersion object with these values.
+        /// The SFVersion object is then added to the data collection.
+        /// </remarks>
         public override SFVersion Read(BinaryReader br)
         {
             SFVersion v = new SFVersion();
@@ -20,8 +27,10 @@ namespace NAudio.SoundFont
         }
 
         /// <summary>
-        /// Writes a SoundFont Version structure
+        /// Writes the major and minor version numbers to the specified binary writer.
         /// </summary>
+        /// <param name="bw">The binary writer to write the version numbers to.</param>
+        /// <param name="v">The SFVersion object containing the version numbers to be written.</param>
         public override void Write(BinaryWriter bw, SFVersion v)
         {
             bw.Write(v.Major);

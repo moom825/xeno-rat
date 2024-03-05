@@ -5,9 +5,18 @@ namespace NAudio.Utils
 {
     class MergeSort
     {
+
         /// <summary>
-        /// In-place and stable implementation of MergeSort
+        /// Sorts the elements of the input list using the specified comparer.
         /// </summary>
+        /// <typeparam name="T">The type of elements in the list.</typeparam>
+        /// <param name="list">The list to be sorted.</param>
+        /// <param name="comparer">The comparer to use for sorting.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the input list or comparer is null.</exception>
+        /// <remarks>
+        /// This method sorts the elements of the input list in place using the specified comparer.
+        /// The sorting algorithm used is not specified and may vary based on the implementation of the comparer.
+        /// </remarks>
         static void Sort<T>(IList<T> list, int lowIndex, int highIndex, IComparer<T> comparer)
         {
             if (lowIndex >= highIndex)

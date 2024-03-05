@@ -94,12 +94,17 @@ namespace NAudio.Wave
         private byte[] inputBuffer;
 
         /// <summary>
-        /// Reads data from this WaveProvider
+        /// Reads audio data from the input buffer and writes it to the output buffer.
         /// </summary>
-        /// <param name="buffer">Buffer to be filled with sample data</param>
-        /// <param name="offset">Offset to write to within buffer, usually 0</param>
-        /// <param name="count">Number of bytes required</param>
-        /// <returns>Number of bytes read</returns>
+        /// <param name="buffer">The output buffer to write the audio data to.</param>
+        /// <param name="offset">The offset in the output buffer to start writing the data.</param>
+        /// <param name="count">The number of bytes to read from the input buffer and write to the output buffer.</param>
+        /// <returns>The number of sample frames read and written to the output buffer.</returns>
+        /// <remarks>
+        /// This method reads audio data from all input sources, even if the data is not needed, to keep them in sync.
+        /// It then processes the input data and writes it to the output buffer based on the specified offset and count.
+        /// The method modifies the output buffer in place.
+        /// </remarks>
         public int Read(byte[] buffer, int offset, int count)
         {
             int outputBytesPerFrame = bytesPerSample * outputChannelCount;
@@ -154,10 +159,11 @@ namespace NAudio.Wave
         public WaveFormat WaveFormat { get; }
 
         /// <summary>
-        /// Connects a specified input channel to an output channel
+        /// Connects the input channel to the output channel.
         /// </summary>
-        /// <param name="inputChannel">Input Channel index (zero based). Must be less than InputChannelCount</param>
-        /// <param name="outputChannel">Output Channel index (zero based). Must be less than OutputChannelCount</param>
+        /// <param name="inputChannel">The input channel to be connected.</param>
+        /// <param name="outputChannel">The output channel to be connected.</param>
+        /// <exception cref="ArgumentException">Thrown when the input channel or output channel is invalid.</exception>
         public void ConnectInputToOutput(int inputChannel, int outputChannel)
         {
             if (inputChannel < 0 || inputChannel >= InputChannelCount)

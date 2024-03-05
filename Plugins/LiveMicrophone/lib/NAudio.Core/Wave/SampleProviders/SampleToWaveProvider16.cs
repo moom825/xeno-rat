@@ -32,12 +32,16 @@ namespace NAudio.Wave.SampleProviders
         }
 
         /// <summary>
-        /// Reads bytes from this wave stream
+        /// Reads audio data from the source provider and writes it to the destination buffer.
         /// </summary>
-        /// <param name="destBuffer">The destination buffer</param>
-        /// <param name="offset">Offset into the destination buffer</param>
-        /// <param name="numBytes">Number of bytes read</param>
-        /// <returns>Number of bytes read.</returns>
+        /// <param name="destBuffer">The destination buffer to write the audio data to.</param>
+        /// <param name="offset">The offset in the destination buffer to start writing the audio data.</param>
+        /// <param name="numBytes">The number of bytes to read from the source provider and write to the destination buffer.</param>
+        /// <returns>The number of bytes written to the destination buffer.</returns>
+        /// <remarks>
+        /// This method reads audio data from the source provider, adjusts the volume, clips the samples, and writes the processed data to the destination buffer.
+        /// The source buffer is dynamically resized to accommodate the required number of samples.
+        /// </remarks>
         public int Read(byte[] destBuffer, int offset, int numBytes)
         {
             int samplesRequired = numBytes / 2;

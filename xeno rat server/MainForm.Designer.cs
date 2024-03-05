@@ -9,9 +9,14 @@ namespace xeno_rat_server
         private System.ComponentModel.IContainer components = null;
 
         /// <summary>
-        /// Clean up any resources being used.
+        /// Releases the unmanaged resources used by the Component and optionally releases the managed resources.
         /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        /// <remarks>
+        /// This method releases the unmanaged resources used by the Component and optionally releases the managed resources.
+        /// If disposing is true, this method releases all resources held by any managed objects that this Component references.
+        /// This method is called by the public Dispose() method and the Finalize method.
+        /// </remarks>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -21,11 +26,8 @@ namespace xeno_rat_server
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
-
         /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
+        /// Initializes the components of the MainForm.
         /// </summary>
         private void InitializeComponent()
         {

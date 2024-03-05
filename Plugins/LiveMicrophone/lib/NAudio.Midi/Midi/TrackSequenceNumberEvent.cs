@@ -37,24 +37,29 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Creates a deep clone of this MIDI event.
+        /// Creates a new instance of the TrackSequenceNumberEvent class that is a copy of the current instance.
         /// </summary>
+        /// <returns>A new TrackSequenceNumberEvent that is a copy of this instance.</returns>
         public override MidiEvent Clone() => (TrackSequenceNumberEvent)MemberwiseClone();
 
         /// <summary>
-        /// Describes this event
+        /// Returns a string that represents the current object, including the base string representation and the sequence number.
         /// </summary>
-        /// <returns>String describing the event</returns>
+        /// <returns>A string that combines the base string representation and the sequence number.</returns>
         public override string ToString()
         {
             return String.Format("{0} {1}", base.ToString(), sequenceNumber);
         }
 
         /// <summary>
-        /// Calls base class export first, then exports the data 
-        /// specific to this event
-        /// <seealso cref="MidiEvent.Export">MidiEvent.Export</seealso>
+        /// Exports the data to a binary writer, including the sequence number split into two bytes.
         /// </summary>
+        /// <param name="absoluteTime">The absolute time reference for the export operation.</param>
+        /// <param name="writer">The binary writer to which the data is exported.</param>
+        /// <remarks>
+        /// This method first calls the base class Export method to handle the common export operations.
+        /// It then writes the high byte and low byte of the sequence number to the binary writer.
+        /// </remarks>
         public override void Export(ref long absoluteTime, BinaryWriter writer)
         {
             base.Export(ref absoluteTime, writer);

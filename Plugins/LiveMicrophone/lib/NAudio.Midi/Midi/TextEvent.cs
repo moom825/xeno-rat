@@ -35,8 +35,9 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Creates a deep clone of this MIDI event.
+        /// Creates a new instance of the TextEvent class that is a copy of the current instance.
         /// </summary>
+        /// <returns>A new TextEvent that is a copy of this instance.</returns>
         public override MidiEvent Clone() => (TextEvent)MemberwiseClone();
 
         /// <summary>
@@ -74,19 +75,27 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Describes this MIDI text event
+        /// Returns a string that represents the current object, including the base object's string representation and the value of the 'Text' property.
         /// </summary>
-        /// <returns>A string describing this event</returns>
+        /// <returns>A string that combines the string representation of the base object and the value of the 'Text' property.</returns>
+        /// <remarks>
+        /// This method overrides the default ToString method to provide a custom string representation of the current object.
+        /// The returned string includes the string representation of the base object and the value of the 'Text' property.
+        /// </remarks>
         public override string ToString() 
         {
             return String.Format("{0} {1}",base.ToString(),Text);
         }
 
         /// <summary>
-        /// Calls base class export first, then exports the data 
-        /// specific to this event
-        /// <seealso cref="MidiEvent.Export">MidiEvent.Export</seealso>
+        /// Exports the data to a BinaryWriter after performing the base export operation.
         /// </summary>
+        /// <param name="absoluteTime">A reference to the absolute time.</param>
+        /// <param name="writer">The BinaryWriter to which the data is exported.</param>
+        /// <remarks>
+        /// This method performs the base export operation by calling the base class's Export method with the provided <paramref name="absoluteTime"/> and <paramref name="writer"/>.
+        /// It then writes the data to the <paramref name="writer"/>.
+        /// </remarks>
         public override void Export(ref long absoluteTime, BinaryWriter writer)
         {
             base.Export(ref absoluteTime, writer);

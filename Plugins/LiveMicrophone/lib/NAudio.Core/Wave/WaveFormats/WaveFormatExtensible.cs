@@ -49,11 +49,20 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// WaveFormatExtensible for PCM or floating point can be awkward to work with
-        /// This creates a regular WaveFormat structure representing the same audio format
-        /// Returns the WaveFormat unchanged for non PCM or IEEE float
+        /// Converts the current audio format to a standard WaveFormat.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// If the subFormat is MEDIASUBTYPE_IEEE_FLOAT and bitsPerSample is 32, returns a new WaveFormat created using the CreateIeeeFloatWaveFormat method with the specified sample rate and channels.
+        /// If the subFormat is MEDIASUBTYPE_PCM, returns a new WaveFormat with the specified sample rate, bits per sample, and channels.
+        /// If neither of the above conditions are met, returns the current WaveFormat.
+        /// </returns>
+        /// <remarks>
+        /// This method checks the subFormat and bitsPerSample to determine the appropriate WaveFormat conversion.
+        /// If the subFormat is MEDIASUBTYPE_IEEE_FLOAT and bitsPerSample is 32, it creates a new WaveFormat using the CreateIeeeFloatWaveFormat method.
+        /// If the subFormat is MEDIASUBTYPE_PCM, it creates a new WaveFormat with the specified parameters.
+        /// If neither of the above conditions are met, it returns the current WaveFormat without modification.
+        /// If the subFormat is not recognized as PCM or IEEE float, an InvalidOperationException with the message "Not a recognised PCM or IEEE float format" is thrown.
+        /// </remarks>
         public WaveFormat ToStandardWaveFormat()
         {
             if (subFormat == AudioMediaSubtypes.MEDIASUBTYPE_IEEE_FLOAT && bitsPerSample == 32)
@@ -70,9 +79,13 @@ namespace NAudio.Wave
         public Guid SubFormat { get { return subFormat; } }
 
         /// <summary>
-        /// Serialize
+        /// Serializes the object to a binary writer.
         /// </summary>
-        /// <param name="writer"></param>
+        /// <param name="writer">The binary writer to which the object is serialized.</param>
+        /// <exception cref="System.IO.IOException">An I/O error occurred.</exception>
+        /// <remarks>
+        /// This method serializes the object to a binary writer by writing the valid bits per sample, channel mask, and subformat as byte array.
+        /// </remarks>
         public override void Serialize(System.IO.BinaryWriter writer)
         {
             base.Serialize(writer);
@@ -83,8 +96,9 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// String representation
+        /// Returns a string representing the WAVE_FORMAT_EXTENSIBLE audio format with details of subformat, sample rate, channels, and bits per sample.
         /// </summary>
+        /// <returns>A string representing the WAVE_FORMAT_EXTENSIBLE audio format with details of subformat, sample rate, channels, and bits per sample.</returns>
         public override string ToString()
         {
             return $"WAVE_FORMAT_EXTENSIBLE {AudioMediaSubtypes.GetAudioSubtypeName(subFormat)} " +

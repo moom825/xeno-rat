@@ -85,8 +85,12 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Adds samples. Takes a copy of buffer, so that buffer can be reused if necessary
+        /// Adds the specified samples to the circular buffer.
         /// </summary>
+        /// <param name="buffer">The buffer containing the samples to be added.</param>
+        /// <param name="offset">The zero-based byte offset in the buffer at which to begin copying bytes to the circular buffer.</param>
+        /// <param name="count">The number of samples to be added from the buffer to the circular buffer.</param>
+        /// <exception cref="InvalidOperationException">Thrown when the circular buffer is full and <see cref="DiscardOnBufferOverflow"/> is set to false.</exception>
         public void AddSamples(byte[] buffer, int offset, int count)
         {
             // create buffer here to allow user to customise buffer length
@@ -103,9 +107,17 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Reads from this WaveProvider
-        /// Will always return count bytes, since we will zero-fill the buffer if not enough available
+        /// Reads data from the circular buffer into the specified byte array.
         /// </summary>
+        /// <param name="buffer">The byte array to read the data into.</param>
+        /// <param name="offset">The zero-based byte offset in <paramref name="buffer"/> at which to begin storing the data read from the current stream.</param>
+        /// <param name="count">The maximum number of bytes to read.</param>
+        /// <returns>The total number of bytes read into the buffer.</returns>
+        /// <remarks>
+        /// This method reads data from the circular buffer into the specified byte array starting at the specified offset and up to the specified count.
+        /// If the circular buffer is not yet created, it returns 0.
+        /// If <paramref name="ReadFully"/> is true and the total number of bytes read is less than the specified count, it zeros the end of the buffer and returns the total count.
+        /// </remarks>
         public int Read(byte[] buffer, int offset, int count) 
         {
             int read = 0;
@@ -123,8 +135,11 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Discards all audio from the buffer
+        /// Clears the circular buffer.
         /// </summary>
+        /// <remarks>
+        /// This method clears the circular buffer by resetting it to its initial state.
+        /// </remarks>
         public void ClearBuffer()
         {
             if (circularBuffer != null)

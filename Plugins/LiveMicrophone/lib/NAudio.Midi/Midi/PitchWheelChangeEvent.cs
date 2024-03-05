@@ -43,11 +43,14 @@ namespace NAudio.Midi
         {
             Pitch = pitchWheel;
         }
-        
+
         /// <summary>
-        /// Describes this pitch wheel change event
+        /// Returns a string representation of the object.
         /// </summary>
-        /// <returns>String describing this pitch wheel change event</returns>
+        /// <returns>A string containing the object's base representation, pitch, and pitch value relative to 0x2000.</returns>
+        /// <remarks>
+        /// This method returns a formatted string that includes the base representation of the object, its pitch, and the pitch value relative to 0x2000.
+        /// </remarks>
         public override string ToString() 
         {
             return String.Format("{0} Pitch {1} ({2})",
@@ -76,19 +79,23 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Gets a short message
+        /// Gets the short message representation of the MIDI event.
         /// </summary>
-        /// <returns>Integer to sent as short message</returns>
+        /// <returns>The short message representation of the MIDI event.</returns>
         public override int GetAsShortMessage()
         {
             return base.GetAsShortMessage() + ((pitch & 0x7f) << 8) + (((pitch >> 7) & 0x7f) << 16);
         }
 
         /// <summary>
-        /// Calls base class export first, then exports the data 
-        /// specific to this event
-        /// <seealso cref="MidiEvent.Export">MidiEvent.Export</seealso>
+        /// Exports the object's data to a binary writer, including the pitch value.
         /// </summary>
+        /// <param name="absoluteTime">The absolute time value.</param>
+        /// <param name="writer">The binary writer to which the data is exported.</param>
+        /// <remarks>
+        /// This method exports the object's data to the specified binary writer, including the pitch value.
+        /// The pitch value is written as two bytes, with the least significant 7 bits written first followed by the most significant 7 bits.
+        /// </remarks>
         public override void Export(ref long absoluteTime, BinaryWriter writer)
         {
             base.Export(ref absoluteTime, writer);

@@ -67,9 +67,17 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// sets the mode
-        /// if sinc set, it overrides interp or filtercnt
+        /// Sets the mode for resampling with optional sinc interpolation and filter count.
         /// </summary>
+        /// <param name="interp">Specifies whether to use interpolation.</param>
+        /// <param name="filtercnt">The number of filters to be used.</param>
+        /// <param name="sinc">Specifies whether to use sinc interpolation.</param>
+        /// <param name="sinc_size">The size of the sinc interpolation. Default is 64.</param>
+        /// <param name="sinc_interpsize">The interpolation size for sinc. Default is 32.</param>
+        /// <remarks>
+        /// This method sets the mode for resampling with optional sinc interpolation and filter count.
+        /// It modifies the internal state of the resampler based on the provided parameters.
+        /// </remarks>
         public void SetMode(bool interp, int filtercnt, bool sinc, int sinc_size = 64, int sinc_interpsize = 32)
         {
             m_sincsize = sinc && sinc_size >= 4 ? sinc_size > 8192 ? 8192 : sinc_size : 0;
@@ -92,9 +100,10 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// Sets the filter parameters
-        /// used for filtercnt>0 but not sinc
+        /// Sets the filter parameters with default values for position and quality factor.
         /// </summary>
+        /// <param name="filterpos">The position parameter for the filter. Default value is 0.693.</param>
+        /// <param name="filterq">The quality factor parameter for the filter. Default value is 0.707.</param>
         public void SetFilterParms(float filterpos = 0.693f, float filterq = 0.707f)
         {
             m_filterpos = filterpos;
@@ -102,16 +111,19 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// Set feed mode
+        /// Sets the feed mode for the system.
         /// </summary>
-        /// <param name="wantInputDriven">if true, that means the first parameter to ResamplePrepare will specify however much input you have, not how much you want</param>
+        /// <param name="wantInputDriven">A boolean value indicating whether the system should be in input-driven feed mode.</param>
+        /// <remarks>
+        /// This method sets the feed mode for the system. If <paramref name="wantInputDriven"/> is true, the system will operate in input-driven feed mode; otherwise, it will operate in a different mode.
+        /// </remarks>
         public void SetFeedMode(bool wantInputDriven)
         {
             m_feedmode = wantInputDriven;
         }
 
         /// <summary>
-        /// Reset
+        /// Resets the history of the resampler by creating a new history array.
         /// </summary>
         public void Reset(double fracpos = 0.0)
         {
@@ -122,6 +134,16 @@ namespace NAudio.Dsp
             if (m_iirfilter != null) m_iirfilter.Reset();
         }
 
+        /// <summary>
+        /// Sets the input and output rates, ensuring they are at least 1.0, and updates the internal ratio if the rates have changed.
+        /// </summary>
+        /// <param name="rate_in">The input rate to be set.</param>
+        /// <param name="rate_out">The output rate to be set.</param>
+        /// <remarks>
+        /// If the input rate <paramref name="rate_in"/> is less than 1.0, it is set to 1.0.
+        /// If the output rate <paramref name="rate_out"/> is less than 1.0, it is set to 1.0.
+        /// If either <paramref name="rate_in"/> or <paramref name="rate_out"/> is different from the current input or output rates, the internal rates are updated and the ratio is recalculated as the input rate divided by the output rate.
+        /// </remarks>
         public void SetRates(double rate_in, double rate_out)
         {
             if (rate_in < 1.0) rate_in = 1.0;
@@ -134,7 +156,10 @@ namespace NAudio.Dsp
             }
         }
 
-        // amount of input that has been received but not yet converted to output, in seconds
+        /// <summary>
+        /// Gets the current latency in seconds.
+        /// </summary>
+        /// <returns>The current latency in seconds.</returns>
         public double GetCurrentLatency()
         {
             double v = ((double)m_samples_in_rsinbuf - m_filtlatency) / m_sratein;
@@ -144,15 +169,17 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// Prepare
-        /// note that it is safe to call ResamplePrepare without calling ResampleOut (the next call of ResamplePrepare will function as normal)
-        /// nb inbuffer was WDL_ResampleSample **, returning a place to put the in buffer, so we return a buffer and offset
+        /// Prepares the resampling process and returns the number of samples required for the resampled output.
         /// </summary>
-        /// <param name="out_samples">req_samples is output samples desired if !wantInputDriven, or if wantInputDriven is input samples that we have</param>
-        /// <param name="nch"></param>
-        /// <param name="inbuffer"></param>
-        /// <param name="inbufferOffset"></param>
-        /// <returns>returns number of samples desired (put these into *inbuffer)</returns>
+        /// <param name="out_samples">The number of output samples.</param>
+        /// <param name="nch">The number of channels.</param>
+        /// <param name="inbuffer">The input buffer for resampling.</param>
+        /// <param name="inbufferOffset">The offset for the input buffer.</param>
+        /// <returns>The number of samples required for the resampled output.</returns>
+        /// <remarks>
+        /// This method prepares the resampling process by resizing the input buffer and calculating the number of samples required for the resampled output.
+        /// It also handles the filter latency and adjusts the size of the input buffer accordingly.
+        /// </remarks>
         public int ResamplePrepare(int out_samples, int nch, out WDL_ResampleSample[] inbuffer, out int inbufferOffset)
         {
             if (nch > WDL_RESAMPLE_MAX_NCH || nch < 1)
@@ -210,9 +237,19 @@ namespace NAudio.Dsp
             return sreq;
         }
 
-        // if numsamples_in < the value return by ResamplePrepare(), then it will be flushed to produce all remaining valid samples
-        // do NOT call with nsamples_in greater than the value returned from resamplerprpare()! the extra samples will be ignored.
-        // returns number of samples successfully outputted to out
+        /// <summary>
+        /// Resamples the input buffer to the output buffer based on the given parameters and returns the number of samples written to the output buffer.
+        /// </summary>
+        /// <param name="outBuffer">The output buffer to write the resampled samples to.</param>
+        /// <param name="outBufferIndex">The index in the output buffer to start writing the resampled samples.</param>
+        /// <param name="nsamples_in">The number of input samples to be resampled.</param>
+        /// <param name="nsamples_out">The number of output samples to be generated.</param>
+        /// <param name="nch">The number of channels in the input and output buffers.</param>
+        /// <returns>The number of samples written to the output buffer.</returns>
+        /// <remarks>
+        /// This method resamples the input buffer to the output buffer based on the given parameters. It handles filtering, interpolation, and padding as necessary to ensure accurate resampling.
+        /// The resampling process modifies the output buffer in place.
+        /// </remarks>
         public int ResampleOut(WDL_ResampleSample[] outBuffer, int outBufferIndex, int nsamples_in, int nsamples_out, int nch)
         {
             if (nch > WDL_RESAMPLE_MAX_NCH || nch < 1)
@@ -475,7 +512,15 @@ namespace NAudio.Dsp
             return ret;
         }
 
-        // only called in sinc modes
+        /// <summary>
+        /// Builds a lowpass filter based on the given filter position.
+        /// </summary>
+        /// <param name="filtpos">The position of the filter.</param>
+        /// <remarks>
+        /// This method builds a lowpass filter based on the given filter position, filter size, and interpolation size.
+        /// It modifies the original filter coefficients array in place.
+        /// The algorithm uses Blackman-Harris window and sinc function to construct the filter coefficients.
+        /// </remarks>
         private void BuildLowPass(double filtpos)
         {
             int wantsize = m_sincsize;
@@ -527,7 +572,21 @@ namespace NAudio.Dsp
             }
         }
 
-        // SincSample(WDL_ResampleSample *outptr, WDL_ResampleSample *inptr, double fracpos, int nch, WDL_SincFilterSample *filter, int filtsz)
+        /// <summary>
+        /// Performs sample rate conversion using sinc interpolation.
+        /// </summary>
+        /// <param name="outBuffer">The output buffer to store the resampled samples.</param>
+        /// <param name="outBufferIndex">The index in the output buffer to start writing the resampled samples.</param>
+        /// <param name="inBuffer">The input buffer containing the original samples.</param>
+        /// <param name="inBufferIndex">The index in the input buffer to start reading the original samples.</param>
+        /// <param name="fracpos">The fractional position within the input buffer for interpolation.</param>
+        /// <param name="nch">The number of channels in the audio data.</param>
+        /// <param name="filter">The sinc filter coefficients for interpolation.</param>
+        /// <param name="filterIndex">The index in the filter array to start applying the filter.</param>
+        /// <param name="filtsz">The size of the filter.</param>
+        /// <remarks>
+        /// This method performs sample rate conversion using sinc interpolation. It applies a sinc filter to the input samples to generate the resampled output. The fractional position within the input buffer is used for interpolation, and the number of channels and filter size are taken into account during the process. The resampled samples are written to the output buffer starting from the specified index.
+        /// </remarks>
         private void SincSample(WDL_ResampleSample[] outBuffer, int outBufferIndex, WDL_ResampleSample[] inBuffer, int inBufferIndex, double fracpos, int nch, WDL_SincFilterSample[] filter, int filterIndex, int filtsz)
         {
             int oversize = m_lp_oversize;
@@ -553,7 +612,21 @@ namespace NAudio.Dsp
             }
         }
 
-        // SincSample1(WDL_ResampleSample* outptr, WDL_ResampleSample* inptr, double fracpos, WDL_SincFilterSample* filter, int filtsz)
+        /// <summary>
+        /// Performs sinc resampling on the input buffer and writes the result to the output buffer at the specified indices.
+        /// </summary>
+        /// <param name="outBuffer">The output buffer where the resampled data will be written.</param>
+        /// <param name="outBufferIndex">The index in the output buffer where the resampled data will be written.</param>
+        /// <param name="inBuffer">The input buffer containing the original data to be resampled.</param>
+        /// <param name="inBufferIndex">The index in the input buffer from where the original data will be read for resampling.</param>
+        /// <param name="fracpos">The fractional position within the input buffer for resampling.</param>
+        /// <param name="filter">The sinc filter used for resampling.</param>
+        /// <param name="filterIndex">The index in the sinc filter array.</param>
+        /// <param name="filtsz">The size of the sinc filter.</param>
+        /// <remarks>
+        /// This method performs sinc resampling on the input buffer using the provided sinc filter and fractional position.
+        /// It calculates the resampled value using the filter coefficients and writes the result to the output buffer at the specified index.
+        /// </remarks>
         private void SincSample1(WDL_ResampleSample[] outBuffer, int outBufferIndex, WDL_ResampleSample[] inBuffer, int inBufferIndex, double fracpos, WDL_SincFilterSample[] filter, int filterIndex, int filtsz)
         {
             int oversize = m_lp_oversize;
@@ -576,7 +649,21 @@ namespace NAudio.Dsp
             outBuffer[outBufferIndex] = (WDL_ResampleSample)(sum * fracpos + sum2 * (1.0 - fracpos));
         }
 
-        // SincSample2(WDL_ResampleSample* outptr, WDL_ResampleSample* inptr, double fracpos, WDL_SincFilterSample* filter, int filtsz)
+        /// <summary>
+        /// Performs a sinc resampling of the input buffer and stores the result in the output buffer.
+        /// </summary>
+        /// <param name="outptr">The output buffer where the resampled data will be stored.</param>
+        /// <param name="outBufferIndex">The index in the output buffer where the resampled data will start.</param>
+        /// <param name="inBuffer">The input buffer containing the original data to be resampled.</param>
+        /// <param name="inBufferIndex">The index in the input buffer from where the original data will be read for resampling.</param>
+        /// <param name="fracpos">The fractional position within the input buffer for resampling.</param>
+        /// <param name="filter">The sinc filter used for resampling.</param>
+        /// <param name="filterIndex">The index in the filter array from where filtering will start.</param>
+        /// <param name="filtsz">The size of the filter array.</param>
+        /// <remarks>
+        /// This method performs a sinc resampling of the input buffer using the provided sinc filter. It calculates the resampled values based on the fractional position within the input buffer and stores the result in the output buffer starting from the specified index.
+        /// The resampling process involves applying the sinc filter to the input buffer data to obtain the resampled values. The filter is applied based on the fractional position, and the resulting values are stored in the output buffer.
+        /// </remarks>
         private void SincSample2(WDL_ResampleSample[] outptr, int outBufferIndex, WDL_ResampleSample[] inBuffer, int inBufferIndex, double fracpos, WDL_SincFilterSample[] filter, int filterIndex, int filtsz)
         {
             int oversize = m_lp_oversize;
@@ -647,6 +734,15 @@ namespace NAudio.Dsp
                 m_hist = new double[WDL_RESAMPLE_MAX_FILTERS * WDL_RESAMPLE_MAX_NCH, 4];
             }
 
+            /// <summary>
+            /// Sets the parameters for the filter.
+            /// </summary>
+            /// <param name="fpos">The position parameter.</param>
+            /// <param name="Q">The Q factor.</param>
+            /// <remarks>
+            /// This method sets the parameters for the filter based on the given position <paramref name="fpos"/> and Q factor <paramref name="Q"/>.
+            /// It calculates various coefficients based on the input parameters and updates the internal state of the filter.
+            /// </remarks>
             public void setParms(double fpos, double Q)
             {
                 if (Math.Abs(fpos - m_fpos) < 0.000001) return;
@@ -666,6 +762,21 @@ namespace NAudio.Dsp
 
             }
 
+            /// <summary>
+            /// Applies a filter to the input buffer and stores the result in the output buffer.
+            /// </summary>
+            /// <param name="inBuffer">The input buffer containing samples to be filtered.</param>
+            /// <param name="inIndex">The index in the input buffer to start filtering from.</param>
+            /// <param name="outBuffer">The output buffer to store the filtered samples.</param>
+            /// <param name="outIndex">The index in the output buffer to start storing the filtered samples.</param>
+            /// <param name="ns">The number of samples to filter.</param>
+            /// <param name="span">The span between samples in the input and output buffers.</param>
+            /// <param name="w">The value used for indexing in the history buffer.</param>
+            /// <remarks>
+            /// This method applies a filter to the input buffer using the coefficients b0, b1, b2, a1, and a2.
+            /// The filtered samples are stored in the output buffer starting from the specified index.
+            /// The history buffer m_hist is used to store previous input and output samples for filtering.
+            /// </remarks>
             public void Apply(WDL_ResampleSample[] inBuffer, int inIndex, WDL_ResampleSample[] outBuffer, int outIndex, int ns, int span, int w)
             {
                 double b0 = m_b0, b1 = m_b1, b2 = m_b2, a1 = m_a1, a2 = m_a2;
@@ -685,6 +796,16 @@ namespace NAudio.Dsp
                 }
             }
 
+            /// <summary>
+            /// Filters the input value to prevent denormalization and returns the filtered value.
+            /// </summary>
+            /// <param name="x">The input value to be filtered.</param>
+            /// <returns>The filtered value of <paramref name="x"/>.</returns>
+            /// <remarks>
+            /// This method is intended to prevent denormalization of the input value <paramref name="x"/> and returns the filtered value.
+            /// Denormalization occurs when a floating-point number is too close to zero, causing a loss of precision and performance degradation.
+            /// The implementation of denormalization filtering is pending and needs to be completed.
+            /// </remarks>
             double denormal_filter(float x)
             {
                 // TODO: implement denormalisation

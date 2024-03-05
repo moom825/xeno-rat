@@ -34,12 +34,16 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Reads bytes from this wave stream
+        /// Reads audio data from the source buffer, adjusts the volume, clips the samples, and writes the result to the destination buffer.
         /// </summary>
-        /// <param name="destBuffer">The destination buffer</param>
-        /// <param name="offset">Offset into the destination buffer</param>
-        /// <param name="numBytes">Number of bytes read</param>
-        /// <returns>Number of bytes read.</returns>
+        /// <param name="destBuffer">The destination buffer to write the audio data to.</param>
+        /// <param name="offset">The offset in the destination buffer at which to start writing.</param>
+        /// <param name="numBytes">The number of bytes to read from the source buffer and write to the destination buffer.</param>
+        /// <returns>The number of bytes written to the destination buffer.</returns>
+        /// <remarks>
+        /// This method reads audio data from the source buffer, adjusts the volume of each sample, clips the samples to prevent overflow, and writes the result to the destination buffer.
+        /// The method modifies the destination buffer in place.
+        /// </remarks>
         public int Read(byte[] destBuffer, int offset, int numBytes)
         {
             int sourceBytesRequired = numBytes * 2;

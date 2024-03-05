@@ -59,8 +59,12 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Releases resources held by this WaveBuffer
+        /// Disposes of the managed and unmanaged resources used by the WaveOut device.
         /// </summary>
+        /// <param name="disposing">A boolean value indicating whether to dispose of managed resources.</param>
+        /// <remarks>
+        /// This method releases the managed resources if <paramref name="disposing"/> is true. It also releases the unmanaged resources including the allocated headers and buffers used by the WaveOut device.
+        /// </remarks>
         public void Dispose()
         {
             GC.SuppressFinalize(this);
@@ -93,9 +97,15 @@ namespace NAudio.Wave
             }
         }
 
-        #endregion
-
-        /// this is called by the WAVE callback and should be used to refill the buffer
+        /// <summary>
+        /// Reads data from the wave stream, writes it to the output, and returns a boolean value indicating whether the operation is successful.
+        /// </summary>
+        /// <returns>True if data is successfully read and written to the output; otherwise, false.</returns>
+        /// <remarks>
+        /// This method locks the wave stream to read data into the buffer and then writes the data to the output.
+        /// If no data is read from the wave stream, it returns false.
+        /// The method also ensures that any remaining buffer space is filled with zeros before writing to the output.
+        /// </remarks>
         public bool OnDone()
         {
             int bytes;
@@ -131,6 +141,14 @@ namespace NAudio.Wave
         /// </summary>
         public int BufferSize => bufferSize;
 
+        /// <summary>
+        /// Writes the audio data to the WaveOut device for playback.
+        /// </summary>
+        /// <remarks>
+        /// This method writes the audio data to the WaveOut device for playback. It locks the <paramref name="waveOutLock"/> to ensure thread safety and then calls the <see cref="WaveInterop.waveOutWrite"/> method to write the audio data to the device using the specified <paramref name="header"/>.
+        /// If an error occurs during the write operation, a <see cref="MmException"/> is thrown with details about the specific error.
+        /// After writing the data, this method ensures that the current object is kept alive by calling <see cref="GC.KeepAlive"/> to prevent premature garbage collection.
+        /// </remarks>
         private void WriteToWaveOut()
         {
             MmResult result;

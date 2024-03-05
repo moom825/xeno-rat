@@ -160,6 +160,15 @@ namespace NAudio.Wave
         /// <returns>An MP3 Frame decompressor</returns>
         public delegate IMp3FrameDecompressor FrameDecompressorBuilder(WaveFormat mp3Format);
 
+        /// <summary>
+        /// Creates a table of contents for the MP3 file by reading the frames and populating the table of contents list.
+        /// </summary>
+        /// <remarks>
+        /// This method estimates the number of entries needed for the table of contents list based on the MP3 data length to minimize array resizing.
+        /// It iterates through the MP3 frames, reading each frame and populating the table of contents list with information such as file position, sample position, sample count, and byte count.
+        /// The method also validates the format of each frame and updates the total samples count.
+        /// If an EndOfStreamException is encountered during frame reading, it is caught and handled without affecting the process.
+        /// </remarks>
         private void CreateTableOfContents()
         {
             try
@@ -191,6 +200,17 @@ namespace NAudio.Wave
             }
         }
 
+        /// <summary>
+        /// Validates the format of the MP3 frame.
+        /// </summary>
+        /// <param name="frame">The MP3 frame to be validated.</param>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when the sample rate of the input frame does not match the sample rate of the MP3 wave format, or when the channel count of the input frame does not match the channel count of the MP3 wave format.
+        /// </exception>
+        /// <remarks>
+        /// This method validates the format of the input MP3 frame by checking its sample rate and channel count against the sample rate and channel count of the MP3 wave format.
+        /// If the sample rate or channel count does not match, an InvalidOperationException is thrown with a descriptive message.
+        /// </remarks>
         private void ValidateFrameFormat(Mp3Frame frame)
         {
             if (frame.SampleRate != Mp3WaveFormat.SampleRate)
@@ -213,8 +233,9 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Gets the total length of this file in milliseconds.
+        /// Calculates the total seconds based on the total samples and sample rate.
         /// </summary>
+        /// <returns>The total seconds calculated based on the total samples and sample rate.</returns>
         private double TotalSeconds()
         {
             return (double)totalSamples / Mp3WaveFormat.SampleRate;
@@ -233,9 +254,14 @@ namespace NAudio.Wave
         public byte[] Id3v1Tag { get; }
 
         /// <summary>
-        /// Reads the next mp3 frame
+        /// Reads the next MP3 frame from the stream and advances the position by one frame.
         /// </summary>
-        /// <returns>Next mp3 frame, or null if EOF</returns>
+        /// <param name="readData">A boolean value indicating whether to read the frame data.</param>
+        /// <returns>The next MP3 frame read from the stream, or null if the end of the stream is reached unexpectedly.</returns>
+        /// <remarks>
+        /// This method attempts to load the next MP3 frame from the input stream. If successful, it advances the position by one frame.
+        /// If the end of the stream is reached unexpectedly, an EndOfStreamException is caught and suppressed for now, as it indicates an unexpected end of the stream halfway through a frame.
+        /// </remarks>
         public Mp3Frame ReadNextFrame()
         {
             var frame = ReadNextFrame(true);
@@ -332,8 +358,17 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Reads decompressed PCM data from our MP3 file.
+        /// Reads a specified number of bytes from the MP3 file into the sample buffer.
         /// </summary>
+        /// <param name="sampleBuffer">The buffer to store the read bytes.</param>
+        /// <param name="offset">The zero-based byte offset in <paramref name="sampleBuffer"/> at which to begin storing the data read from the current stream.</param>
+        /// <param name="numBytes">The maximum number of bytes to read.</param>
+        /// <returns>The total number of bytes read into the buffer.</returns>
+        /// <remarks>
+        /// This method reads a specified number of bytes from the MP3 file into the sample buffer.
+        /// It uses a decompressor to decompress the frames and copy the decompressed data into the sample buffer.
+        /// The method handles repositioning, warm-up frames, and purging of data as needed.
+        /// </remarks>
         public override int Read(byte[] sampleBuffer, int offset, int numBytes)
         {
             int bytesRead = 0;
@@ -435,8 +470,12 @@ namespace NAudio.Wave
         public XingHeader XingHeader => xingHeader;
 
         /// <summary>
-        /// Disposes this WaveStream
+        /// Releases the unmanaged resources used by the Mp3Stream, and optionally releases the managed resources.
         /// </summary>
+        /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        /// <remarks>
+        /// This method disposes the Mp3Stream and the decompressor if they are not null. If <paramref name="disposing"/> is true, it also disposes the managed resources.
+        /// </remarks>
         protected override void Dispose(bool disposing)
         {
             if (disposing)

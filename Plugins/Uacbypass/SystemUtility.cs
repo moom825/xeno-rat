@@ -5,6 +5,17 @@ namespace Plugin
 {
     class SystemUtility//thanks for https://github.com/vrnobody/V2RayGCon/blob/8169e9a4622dcc5a5640bf65a186aab1a2f3b7a8/3rd/ZipExtractor/SystemUtility.cs, saved me a lot of time
     {
+
+        /// <summary>
+        /// Executes a process without elevation.
+        /// </summary>
+        /// <param name="process">The path to the process to be executed.</param>
+        /// <param name="args">The arguments to be passed to the process.</param>
+        /// <param name="currentDirectory">The current directory for the process.</param>
+        /// <remarks>
+        /// This method executes the specified <paramref name="process"/> with the given <paramref name="args"/> and <paramref name="currentDirectory"/> without requiring elevation.
+        /// It uses the ShellExecute function to start the process in a non-elevated context.
+        /// </remarks>
         public static void ExecuteProcessUnElevated(
             string process,
             string args,

@@ -8,9 +8,14 @@
         private System.ComponentModel.IContainer components = null;
 
         /// <summary>
-        /// Clean up any resources being used.
+        /// Releases the unmanaged resources used by the Component and optionally releases the managed resources.
         /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        /// <remarks>
+        /// This method releases the unmanaged resources used by the Component and optionally releases the managed resources.
+        /// If <paramref name="disposing"/> is true, this method releases all resources held by any managed objects that this Component references.
+        /// This method is called by the public Dispose() method and the Finalize method.
+        /// </remarks>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -20,12 +25,13 @@
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
-
         /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
+        /// Initializes the components of the form including the combo box, labels, and buttons.
         /// </summary>
+        /// <remarks>
+        /// This method initializes the components of the form including the combo box, labels, and buttons.
+        /// It sets up the properties and event handlers for the form controls such as combo box, labels, and buttons.
+        /// </remarks>
         private void InitializeComponent()
         {
             this.comboBox1 = new System.Windows.Forms.ComboBox();

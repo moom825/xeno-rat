@@ -108,15 +108,25 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Gets the default audio capture device
+        /// Retrieves the default audio capture device.
         /// </summary>
-        /// <returns>The default audio capture device</returns>
+        /// <returns>The default audio capture device.</returns>
+        /// <remarks>
+        /// This method retrieves the default audio capture device using the MMDeviceEnumerator class.
+        /// It then returns the default audio endpoint for capture with the specified data flow and role.
+        /// </remarks>
         public static MMDevice GetDefaultCaptureDevice()
         {
             var devices = new MMDeviceEnumerator();
             return devices.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Console);
         }
 
+        /// <summary>
+        /// Initializes the capture device for audio recording.
+        /// </summary>
+        /// <remarks>
+        /// This method initializes the capture device for audio recording. It sets up the audio client with the specified parameters such as share mode, stream flags, requested duration, wave format, and event handle. If using EventSync, the setup is specific with share mode and latencies. The method also initializes the record buffer for storing the recorded audio data.
+        /// </remarks>
         private void InitializeCaptureDevice()
         {
             if (initialized)
@@ -168,8 +178,9 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// To allow overrides to specify different flags (e.g. loopback)
+        /// Gets the audio client stream flags for the audio client stream.
         /// </summary>
+        /// <returns>The audio client stream flags, including the flag to enable auto-conversion of PCM and the default quality flag for the sample rate converter.</returns>
         protected virtual AudioClientStreamFlags GetAudioClientStreamFlags()
         {
             // enable auto-convert PCM
@@ -177,8 +188,13 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Start Capturing
+        /// Starts the recording process.
         /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown when a previous recording is still in progress.</exception>
+        /// <remarks>
+        /// This method initiates the recording process by setting the capture state to <see cref="CaptureState.Starting"/>.
+        /// It then initializes the capture device and starts a new thread to handle the recording using the <see cref="CaptureThread"/> method.
+        /// </remarks>
         public void StartRecording()
         {
             if (captureState != CaptureState.Stopped)
@@ -192,14 +208,25 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Stop Capturing (requests a stop, wait for RecordingStopped event to know it has finished)
+        /// Stops the recording if it is currently in progress.
         /// </summary>
+        /// <remarks>
+        /// This method changes the capture state to 'Stopping' if the current capture state is not already 'Stopped'.
+        /// </remarks>
         public void StopRecording()
         {
             if (captureState != CaptureState.Stopped)
                 captureState = CaptureState.Stopping;
         }
 
+        /// <summary>
+        /// Captures audio using the provided AudioClient and raises an event when recording is stopped.
+        /// </summary>
+        /// <param name="client">The AudioClient used for capturing audio.</param>
+        /// <remarks>
+        /// This method captures audio using the provided <paramref name="client"/>. It handles any exceptions that may occur during the recording process and raises a recording stopped event at the end.
+        /// </remarks>
+        /// <exception cref="Exception">Thrown if an exception occurs during the recording process.</exception>
         private void CaptureThread(AudioClient client)
         {
             Exception exception = null;
@@ -221,6 +248,15 @@ namespace NAudio.CoreAudioApi
             RaiseRecordingStopped(exception);
         }
 
+        /// <summary>
+        /// Records audio using the provided <paramref name="client"/> and manages the capture state.
+        /// </summary>
+        /// <param name="client">The audio client used for recording.</param>
+        /// <remarks>
+        /// This method calculates the duration of the allocated buffer, sets sleep and wait times, and starts capturing audio using the provided <paramref name="client"/>.
+        /// It then enters a loop to continuously capture audio packets while the capture state is set to Capturing.
+        /// The method handles different synchronization methods based on the value of <paramref name="isUsingEventSync"/>.
+        /// </remarks>
         private void DoRecording(AudioClient client)
         {
             //Debug.WriteLine(String.Format("Client buffer frame count: {0}", client.BufferSize));
@@ -257,6 +293,14 @@ namespace NAudio.CoreAudioApi
             }
         }
 
+        /// <summary>
+        /// Raises the RecordingStopped event with the specified exception.
+        /// </summary>
+        /// <param name="e">The exception that caused the recording to stop.</param>
+        /// <remarks>
+        /// This method raises the RecordingStopped event with the specified exception. If a synchronization context is available, the event is raised on the synchronization context; otherwise, it is raised on the current thread.
+        /// </remarks>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="e"/> is null.</exception>
         private void RaiseRecordingStopped(Exception e)
         {
             var handler = RecordingStopped;
@@ -271,6 +315,14 @@ namespace NAudio.CoreAudioApi
             }
         }
 
+        /// <summary>
+        /// Reads the next packet from the AudioCaptureClient and invokes the DataAvailable event with the captured audio data.
+        /// </summary>
+        /// <param name="capture">The AudioCaptureClient instance to read the packet from.</param>
+        /// <remarks>
+        /// This method reads the next packet from the specified AudioCaptureClient. It retrieves the packet size and iteratively processes the packet until no more data is available.
+        /// The method then invokes the DataAvailable event with the captured audio data in a WaveInEventArgs object.
+        /// </remarks>
         private void ReadNextPacket(AudioCaptureClient capture)
         {
             int packetSize = capture.GetNextPacketSize();
@@ -309,8 +361,11 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Dispose
+        /// Disposes of the resources used for audio recording.
         /// </summary>
+        /// <remarks>
+        /// This method stops the audio recording, releases the capture thread, and disposes of the audio client used for recording.
+        /// </remarks>
         public void Dispose()
         {
             StopRecording();

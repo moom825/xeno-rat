@@ -21,8 +21,9 @@ namespace NAudio.SoundFont
         public Zone[] Zones { get; set; }
 
         /// <summary>
-        /// <see cref="Object.ToString"/>
+        /// Returns the name of the object as a string representation.
         /// </summary>
+        /// <returns>The name of the object as a string.</returns>
         public override string ToString() => Name;
     }
 }

@@ -25,12 +25,18 @@ namespace NAudio.Utils
         }
 
         /// <summary>
-        /// Write data to the buffer
+        /// Writes the specified number of bytes from the input <paramref name="data"/> array to the internal buffer, starting at the specified <paramref name="offset"/>.
         /// </summary>
-        /// <param name="data">Data to write</param>
-        /// <param name="offset">Offset into data</param>
-        /// <param name="count">Number of bytes to write</param>
-        /// <returns>number of bytes written</returns>
+        /// <param name="data">The input byte array from which data will be written to the internal buffer.</param>
+        /// <param name="offset">The zero-based byte offset in the <paramref name="data"/> array at which to begin copying bytes to the internal buffer.</param>
+        /// <param name="count">The number of bytes to write to the internal buffer.</param>
+        /// <returns>The actual number of bytes written to the internal buffer, which may be less than the specified <paramref name="count"/> if the internal buffer does not have enough space.</returns>
+        /// <remarks>
+        /// This method locks the <paramref name="lockObject"/> to ensure thread safety while writing to the internal buffer.
+        /// If the specified <paramref name="count"/> is greater than the available space in the internal buffer, only the available space is written.
+        /// The method first writes to the end of the buffer, and if necessary, wraps around and writes to the start of the buffer to complete the write operation.
+        /// The total number of bytes written is returned, and the internal byte count is updated accordingly.
+        /// </remarks>
         public int Write(byte[] data, int offset, int count)
         {
             lock (lockObject)
@@ -60,12 +66,16 @@ namespace NAudio.Utils
         }
 
         /// <summary>
-        /// Read from the buffer
+        /// Reads data from the buffer into the specified byte array.
         /// </summary>
-        /// <param name="data">Buffer to read into</param>
-        /// <param name="offset">Offset into read buffer</param>
-        /// <param name="count">Bytes to read</param>
-        /// <returns>Number of bytes actually read</returns>
+        /// <param name="data">The byte array to which the data will be read.</param>
+        /// <param name="offset">The zero-based byte offset in <paramref name="data"/> at which to begin storing the data.</param>
+        /// <param name="count">The maximum number of bytes to read.</param>
+        /// <returns>The total number of bytes read into the buffer.</returns>
+        /// <remarks>
+        /// This method reads data from the internal buffer into the specified byte array. If the specified count is greater than the available bytes in the buffer, it only reads the available bytes.
+        /// The method handles wrapping around the buffer if necessary and updates the internal state accordingly.
+        /// </remarks>
         public int Read(byte[] data, int offset, int count)
         {
             lock (lockObject)
@@ -116,8 +126,11 @@ namespace NAudio.Utils
         }
 
         /// <summary>
-        /// Resets the buffer
+        /// Resets the state of the object.
         /// </summary>
+        /// <remarks>
+        /// This method locks the <paramref name="lockObject"/> and then calls the <see cref="ResetInner"/> method to reset the state of the object.
+        /// </remarks>
         public void Reset()
         {
             lock (lockObject)
@@ -126,6 +139,12 @@ namespace NAudio.Utils
             }
         }
 
+        /// <summary>
+        /// Resets the internal state of the object.
+        /// </summary>
+        /// <remarks>
+        /// This method resets the byte count, read position, and write position to their initial values, effectively clearing the internal state of the object.
+        /// </remarks>
         private void ResetInner()
         {
             byteCount = 0;
@@ -134,9 +153,14 @@ namespace NAudio.Utils
         }
 
         /// <summary>
-        /// Advances the buffer, discarding bytes
+        /// Advances the read position in the buffer by the specified count.
         /// </summary>
-        /// <param name="count">Bytes to advance</param>
+        /// <param name="count">The number of positions to advance the read position by.</param>
+        /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the count is negative.</exception>
+        /// <remarks>
+        /// This method advances the read position in the buffer by the specified count. If the count is greater than or equal to the total byte count, it resets the buffer.
+        /// Otherwise, it decrements the byte count by the specified count, advances the read position, and ensures that the read position wraps around if it exceeds the maximum length.
+        /// </remarks>
         public void Advance(int count)
         {
             lock (lockObject)

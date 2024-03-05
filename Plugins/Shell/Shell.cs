@@ -13,6 +13,20 @@ namespace Plugin
     public class Main
     {
         Process process;
+
+        /// <summary>
+        /// Runs the specified node and handles communication with it.
+        /// </summary>
+        /// <param name="node">The node to be run and communicated with.</param>
+        /// <exception cref="Exception">Thrown when an error occurs during the communication process.</exception>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <remarks>
+        /// This method sends a byte array with value 3 to indicate that it has connected to the specified node.
+        /// It then enters a loop to continuously receive data from the node and handle it accordingly.
+        /// If the received data is null, it terminates any existing process and breaks out of the loop.
+        /// If the received data indicates a command to execute, it creates a new process and executes the command.
+        /// The method also handles exceptions that may occur during the process creation and communication.
+        /// </remarks>
         public async Task Run(Node node)
         {
             await node.SendAsync(new byte[] { 3 });//indicate that it has connected
@@ -64,6 +78,19 @@ namespace Plugin
             process?.Close();
             process?.Dispose();
         }
+
+        /// <summary>
+        /// Kills the specified process and all its child processes.
+        /// </summary>
+        /// <param name="pid">The process ID of the parent process to be killed.</param>
+        /// <remarks>
+        /// This method recursively kills the specified process and all its child processes.
+        /// It first retrieves all the child processes of the specified parent process using WMI query.
+        /// Then, it iterates through each child process and calls the KillProcessAndChildren method recursively to kill its children.
+        /// After killing all the child processes, it attempts to kill the parent process using the Process.Kill method.
+        /// If the process has already exited, it catches the ArgumentException and continues without throwing an exception.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown when the process has already exited.</exception>
         private static void KillProcessAndChildren(int pid)
         {
             // Cannot close 'system idle process'.
@@ -89,6 +116,17 @@ namespace Plugin
                 // Process already exited.
             }
         }
+
+        /// <summary>
+        /// Creates a new process using the specified file path and redirects its standard input and output to the provided Node.
+        /// </summary>
+        /// <param name="path">The file path of the process to be started.</param>
+        /// <param name="node">The Node to which the standard output and error of the process will be redirected.</param>
+        /// <remarks>
+        /// This method creates a new process using the specified file path and configures it to redirect its standard input, output, and error.
+        /// The standard output and error data received from the process are sent to the provided Node after encoding them using UTF-8.
+        /// The process is started in a hidden window without using the system shell.
+        /// </remarks>
         public async Task CreateProc(string path, Node node) 
         {
             process = new Process();

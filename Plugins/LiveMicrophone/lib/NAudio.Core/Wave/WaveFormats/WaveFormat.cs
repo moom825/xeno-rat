@@ -47,10 +47,14 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Gets the size of a wave buffer equivalent to the latency in milliseconds.
+        /// Converts the given latency in milliseconds to the corresponding byte size based on the average bytes per second.
         /// </summary>
-        /// <param name="milliseconds">The milliseconds.</param>
-        /// <returns></returns>
+        /// <param name="milliseconds">The latency in milliseconds to be converted.</param>
+        /// <returns>The byte size calculated based on the average bytes per second and the given latency.</returns>
+        /// <remarks>
+        /// This method calculates the byte size by multiplying the average bytes per second by the given latency in milliseconds and then rounding it to the nearest block align if necessary.
+        /// If the calculated byte size is not already aligned to the block size, it is adjusted to the next block-aligned value.
+        /// </remarks>
         public int ConvertLatencyToByteSize(int milliseconds)
         {
             int bytes = (int) ((AverageBytesPerSecond/1000.0)*milliseconds);
@@ -63,15 +67,15 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Creates a WaveFormat with custom members
+        /// Creates a custom WaveFormat with the specified parameters.
         /// </summary>
-        /// <param name="tag">The encoding</param>
-        /// <param name="sampleRate">Sample Rate</param>
-        /// <param name="channels">Number of channels</param>
-        /// <param name="averageBytesPerSecond">Average Bytes Per Second</param>
-        /// <param name="blockAlign">Block Align</param>
-        /// <param name="bitsPerSample">Bits Per Sample</param>
-        /// <returns></returns>
+        /// <param name="tag">The encoding format of the WaveFormat.</param>
+        /// <param name="sampleRate">The sample rate of the WaveFormat.</param>
+        /// <param name="channels">The number of channels in the WaveFormat.</param>
+        /// <param name="averageBytesPerSecond">The average bytes per second for the WaveFormat.</param>
+        /// <param name="blockAlign">The block alignment for the WaveFormat.</param>
+        /// <param name="bitsPerSample">The number of bits per sample in the WaveFormat.</param>
+        /// <returns>A custom WaveFormat with the specified parameters.</returns>
         public static WaveFormat CreateCustomFormat(WaveFormatEncoding tag, int sampleRate, int channels, int averageBytesPerSecond, int blockAlign, int bitsPerSample)
         {
             WaveFormat waveFormat = new WaveFormat();
@@ -86,22 +90,22 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Creates an A-law wave format
+        /// Creates a new WaveFormat with A-Law encoding.
         /// </summary>
-        /// <param name="sampleRate">Sample Rate</param>
-        /// <param name="channels">Number of Channels</param>
-        /// <returns>Wave Format</returns>
+        /// <param name="sampleRate">The sample rate of the audio.</param>
+        /// <param name="channels">The number of channels in the audio.</param>
+        /// <returns>A new WaveFormat with A-Law encoding, sample rate, channels, and other parameters set accordingly.</returns>
         public static WaveFormat CreateALawFormat(int sampleRate, int channels)
         {
             return CreateCustomFormat(WaveFormatEncoding.ALaw, sampleRate, channels, sampleRate * channels, channels, 8);
         }
 
         /// <summary>
-        /// Creates a Mu-law wave format
+        /// Creates a new WaveFormat with MuLaw encoding.
         /// </summary>
-        /// <param name="sampleRate">Sample Rate</param>
-        /// <param name="channels">Number of Channels</param>
-        /// <returns>Wave Format</returns>
+        /// <param name="sampleRate">The sample rate of the audio.</param>
+        /// <param name="channels">The number of channels in the audio.</param>
+        /// <returns>A new WaveFormat with MuLaw encoding, based on the specified <paramref name="sampleRate"/> and <paramref name="channels"/>.</returns>
         public static WaveFormat CreateMuLawFormat(int sampleRate, int channels)
         {
             return CreateCustomFormat(WaveFormatEncoding.MuLaw, sampleRate, channels, sampleRate * channels, channels, 8);
@@ -128,10 +132,11 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Creates a new 32 bit IEEE floating point wave format
+        /// Creates a new IEEE float wave format with the specified sample rate and number of channels.
         /// </summary>
-        /// <param name="sampleRate">sample rate</param>
-        /// <param name="channels">number of channels</param>
+        /// <param name="sampleRate">The sample rate of the wave format.</param>
+        /// <param name="channels">The number of channels in the wave format.</param>
+        /// <returns>A new WaveFormat object representing the IEEE float wave format with the specified parameters.</returns>
         public static WaveFormat CreateIeeeFloatWaveFormat(int sampleRate, int channels)
         {
             var wf = new WaveFormat();
@@ -146,10 +151,19 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Helper function to retrieve a WaveFormat structure from a pointer
+        /// Marshals a WaveFormat structure from the specified pointer.
         /// </summary>
-        /// <param name="pointer">WaveFormat structure</param>
-        /// <returns></returns>
+        /// <param name="pointer">A pointer to the WaveFormat structure.</param>
+        /// <returns>The WaveFormat structure marshaled from the specified <paramref name="pointer"/>.</returns>
+        /// <remarks>
+        /// This method marshals a WaveFormat structure from the specified <paramref name="pointer"/>.
+        /// It first marshals the WaveFormat structure using Marshal.PtrToStructure method.
+        /// Then, based on the wave format encoding, it may further marshal the structure to a more specific type, such as WaveFormatExtensible, AdpcmWaveFormat, Gsm610WaveFormat, or WaveFormatExtraData.
+        /// If the wave format encoding is PCM, the extra size is set to 0 to avoid reading corrupt data.
+        /// If the wave format encoding is Extensible, Adpcm, or Gsm610, the structure is further marshaled to the specific type.
+        /// If the wave format encoding is not recognized and the extra size is greater than 0, the structure is marshaled to WaveFormatExtraData.
+        /// The marshaled WaveFormat structure is then returned.
+        /// </remarks>
         public static WaveFormat MarshalFromPtr(IntPtr pointer)
         {
             var waveFormat = Marshal.PtrToStructure<WaveFormat>(pointer);
@@ -180,10 +194,14 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Helper function to marshal WaveFormat to an IntPtr
+        /// Marshals the WaveFormat structure to a pointer.
         /// </summary>
-        /// <param name="format">WaveFormat</param>
-        /// <returns>IntPtr to WaveFormat structure (needs to be freed by callee)</returns>
+        /// <param name="format">The WaveFormat structure to be marshaled.</param>
+        /// <returns>A pointer to the marshaled WaveFormat structure.</returns>
+        /// <remarks>
+        /// This method allocates memory for the WaveFormat structure, marshals the structure to the allocated memory, and returns a pointer to the marshaled structure.
+        /// The allocated memory must be released using Marshal.FreeHGlobal when it is no longer needed to prevent memory leaks.
+        /// </remarks>
         public static IntPtr MarshalToPtr(WaveFormat format)
         {
             int formatSize = Marshal.SizeOf(format);
@@ -193,12 +211,16 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Reads in a WaveFormat (with extra data) from a fmt chunk (chunk identifier and
-        /// length should already have been read)
+        /// Reads the wave format and extra data from the specified binary reader and returns the WaveFormatExtraData.
         /// </summary>
-        /// <param name="br">Binary reader</param>
-        /// <param name="formatChunkLength">Format chunk length</param>
-        /// <returns>A WaveFormatExtraData</returns>
+        /// <param name="br">The BinaryReader used to read the wave format and extra data.</param>
+        /// <param name="formatChunkLength">The length of the format chunk.</param>
+        /// <returns>The WaveFormatExtraData containing the wave format and extra data.</returns>
+        /// <remarks>
+        /// This method reads the wave format from the specified BinaryReader using the formatChunkLength to determine the length of the format chunk.
+        /// It then reads the extra data from the same BinaryReader.
+        /// The WaveFormatExtraData object containing the wave format and extra data is returned.
+        /// </remarks>
         public static WaveFormat FromFormatChunk(BinaryReader br, int formatChunkLength)
         {
             var waveFormat = new WaveFormatExtraData();
@@ -207,6 +229,16 @@ namespace NAudio.Wave
             return waveFormat;
         }
 
+        /// <summary>
+        /// Reads the wave format information from the provided BinaryReader.
+        /// </summary>
+        /// <param name="br">The BinaryReader to read the wave format from.</param>
+        /// <param name="formatChunkLength">The length of the format chunk.</param>
+        /// <exception cref="InvalidDataException">Thrown when the formatChunkLength is less than 16, indicating an invalid WaveFormat structure.</exception>
+        /// <remarks>
+        /// This method reads the wave format information from the provided BinaryReader, including the wave format tag, number of channels, sample rate, average bytes per second, block align, and bits per sample.
+        /// If the formatChunkLength is greater than 16, it also reads the extra size and checks for format chunk mismatch.
+        /// </remarks>
         private void ReadWaveFormat(BinaryReader br, int formatChunkLength)
         {
             if (formatChunkLength < 16)
@@ -239,9 +271,17 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Reports this WaveFormat as a string
+        /// Returns a string representation of the WaveFormat object.
         /// </summary>
-        /// <returns>String describing the wave format</returns>
+        /// <returns>
+        /// A string representing the wave format, including the number of bits per sample, the sample rate in Hertz, and the number of channels.
+        /// </returns>
+        /// <remarks>
+        /// This method returns a string representation of the WaveFormat object based on the wave format tag.
+        /// If the wave format tag is PCM or Extensible, it returns a string with the number of bits per sample, the sample rate in Hertz, and the number of channels.
+        /// If the wave format tag is IEEEFloat, it returns a string with the number of bits per sample, the sample rate in Hertz, and the number of channels.
+        /// If the wave format tag is neither PCM, Extensible, nor IEEEFloat, it returns the wave format tag as a string.
+        /// </remarks>
         public override string ToString()
         {
             switch (waveFormatTag)
@@ -258,10 +298,10 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Compares with another WaveFormat object
+        /// Determines whether the current WaveFormat object is equal to another object.
         /// </summary>
-        /// <param name="obj">Object to compare to</param>
-        /// <returns>True if the objects are the same</returns>
+        /// <param name="obj">The object to compare with the current WaveFormat object.</param>
+        /// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
         public override bool Equals(object obj)
         {
             var other = obj as WaveFormat;
@@ -278,9 +318,9 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Provides a Hashcode for this WaveFormat
+        /// Computes the hash code for the WaveFormat instance.
         /// </summary>
-        /// <returns>A hashcode</returns>
+        /// <returns>The computed hash code.</returns>
         public override int GetHashCode()
         {
             return (int) waveFormatTag ^ 
@@ -297,9 +337,12 @@ namespace NAudio.Wave
         public WaveFormatEncoding Encoding => waveFormatTag;
 
         /// <summary>
-        /// Writes this WaveFormat object to a stream
+        /// Serializes the wave format data and writes it to the specified BinaryWriter.
         /// </summary>
-        /// <param name="writer">the output stream</param>
+        /// <param name="writer">The BinaryWriter to which the wave format data will be written.</param>
+        /// <remarks>
+        /// This method serializes the wave format data including encoding, channels, sample rate, average bytes per second, block align, bits per sample, and extra size, and writes it to the specified BinaryWriter.
+        /// </remarks>
         public virtual void Serialize(BinaryWriter writer)
         {
             writer.Write((int)(18 + extraSize)); // wave format length

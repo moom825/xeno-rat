@@ -81,12 +81,12 @@ namespace NAudio.Wave.Compression
             streamHeader = new AcmStreamHeader(streamHandle, sourceBufferSize, SourceToDest(sourceBufferSize));
         }
 
-
         /// <summary>
-        /// Returns the number of output bytes for a given number of input bytes
+        /// Converts the source value to destination and returns the result.
         /// </summary>
-        /// <param name="source">Number of input bytes</param>
-        /// <returns>Number of output bytes</returns>
+        /// <param name="source">The value to be converted.</param>
+        /// <returns>The converted value from <paramref name="source"/>.</returns>
+        /// <exception cref="MmException">Thrown when an error occurs during the conversion process.</exception>
         public int SourceToDest(int source)
         {
             if (source == 0) // zero is an invalid parameter to acmStreamSize
@@ -98,10 +98,15 @@ namespace NAudio.Wave.Compression
         }
 
         /// <summary>
-        /// Returns the number of source bytes for a given number of destination bytes
+        /// Converts the specified destination value to the source format and returns the result.
         /// </summary>
-        /// <param name="dest">Number of destination bytes</param>
-        /// <returns>Number of source bytes</returns>
+        /// <param name="dest">The destination value to be converted.</param>
+        /// <returns>The converted value in the source format.</returns>
+        /// <exception cref="MmException">Thrown when the acmStreamSize method fails.</exception>
+        /// <remarks>
+        /// If the <paramref name="dest"/> parameter is 0, the method returns 0, as zero is considered an invalid parameter for acmStreamSize.
+        /// The method uses the acmStreamSize method to determine the size of the buffer needed to convert the specified destination value to the source format.
+        /// </remarks>
         public int DestToSource(int dest)
         {
             if (dest == 0) // zero is an invalid parameter to acmStreamSize
@@ -112,11 +117,16 @@ namespace NAudio.Wave.Compression
         }
 
         /// <summary>
-        /// Suggests an appropriate PCM format that the compressed format can be converted
-        /// to in one step
+        /// Suggests a PCM format based on the given compressed format.
         /// </summary>
-        /// <param name="compressedFormat">The compressed format</param>
-        /// <returns>The PCM format</returns>
+        /// <param name="compressedFormat">The compressed format for which to suggest a PCM format.</param>
+        /// <returns>A PCM format suggested based on the given compressed format.</returns>
+        /// <exception cref="MmException">Thrown when an error occurs during the suggestion process.</exception>
+        /// <remarks>
+        /// This method suggests a PCM format based on the given compressed format using the acmFormatSuggest2 function from AcmInterop.
+        /// It creates a PCM format with the same sample rate and channels as the compressed format, with 16-bit sample size.
+        /// The suggested PCM format is returned after the suggestion process is completed.
+        /// </remarks>
         public static WaveFormat SuggestPcmFormat(WaveFormat compressedFormat)
         {
             // create a PCM format
@@ -153,20 +163,27 @@ namespace NAudio.Wave.Compression
         public byte[] DestBuffer => streamHeader.DestBuffer;
 
         /// <summary>
-        /// Report that we have repositioned in the source stream
+        /// Repositions the stream header.
         /// </summary>
+        /// <remarks>
+        /// This method calls the Reposition method of the streamHeader object to reposition the stream header.
+        /// </remarks>
         public void Reposition()
         {
             streamHeader.Reposition();
         }
 
         /// <summary>
-        /// Converts the contents of the SourceBuffer into the DestinationBuffer
+        /// Converts the specified number of bytes and returns the converted bytes count.
         /// </summary>
-        /// <param name="bytesToConvert">The number of bytes in the SourceBuffer
-        /// that need to be converted</param>
-        /// <param name="sourceBytesConverted">The number of source bytes actually converted</param>
-        /// <returns>The number of converted bytes in the DestinationBuffer</returns>
+        /// <param name="bytesToConvert">The number of bytes to be converted.</param>
+        /// <returns>The number of bytes after conversion.</returns>
+        /// <exception cref="MmException">Thrown when the conversion does not convert all the bytes.</exception>
+        /// <remarks>
+        /// This method is marked as obsolete and it is recommended to call the version returning sourceBytesConverted instead.
+        /// The method internally calls another overloaded method to perform the conversion and checks if the conversion was successful.
+        /// If the conversion did not convert all the bytes, a <see cref="MmException"/> is thrown with the message "AcmStreamHeader.Convert didn't convert everything".
+        /// </remarks>
         public int Convert(int bytesToConvert, out int sourceBytesConverted)
         {
             if (bytesToConvert % sourceFormat.BlockAlign != 0)
@@ -196,18 +213,18 @@ namespace NAudio.Wave.Compression
             return destBytes;
         }
 
-        /* Relevant only for async conversion streams
-        public void Reset()
-        {
-            MmException.Try(AcmInterop.acmStreamReset(streamHandle,0),"acmStreamReset");
-        }
-        */
-
-        #region IDisposable Members
-
         /// <summary>
-        /// Frees resources associated with this ACM Stream
+        /// Releases the unmanaged resources used by the WaveFormatConverter and optionally releases the managed resources.
         /// </summary>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        /// <exception cref="MmException">Thrown when an error occurs during the ACM stream close operation.</exception>
+        /// <remarks>
+        /// This method releases the unmanaged resources used by the WaveFormatConverter. If the disposing parameter is true, it also releases the managed resources.
+        /// The method first checks if the streamHeader is not null, and if so, disposes it and sets it to null.
+        /// Then, it checks if the streamHandle is not IntPtr.Zero, and if so, calls acmStreamClose to close the stream handle.
+        /// If an error occurs during the acmStreamClose operation, a MmException is thrown with details of the error.
+        /// Finally, it checks if the driverHandle is not IntPtr.Zero, and if so, calls acmDriverClose to close the driver handle.
+        /// </remarks>
         public void Dispose()
         {
             Dispose(true);

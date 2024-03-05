@@ -2,7 +2,7 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2009-2013
+// Copyright Â© AForge.NET, 2009-2013
 // contacts@aforgenet.com
 //
 
@@ -99,9 +99,14 @@ namespace AForge.Video.DirectShow.Internals
         }
 
         /// <summary>
-        /// Dispose the object.
+        /// Disposes of the resources used by the current instance.
         /// </summary>
-        ///
+        /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        /// <remarks>
+        /// This method disposes of the resources used by the current instance. If <paramref name="disposing"/> is true, it releases both managed and unmanaged resources. If <paramref name="disposing"/> is false, it releases only unmanaged resources.
+        /// The method first checks if the <see cref="FormatSize"/> is not equal to 0 and <see cref="FormatPtr"/> is not equal to <see cref="IntPtr.Zero"/>, then it frees the memory allocated by <see cref="FormatPtr"/> using <see cref="Marshal.FreeCoTaskMem"/>.
+        /// Next, it checks if <see cref="unkPtr"/> is not equal to <see cref="IntPtr.Zero"/>, then it releases the COM object referenced by <see cref="unkPtr"/> using <see cref="Marshal.Release"/>.
+        /// </remarks>
         public void Dispose( )
         {
             Dispose( true );

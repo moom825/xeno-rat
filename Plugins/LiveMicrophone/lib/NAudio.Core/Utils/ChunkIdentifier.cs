@@ -9,11 +9,17 @@ namespace NAudio.Utils
     /// </summary>
     public class ChunkIdentifier
     {
+
         /// <summary>
-        /// Chunk identifier to Int32 (replaces mmioStringToFOURCC)
+        /// Converts a four-character string to a 32-bit signed integer.
         /// </summary>
-        /// <param name="s">four character chunk identifier</param>
-        /// <returns>Chunk identifier as int 32</returns>
+        /// <param name="s">The input string, must be exactly four characters long.</param>
+        /// <returns>The 32-bit signed integer representation of the input string.</returns>
+        /// <exception cref="ArgumentException">Thrown when the input string is not exactly four characters long or when it does not encode to exactly four bytes.</exception>
+        /// <remarks>
+        /// This method converts the input string <paramref name="s"/> to a byte array using UTF-8 encoding, and then converts the byte array to a 32-bit signed integer using the BitConverter.ToInt32 method.
+        /// If the input string is not exactly four characters long or does not encode to exactly four bytes, an ArgumentException is thrown.
+        /// </remarks>
         public static int ChunkIdentifierToInt32(string s)
         {
             if (s.Length != 4) throw new ArgumentException("Must be a four character string");

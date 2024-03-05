@@ -305,7 +305,7 @@ namespace NAudio.Dmo.Effect
         }
 
         /// <summary>
-        /// Dispose code
+        /// Disposes the media objects if they are not null.
         /// </summary>
         public void Dispose()
         {

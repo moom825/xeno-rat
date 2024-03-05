@@ -23,12 +23,16 @@
         public WaveFormat WaveFormat => source.WaveFormat;
 
         /// <summary>
-        /// Reads samples from this sample provider
+        /// Reads audio samples from the source and modifies the volume if necessary.
         /// </summary>
-        /// <param name="buffer">Sample buffer</param>
-        /// <param name="offset">Offset into sample buffer</param>
-        /// <param name="sampleCount">Number of samples desired</param>
-        /// <returns>Number of samples read</returns>
+        /// <param name="buffer">The buffer to store the audio samples.</param>
+        /// <param name="offset">The offset in the buffer at which to begin storing the samples.</param>
+        /// <param name="sampleCount">The number of samples to read.</param>
+        /// <returns>The number of samples actually read from the source.</returns>
+        /// <remarks>
+        /// This method reads audio samples from the source into the specified buffer starting at the given offset.
+        /// If the volume is not equal to 1, it modifies the audio samples in the buffer by scaling them with the volume factor.
+        /// </remarks>
         public int Read(float[] buffer, int offset, int sampleCount)
         {
             int samplesRead = source.Read(buffer, offset, sampleCount);

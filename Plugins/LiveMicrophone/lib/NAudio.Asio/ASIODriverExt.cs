@@ -57,10 +57,12 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Allows adjustment of which is the first output channel we write to
+        /// Sets the channel offsets for output and input channels.
         /// </summary>
-        /// <param name="outputChannelOffset">Output Channel offset</param>
-        /// <param name="inputChannelOffset">Input Channel offset</param>
+        /// <param name="outputChannelOffset">The offset for the output channels.</param>
+        /// <param name="inputChannelOffset">The offset for the input channels.</param>
+        /// <exception cref="ArgumentException">Thrown when the sum of <paramref name="outputChannelOffset"/> and <paramref name="numberOfOutputChannels"/> is greater than the number of output channels in the capabilities.</exception>
+        /// <exception cref="ArgumentException">Thrown when the sum of <paramref name="inputChannelOffset"/> and <paramref name="numberOfInputChannels"/> is greater than the number of input channels in the capabilities.</exception>
         public void SetChannelOffset(int outputChannelOffset, int inputChannelOffset)
         {
             if (outputChannelOffset + numberOfOutputChannels <= Capabilities.NbOutputChannels)
@@ -89,15 +91,18 @@ namespace NAudio.Wave.Asio
         public AsioDriver Driver => driver;
 
         /// <summary>
-        /// Starts playing the buffers.
+        /// Starts the driver.
         /// </summary>
+        /// <remarks>
+        /// This method starts the driver, allowing it to perform its designated tasks.
+        /// </remarks>
         public void Start()
         {
             driver.Start();
         }
 
         /// <summary>
-        /// Stops playing the buffers.
+        /// Stops the driver.
         /// </summary>
         public void Stop()
         {
@@ -105,7 +110,7 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Shows the control panel.
+        /// Shows the control panel by invoking the driver's ControlPanel method.
         /// </summary>
         public void ShowControlPanel()
         {
@@ -113,8 +118,12 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Releases this instance.
+        /// Releases the driver resources and COM ASIO driver.
         /// </summary>
+        /// <remarks>
+        /// This method releases the driver resources by disposing the buffers and releasing the COM ASIO driver.
+        /// </remarks>
+        /// <exception cref="Exception">Thrown if an error occurs while disposing the buffers.</exception>
         public void ReleaseDriver()
         {
             try
@@ -128,21 +137,22 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Determines whether the specified sample rate is supported.
+        /// Checks if the specified sample rate is supported by the driver.
         /// </summary>
-        /// <param name="sampleRate">The sample rate.</param>
-        /// <returns>
-        /// 	<c>true</c> if [is sample rate supported]; otherwise, <c>false</c>.
-        /// </returns>
+        /// <param name="sampleRate">The sample rate to be checked.</param>
+        /// <returns>True if the sample rate is supported; otherwise, false.</returns>
         public bool IsSampleRateSupported(double sampleRate)
         {
             return driver.CanSampleRate(sampleRate);
         }
 
         /// <summary>
-        /// Sets the sample rate.
+        /// Sets the sample rate for the driver and updates the capabilities.
         /// </summary>
-        /// <param name="sampleRate">The sample rate.</param>
+        /// <param name="sampleRate">The new sample rate to be set.</param>
+        /// <remarks>
+        /// This method sets the sample rate for the driver to the specified value and then updates the capabilities by calling the BuildCapabilities method.
+        /// </remarks>
         public void SetSampleRate(double sampleRate)
         {
             driver.SetSampleRate(sampleRate);
@@ -167,11 +177,22 @@ namespace NAudio.Wave.Asio
         public AsioDriverCapability Capabilities => capability;
 
         /// <summary>
-        /// Creates the buffers for playing.
+        /// Creates buffers for the specified number of output and input channels and returns the buffer size used.
         /// </summary>
-        /// <param name="numberOfOutputChannels">The number of outputs channels.</param>
-        /// <param name="numberOfInputChannels">The number of input channel.</param>
-        /// <param name="useMaxBufferSize">if set to <c>true</c> [use max buffer size] else use Prefered size</param>
+        /// <param name="numberOfOutputChannels">The number of output channels for which buffers need to be created.</param>
+        /// <param name="numberOfInputChannels">The number of input channels for which buffers need to be created.</param>
+        /// <param name="useMaxBufferSize">A boolean value indicating whether to use the maximum buffer size provided by the driver.</param>
+        /// <exception cref="ArgumentException">
+        /// Thrown when the number of output channels or input channels is invalid, i.e., not within the specified range.
+        /// </exception>
+        /// <returns>
+        /// The size of the buffers created for the channels, based on whether the maximum buffer size provided by the driver is used or the preferred buffer size.
+        /// </returns>
+        /// <remarks>
+        /// This method creates buffers for the specified number of output and input channels. It sets the number of output and input channels and initializes buffer information accordingly.
+        /// If <paramref name="useMaxBufferSize"/> is true, the driver's maximum buffer size is used; otherwise, the preferred buffer size is used.
+        /// The ASIO Buffers are created with the specified buffer information and callbacks, and the method checks if outputReady is supported by the driver.
+        /// </remarks>
         public int CreateBuffers(int numberOfOutputChannels, int numberOfInputChannels, bool useMaxBufferSize)
         {
             if (numberOfOutputChannels < 0 || numberOfOutputChannels > capability.NbOutputChannels)
@@ -241,8 +262,17 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Builds the capabilities internally.
+        /// Builds the capabilities of the ASIO driver, including driver name, input/output channels, channel information, sample rate, latencies, and buffer size.
         /// </summary>
+        /// <remarks>
+        /// This method initializes the <paramref name="capability"/> object with the capabilities of the ASIO driver.
+        /// It retrieves the driver name using <see cref="AsioDriver.GetDriverName"/> and the number of input/output channels using <see cref="AsioDriver.GetChannels"/>.
+        /// It then retrieves the channel information for inputs and outputs using <see cref="AsioDriver.GetChannelInfo"/>.
+        /// The sample rate is obtained using <see cref="AsioDriver.GetSampleRate"/>, and latencies are retrieved using <see cref="AsioDriver.GetLatencies"/>.
+        /// If an error occurs during the retrieval of latencies, an <see cref="AsioException"/> is thrown with the specific error information.
+        /// Finally, the buffer size is obtained using <see cref="AsioDriver.GetBufferSize"/>.
+        /// </remarks>
+        /// <exception cref="AsioException">Thrown when an error occurs during the retrieval of latencies.</exception>
         private void BuildCapabilities()
         {
             capability = new AsioDriverCapability();
@@ -285,10 +315,10 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Callback called by the AsioDriver on fill buffer demand. Redirect call to external callback.
+        /// Callback function for switching buffers and invoking the fill buffer callback.
         /// </summary>
-        /// <param name="doubleBufferIndex">Index of the double buffer.</param>
-        /// <param name="directProcess">if set to <c>true</c> [direct process].</param>
+        /// <param name="doubleBufferIndex">The index of the double buffer.</param>
+        /// <param name="directProcess">A boolean value indicating whether to process directly.</param>
         private void BufferSwitchCallBack(int doubleBufferIndex, bool directProcess)
         {
             for (int i = 0; i < numberOfInputChannels; i++)
@@ -310,9 +340,12 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Callback called by the AsioDriver on event "Samples rate changed".
+        /// Updates the sample rate in the capability and modifies the original array in place.
         /// </summary>
-        /// <param name="sRate">The sample rate.</param>
+        /// <param name="sRate">The new sample rate value.</param>
+        /// <remarks>
+        /// This method updates the sample rate in the capability object with the provided <paramref name="sRate"/> value.
+        /// </remarks>
         private void SampleRateDidChangeCallBack(double sRate)
         {
             // Check when this is called?
@@ -320,13 +353,19 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Asio message call back.
+        /// Handles ASIO messages and performs corresponding actions based on the message selector and value.
         /// </summary>
-        /// <param name="selector">The selector.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="message">The message.</param>
-        /// <param name="opt">The opt.</param>
-        /// <returns></returns>
+        /// <param name="selector">The ASIO message selector.</param>
+        /// <param name="value">The value associated with the message selector.</param>
+        /// <param name="message">A pointer to the message data.</param>
+        /// <param name="opt">A pointer to optional data.</param>
+        /// <returns>The result of the ASIO message handling.</returns>
+        /// <remarks>
+        /// This method handles ASIO messages and performs corresponding actions based on the message selector and value.
+        /// It switches between different message selectors and executes the appropriate actions for each case.
+        /// If the message selector is kAsioSelectorSupported, it further switches between sub-values to handle specific cases.
+        /// The method also invokes the ResetRequestCallback when the message selector is kAsioResetRequest.
+        /// </remarks>
         private int AsioMessageCallBack(AsioMessageSelector selector, int value, IntPtr message, IntPtr opt)
         {
             // Check when this is called?
@@ -375,12 +414,12 @@ namespace NAudio.Wave.Asio
         }
 
         /// <summary>
-        /// Buffers switch time info call back.
+        /// Callback function for switching buffer time information.
         /// </summary>
-        /// <param name="asioTimeParam">The asio time param.</param>
-        /// <param name="doubleBufferIndex">Index of the double buffer.</param>
-        /// <param name="directProcess">if set to <c>true</c> [direct process].</param>
-        /// <returns></returns>
+        /// <param name="asioTimeParam">The time parameter for the ASIO driver.</param>
+        /// <param name="doubleBufferIndex">The index of the double buffer.</param>
+        /// <param name="directProcess">A boolean value indicating whether the process is direct.</param>
+        /// <returns>Returns a pointer to the buffer switch time information.</returns>
         private IntPtr BufferSwitchTimeInfoCallBack(IntPtr asioTimeParam, int doubleBufferIndex, bool directProcess)
         {
             // Check when this is called?

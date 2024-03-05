@@ -23,11 +23,15 @@ namespace NAudio.Mixer
 			GetControlDetails();
 
 		}
-		
+
 		/// <summary>
-		/// Gets the details for this control
+		/// Retrieves details from the specified memory location and stores them in the boolDetails field.
 		/// </summary>
-		/// <param name="pDetails">memory pointer</param>
+		/// <param name="pDetails">A pointer to the memory location containing the details to be retrieved.</param>
+		/// <exception cref="ArgumentNullException">Thrown when the <paramref name="pDetails"/> is null.</exception>
+		/// <remarks>
+		/// This method uses the Marshal.PtrToStructure method to retrieve details from the specified memory location and stores them in the boolDetails field.
+		/// </remarks>
 		protected override void GetDetails(IntPtr pDetails) 
 		{
 			boolDetails = Marshal.PtrToStructure<MixerInterop.MIXERCONTROLDETAILS_BOOLEAN>(pDetails);

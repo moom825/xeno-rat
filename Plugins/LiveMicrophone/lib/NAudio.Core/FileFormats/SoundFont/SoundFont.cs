@@ -87,8 +87,13 @@ namespace NAudio.SoundFont
         public byte[] SampleData => sampleData.SampleData;
 
         /// <summary>
-        /// <see cref="Object.ToString"/>
+        /// Returns a formatted string containing information and presets chunks.
         /// </summary>
+        /// <returns>A string containing the information chunk and presets chunk.</returns>
+        /// <remarks>
+        /// This method returns a formatted string that includes the information chunk and presets chunk.
+        /// The information chunk contains <paramref name="info"/>, and the presets chunk contains <paramref name="presetsChunk"/>.
+        /// </remarks>
         public override string ToString()
         {
             return String.Format("Info Chunk:\r\n{0}\r\nPresets Chunk:\r\n{1}",

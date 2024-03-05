@@ -47,10 +47,10 @@
         };
 
         /// <summary>
-        /// Converts a mu-law encoded byte to a 16 bit linear sample
+        /// Converts a mu-law encoded byte to a 16-bit linear PCM sample.
         /// </summary>
-        /// <param name="muLaw">mu-law encoded byte</param>
-        /// <returns>Linear sample</returns>
+        /// <param name="muLaw">The mu-law encoded byte to be converted.</param>
+        /// <returns>The 16-bit linear PCM sample corresponding to the input mu-law encoded byte.</returns>
         public static short MuLawToLinearSample(byte muLaw)
         {
             return MuLawDecompressTable[muLaw];

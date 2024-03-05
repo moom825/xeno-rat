@@ -47,10 +47,10 @@
         };
 
         /// <summary>
-        /// Converts an a-law encoded byte to a 16 bit linear sample
+        /// Converts A-law encoded byte to linear sample.
         /// </summary>
-        /// <param name="aLaw">a-law encoded byte</param>
-        /// <returns>Linear sample</returns>
+        /// <param name="aLaw">The A-law encoded byte to be converted.</param>
+        /// <returns>The linear sample corresponding to the A-law encoded byte.</returns>
         public static short ALawToLinearSample(byte aLaw)
         {
             return ALawDecompressTable[aLaw];

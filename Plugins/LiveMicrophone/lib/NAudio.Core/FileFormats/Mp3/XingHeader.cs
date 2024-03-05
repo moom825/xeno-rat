@@ -26,6 +26,12 @@ namespace NAudio.Wave
         private int bytesOffset = -1;
         private Mp3Frame frame;
 
+        /// <summary>
+        /// Reads a 32-bit integer from the specified buffer in big-endian format.
+        /// </summary>
+        /// <param name="buffer">The input buffer containing the integer data.</param>
+        /// <param name="offset">The offset at which the integer data starts in the buffer.</param>
+        /// <returns>The 32-bit integer read from the buffer in big-endian format.</returns>
         private static int ReadBigEndian(byte[] buffer, int offset)
         {
             int x;
@@ -41,6 +47,16 @@ namespace NAudio.Wave
             return x;
         }
 
+        /// <summary>
+        /// Writes the integer value in big-endian format to the specified buffer at the given offset.
+        /// </summary>
+        /// <param name="buffer">The buffer to write the big-endian value to.</param>
+        /// <param name="offset">The offset within the buffer at which to start writing the value.</param>
+        /// <param name="value">The integer value to be written in big-endian format.</param>
+        /// <remarks>
+        /// This method converts the integer value into its little-endian byte representation using the BitConverter.GetBytes method.
+        /// It then writes the bytes in reverse order to the buffer starting from the specified offset to ensure big-endian format.
+        /// </remarks>
         private void WriteBigEndian(byte[] buffer, int offset, int value)
         {
             byte[] littleEndian = BitConverter.GetBytes(value);
@@ -51,10 +67,16 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Load Xing Header
+        /// Loads the Xing header from the provided Mp3Frame.
         /// </summary>
-        /// <param name="frame">Frame</param>
-        /// <returns>Xing Header</returns>
+        /// <param name="frame">The Mp3Frame from which to load the Xing header.</param>
+        /// <returns>The XingHeader loaded from the Mp3Frame, or null if the MPEG version is unsupported or the Xing header is not found.</returns>
+        /// <remarks>
+        /// This method loads the Xing header from the provided Mp3Frame. It calculates the offset based on the MPEG version and channel mode of the frame, and then checks for the presence of the Xing or Info header.
+        /// If the Xing or Info header is found, it reads the XingHeaderOptions flags and sets the corresponding properties in the XingHeader object.
+        /// The method returns the loaded XingHeader or null if the MPEG version is unsupported or the Xing header is not found.
+        /// </remarks>
+        /// <exception cref="FormatException">Thrown when the MPEG version is unsupported.</exception>
         public static XingHeader LoadXingHeader(Mp3Frame frame)
         {
             XingHeader xingHeader = new XingHeader();

@@ -9,9 +9,14 @@ namespace xeno_rat_server.Forms
         private System.ComponentModel.IContainer components = null;
 
         /// <summary>
-        /// Clean up any resources being used.
+        /// Releases the unmanaged resources used by the component and optionally releases the managed resources.
         /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        /// <remarks>
+        /// This method releases the unmanaged resources used by the component and optionally releases the managed resources.
+        /// If <paramref name="disposing"/> is true, this method releases all resources held by any managed objects that this <see cref="T:System.ComponentModel.Component"/> references.
+        /// This method is called by the public <see cref="M:System.ComponentModel.Component.Dispose"/> method and the <see cref="M:System.ComponentModel.Component.Finalize"/> method.
+        /// </remarks>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -21,12 +26,13 @@ namespace xeno_rat_server.Forms
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
-
         /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
+        /// Initializes the components of the form including text boxes, labels, buttons, and list view.
         /// </summary>
+        /// <remarks>
+        /// This method sets up the visual components of the form including text boxes, labels, buttons, and list view.
+        /// It also sets up event handlers for button clicks and form closing.
+        /// </remarks>
         private void InitializeComponent()
         {
             this.textBox1 = new System.Windows.Forms.TextBox();

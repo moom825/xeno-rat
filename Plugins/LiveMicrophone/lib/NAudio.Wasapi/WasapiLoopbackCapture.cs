@@ -28,18 +28,22 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Gets the default audio loopback capture device
+        /// Retrieves the default loopback capture device for audio rendering.
         /// </summary>
-        /// <returns>The default audio loopback capture device</returns>
+        /// <returns>The default loopback capture device for audio rendering.</returns>
+        /// <remarks>
+        /// This method retrieves the default loopback capture device using the MMDeviceEnumerator class and returns the default audio endpoint for rendering multimedia content.
+        /// </remarks>
         public static MMDevice GetDefaultLoopbackCaptureDevice()
         {
             MMDeviceEnumerator devices = new MMDeviceEnumerator();
             return devices.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
         }
-        
+
         /// <summary>
-        /// Specify loopback
+        /// Gets the audio client stream flags for loopback and base stream flags.
         /// </summary>
+        /// <returns>The combined audio client stream flags for loopback and base stream flags.</returns>
         protected override AudioClientStreamFlags GetAudioClientStreamFlags()
         {
             return AudioClientStreamFlags.Loopback | base.GetAudioClientStreamFlags();

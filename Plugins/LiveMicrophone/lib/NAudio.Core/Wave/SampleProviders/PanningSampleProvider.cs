@@ -67,6 +67,12 @@ namespace NAudio.Wave.SampleProviders
             }
         }
 
+        /// <summary>
+        /// Updates the multipliers for the strategy based on the current pan.
+        /// </summary>
+        /// <remarks>
+        /// This method retrieves the multipliers for the current pan from the strategy and updates the left and right multipliers accordingly.
+        /// </remarks>
         private void UpdateMultipliers()
         {
             var multipliers = panStrategy.GetMultipliers(Pan);
@@ -80,12 +86,16 @@ namespace NAudio.Wave.SampleProviders
         public WaveFormat WaveFormat => waveFormat;
 
         /// <summary>
-        /// Reads samples from this sample provider
+        /// Reads audio samples from the source buffer and writes them to the specified buffer.
         /// </summary>
-        /// <param name="buffer">Sample buffer</param>
-        /// <param name="offset">Offset into sample buffer</param>
-        /// <param name="count">Number of samples desired</param>
-        /// <returns>Number of samples read</returns>
+        /// <param name="buffer">The destination buffer to write the audio samples to.</param>
+        /// <param name="offset">The zero-based index in the destination buffer at which to begin writing.</param>
+        /// <param name="count">The number of audio samples to read from the source buffer and write to the destination buffer.</param>
+        /// <returns>The total number of audio samples written to the destination buffer.</returns>
+        /// <remarks>
+        /// This method reads audio samples from the source buffer, applies left and right multipliers, and writes them to the specified destination buffer.
+        /// It ensures that the source buffer has enough capacity to hold the required number of samples, reads the required number of samples from the source buffer, and writes the processed samples to the destination buffer.
+        /// </remarks>
         public int Read(float[] buffer, int offset, int count)
         {
             int sourceSamplesRequired = count / 2;
@@ -121,11 +131,18 @@ namespace NAudio.Wave.SampleProviders
     /// </summary>
     public interface IPanStrategy
     {
+
         /// <summary>
-        /// Gets the left and right multipliers for a given pan value
+        /// Returns the multipliers for left and right audio channels based on the input panning value.
         /// </summary>
-        /// <param name="pan">Pan value from -1 to 1</param>
-        /// <returns>Left and right multipliers in a stereo sample pair</returns>
+        /// <param name="pan">The panning value in the range of -1 to 1.</param>
+        /// <returns>A StereoSamplePair object containing the multipliers for the left and right audio channels.</returns>
+        /// <remarks>
+        /// This method calculates the multipliers for left and right audio channels based on the input panning value.
+        /// The panning value is normalized to the range of 0 to 1, where -1 corresponds to 1 and 1 corresponds to 0.
+        /// The left channel multiplier is equal to the normalized panning value, and the right channel multiplier is equal to 1 minus the normalized panning value.
+        /// The method returns a StereoSamplePair object containing the calculated multipliers for the left and right channels.
+        /// </remarks>
         StereoSamplePair GetMultipliers(float pan);
     }
 

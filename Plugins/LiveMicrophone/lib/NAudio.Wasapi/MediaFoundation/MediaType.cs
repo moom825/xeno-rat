@@ -40,6 +40,15 @@ namespace NAudio.MediaFoundation
             mediaType = MediaFoundationApi.CreateMediaTypeFromWaveFormat(waveFormat);
         }
 
+        /// <summary>
+        /// Retrieves a 32-bit unsigned integer value associated with the specified key.
+        /// </summary>
+        /// <param name="key">The key of the value to retrieve.</param>
+        /// <returns>The 32-bit unsigned integer value associated with the specified <paramref name="key"/>.</returns>
+        /// <remarks>
+        /// This method retrieves a 32-bit unsigned integer value from the mediaType object associated with the specified <paramref name="key"/>.
+        /// If the specified key is not found, this method may throw an exception.
+        /// </remarks>
         private int GetUInt32(Guid key)
         {
             int value;
@@ -47,6 +56,11 @@ namespace NAudio.MediaFoundation
             return value;
         }
 
+        /// <summary>
+        /// Retrieves the GUID value associated with the specified key.
+        /// </summary>
+        /// <param name="key">The key for which to retrieve the GUID value.</param>
+        /// <returns>The GUID value associated with the specified <paramref name="key"/>.</returns>
         private Guid GetGuid(Guid key)
         {
             Guid value;
@@ -55,11 +69,20 @@ namespace NAudio.MediaFoundation
         }
 
         /// <summary>
-        /// Tries to get a UINT32 value, returning a default value if it doesn't exist
+        /// Tries to get the UInt32 value associated with the specified key from the media type. If the key is not found, returns the default value.
         /// </summary>
-        /// <param name="key">Attribute key</param>
-        /// <param name="defaultValue">Default value</param>
-        /// <returns>Value or default if key doesn't exist</returns>
+        /// <param name="key">The key associated with the UInt32 value to retrieve.</param>
+        /// <param name="defaultValue">The default value to return if the key is not found (default is -1).</param>
+        /// <returns>The UInt32 value associated with the specified <paramref name="key"/>. If the key is not found, returns the <paramref name="defaultValue"/>.</returns>
+        /// <exception cref="ArgumentException">Thrown when the parameter associated with the specified <paramref name="key"/> is not a UINT32 type.</exception>
+        /// <exception cref="COMException">Thrown when an error occurs while trying to retrieve the UInt32 value from the media type.</exception>
+        /// <remarks>
+        /// This method attempts to retrieve the UInt32 value associated with the specified <paramref name="key"/> from the media type. If the key is not found, it returns the default value specified by <paramref name="defaultValue"/>.
+        /// If an error occurs during the retrieval process, this method handles specific COMExceptions:
+        /// - If the error code is MF_E_ATTRIBUTENOTFOUND, it indicates that the specified <paramref name="key"/> was not found, and the method returns the default value without throwing an exception.
+        /// - If the error code is MF_E_INVALIDTYPE, it indicates that the parameter associated with the specified <paramref name="key"/> is not a UINT32 type, and an ArgumentException is thrown.
+        /// For any other error codes, the original COMException is re-thrown to be handled by the caller.
+        /// </remarks>
         public int TryGetUInt32(Guid key, int defaultValue = -1)
         {
             int intValue = defaultValue;

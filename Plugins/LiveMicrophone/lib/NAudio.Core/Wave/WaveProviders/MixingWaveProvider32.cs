@@ -41,9 +41,16 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Add a new input to the mixer
+        /// Adds an input audio stream to the mixer.
         /// </summary>
-        /// <param name="waveProvider">The wave input to add</param>
+        /// <param name="waveProvider">The input audio stream to be added.</param>
+        /// <exception cref="ArgumentException">Thrown when the input audio stream does not match the required format.</exception>
+        /// <remarks>
+        /// This method adds the input audio stream <paramref name="waveProvider"/> to the mixer.
+        /// It checks if the format of the input stream matches the required format (IEEE floating point with 32 bits per sample).
+        /// If it is the first input, it sets the format of the mixer to match the input stream.
+        /// If it is not the first input, it checks if the format of the input stream matches the format of the other inputs already added to the mixer.
+        /// </remarks>
         public void AddInputStream(IWaveProvider waveProvider)
         {
             if (waveProvider.WaveFormat.Encoding != WaveFormatEncoding.IeeeFloat)
@@ -71,9 +78,12 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Remove an input from the mixer
+        /// Removes the specified input stream from the list of input streams.
         /// </summary>
-        /// <param name="waveProvider">waveProvider to remove</param>
+        /// <param name="waveProvider">The input stream to be removed.</param>
+        /// <remarks>
+        /// This method removes the specified <paramref name="waveProvider"/> from the list of input streams. It locks the <see cref="inputs"/> list to ensure thread safety while removing the stream.
+        /// </remarks>
         public void RemoveInputStream(IWaveProvider waveProvider)
         {
             lock (inputs)
@@ -91,13 +101,18 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Reads bytes from this wave stream
+        /// Reads audio data from the input streams, sums the channels, and stores the result in the provided buffer.
         /// </summary>
-        /// <param name="buffer">buffer to read into</param>
-        /// <param name="offset">offset into buffer</param>
-        /// <param name="count">number of bytes required</param>
-        /// <returns>Number of bytes read.</returns>
-        /// <exception cref="ArgumentException">Thrown if an invalid number of bytes requested</exception>
+        /// <param name="buffer">The buffer to store the summed audio data.</param>
+        /// <param name="offset">The zero-based byte offset in <paramref name="buffer"/> at which to begin storing the data.</param>
+        /// <param name="count">The number of bytes to read from the input streams.</param>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="count"/> is not a whole number of samples.</exception>
+        /// <returns>The number of bytes read from the input streams, which may be less than the requested <paramref name="count"/>.</returns>
+        /// <remarks>
+        /// This method first checks if <paramref name="count"/> is a whole number of samples and throws an <see cref="ArgumentException"/> if not.
+        /// It then clears the specified portion of the buffer, reads data from the input streams, sums the channels, and stores the result in the buffer.
+        /// The method returns the actual number of bytes read from the input streams, which may be less than the requested count.
+        /// </remarks>
         public int Read(byte[] buffer, int offset, int count)
         {
             if (count % bytesPerSample != 0)
@@ -126,8 +141,16 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Actually performs the mixing
+        /// Sums 32-bit audio samples from the source buffer to the destination buffer.
         /// </summary>
+        /// <param name="destBuffer">The destination buffer to which the audio samples will be added.</param>
+        /// <param name="offset">The offset within the destination buffer to start adding the samples.</param>
+        /// <param name="sourceBuffer">The source buffer containing the audio samples to be added.</param>
+        /// <param name="bytesRead">The number of bytes read from the source buffer.</param>
+        /// <remarks>
+        /// This method sums 32-bit audio samples from the source buffer to the destination buffer. It uses unsafe code to work with pointers and perform the addition operation directly on the memory.
+        /// The method calculates the number of samples read based on the number of bytes read, assuming each sample is 4 bytes (32 bits). It then iterates through the samples and adds each sample from the source buffer to the corresponding sample in the destination buffer.
+        /// </remarks>
         static unsafe void Sum32BitAudio(byte[] destBuffer, int offset, byte[] sourceBuffer, int bytesRead)
         {
             fixed (byte* pDestBuffer = &destBuffer[offset],

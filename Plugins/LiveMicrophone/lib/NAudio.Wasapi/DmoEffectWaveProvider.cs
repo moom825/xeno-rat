@@ -51,12 +51,17 @@ namespace NAudio.Wave
         public WaveFormat WaveFormat => inputProvider.WaveFormat;
 
         /// <summary>
-        /// Reads data from input stream
+        /// Reads data from the input buffer and processes it using the specified effector, if available.
         /// </summary>
-        /// <param name="buffer">buffer</param>
-        /// <param name="offset">offset into buffer</param>
-        /// <param name="count">Bytes required</param>
-        /// <returns>Number of bytes read</returns>
+        /// <param name="buffer">The input buffer to read data from.</param>
+        /// <param name="offset">The zero-based byte offset in <paramref name="buffer"/> at which to begin reading.</param>
+        /// <param name="count">The maximum number of bytes to read.</param>
+        /// <returns>The total number of bytes read into the buffer.</returns>
+        /// <remarks>
+        /// This method reads data from the input buffer using the input provider and processes it using the specified effector, if available.
+        /// If no effector is provided, the method simply reads the data and returns the total number of bytes read.
+        /// If an effector is provided, the method processes the read data and returns the total number of bytes read after processing.
+        /// </remarks>
         public int Read(byte[] buffer, int offset, int count)
         {
             var readNum = inputProvider.Read(buffer, offset, count);
@@ -85,8 +90,11 @@ namespace NAudio.Wave
         public TEffectorParam EffectParams => effector.EffectParams;
 
         /// <summary>
-        /// Dispose
+        /// Disposes the resources used by the effector.
         /// </summary>
+        /// <remarks>
+        /// This method releases the streaming resources used by the effector's media object and disposes the effector itself.
+        /// </remarks>
         public void Dispose()
         {
             if (effector != null)

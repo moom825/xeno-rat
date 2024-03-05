@@ -56,12 +56,16 @@ namespace NAudio.Wave.SampleProviders
         public WaveFormat WaveFormat => source.WaveFormat;
 
         /// <summary>
-        /// Reads samples from this Sample Provider
+        /// Reads audio samples from the source into the buffer and updates the stream volume.
         /// </summary>
-        /// <param name="buffer">Sample buffer</param>
-        /// <param name="offset">Offset into sample buffer</param>
-        /// <param name="count">Number of samples required</param>
-        /// <returns>Number of samples read</returns>
+        /// <param name="buffer">The buffer to store the audio samples.</param>
+        /// <param name="offset">The zero-based byte offset in the buffer at which to begin storing the data.</param>
+        /// <param name="count">The maximum number of samples to read.</param>
+        /// <returns>The total number of samples read into the buffer.</returns>
+        /// <remarks>
+        /// This method reads audio samples from the source into the buffer, updates the stream volume, and returns the total number of samples read.
+        /// If there is an event listener for stream volume, it updates the volume and triggers the event when the sample count reaches the specified threshold (SamplesPerNotification).
+        /// </remarks>
         public int Read(float[] buffer, int offset, int count)
         {
             int samplesRead = source.Read(buffer, offset, count);

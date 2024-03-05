@@ -45,8 +45,9 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Creates a deep clone of this MIDI event.
+        /// Creates a new instance of the SmpteOffsetEvent with the same property values as the current instance.
         /// </summary>
+        /// <returns>A new instance of SmpteOffsetEvent with the same property values as the current instance.</returns>
         public override MidiEvent Clone() => (SmpteOffsetEvent)MemberwiseClone();
 
         /// <summary>
@@ -74,11 +75,10 @@ namespace NAudio.Midi
         /// </summary>
         public int SubFrames => subFrames;
 
-
         /// <summary>
-        /// Describes this time signature event
+        /// Returns a formatted string representing the time.
         /// </summary>
-        /// <returns>A string describing this event</returns>
+        /// <returns>A string formatted as "{base.ToString()} {hours}:{minutes}:{seconds}:{frames}:{subFrames}".</returns>
         public override string ToString() 
         {
             return String.Format("{0} {1}:{2}:{3}:{4}:{5}",
@@ -86,10 +86,14 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Calls base class export first, then exports the data 
-        /// specific to this event
-        /// <seealso cref="MidiEvent.Export">MidiEvent.Export</seealso>
+        /// Exports the time data to a binary writer.
         /// </summary>
+        /// <param name="absoluteTime">The absolute time value.</param>
+        /// <param name="writer">The binary writer to which the time data is exported.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="writer"/> is null.</exception>
+        /// <remarks>
+        /// This method exports the time data, including hours, minutes, seconds, frames, and subframes, to the specified binary writer.
+        /// </remarks>
         public override void Export(ref long absoluteTime, BinaryWriter writer)
         {
             base.Export(ref absoluteTime, writer);

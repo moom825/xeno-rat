@@ -12,8 +12,10 @@ namespace NAudio.Midi
         private byte patch;
 
         /// <summary>
-        /// Gets the default MIDI instrument names
+        /// Retrieves the patch name corresponding to the given patch number.
         /// </summary>
+        /// <param name="patchNumber">The number representing the patch.</param>
+        /// <returns>The name of the patch corresponding to the given <paramref name="patchNumber"/>.</returns>
         public static string GetPatchName(int patchNumber)
         {
             return patchNames[patchNumber];
@@ -86,9 +88,9 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Describes this patch change event
+        /// Returns a string that represents the current object, including the patch name.
         /// </summary>
-        /// <returns>String describing the patch change event</returns>
+        /// <returns>A string that combines the base object's string representation with the patch name.</returns>
         public override string ToString()
         {
             return String.Format("{0} {1}",
@@ -97,19 +99,22 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Gets as a short message for sending with the midiOutShortMsg API
+        /// Adds the patch value shifted by 8 bits to the result of the base class's short message.
         /// </summary>
-        /// <returns>short message</returns>
+        /// <returns>The sum of the base class's short message and the patch value shifted by 8 bits.</returns>
         public override int GetAsShortMessage()
         {
             return base.GetAsShortMessage() + (this.patch << 8);
         }
 
         /// <summary>
-        /// Calls base class export first, then exports the data 
-        /// specific to this event
-        /// <seealso cref="MidiEvent.Export">MidiEvent.Export</seealso>
+        /// Exports the object's data to a binary writer, including the patch value.
         /// </summary>
+        /// <param name="absoluteTime">The absolute time reference for the export operation.</param>
+        /// <param name="writer">The binary writer to which the data is exported.</param>
+        /// <remarks>
+        /// This method exports the object's data to the specified binary writer, including the patch value. It first calls the base class's Export method to export any base class data, and then writes the patch value to the binary writer.
+        /// </remarks>
         public override void Export(ref long absoluteTime, BinaryWriter writer)
         {
             base.Export(ref absoluteTime, writer);

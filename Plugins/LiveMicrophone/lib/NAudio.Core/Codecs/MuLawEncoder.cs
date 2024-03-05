@@ -31,10 +31,16 @@
         };
 
         /// <summary>
-        /// Encodes a single 16 bit sample to mu-law
+        /// Converts a linear PCM sample to a mu-law encoded sample.
         /// </summary>
-        /// <param name="sample">16 bit PCM sample</param>
-        /// <returns>mu-law encoded byte</returns>
+        /// <param name="sample">The linear PCM sample to be converted.</param>
+        /// <returns>The mu-law encoded sample.</returns>
+        /// <remarks>
+        /// This method converts a linear PCM sample to a mu-law encoded sample using the mu-law compression algorithm.
+        /// The input sample is first checked for sign and then adjusted if necessary.
+        /// The method then calculates the exponent and mantissa for the mu-law compression based on the input sample.
+        /// Finally, it constructs and returns the mu-law encoded sample as a byte value.
+        /// </remarks>
         public static byte LinearToMuLawSample(short sample)
         {
             int sign = (sample >> 8) & 0x80;

@@ -31,8 +31,12 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Writes this structure to a BinaryWriter
+        /// Serializes the object to a binary writer.
         /// </summary>
+        /// <param name="writer">The binary writer to which the object is serialized.</param>
+        /// <remarks>
+        /// This method serializes the object to the specified binary writer by first calling the base class's serialization method and then writing each element of the 'unknown' array to the writer using the Write method.
+        /// </remarks>
         public override void Serialize(BinaryWriter writer)
         {
             base.Serialize(writer);

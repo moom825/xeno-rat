@@ -1,7 +1,7 @@
 // AForge Direct Show Library
 // AForge.NET framework
 //
-// Copyright © Andrew Kirillov, 2008
+// Copyright Â© Andrew Kirillov, 2008
 // andrew.kirillov@gmail.com
 //
 
@@ -63,8 +63,17 @@ namespace AForge.Video.DirectShow
                 return ( (FilterInfo) InnerList[index] );
             }
         }
-        
-        // Collect filters of specified category
+
+		/// <summary>
+		/// Collects filters of a specified category and adds them to the collection.
+		/// </summary>
+		/// <param name="category">The category of filters to be collected.</param>
+		/// <exception cref="ApplicationException">Thrown when there is a failure in creating the device enumerator or no devices of the category are found.</exception>
+		/// <remarks>
+		/// This method collects filters of the specified category using the system device enumerator and adds them to the collection.
+		/// It iterates through the filters, creates FilterInfo objects, and adds them to the collection.
+		/// The collection is then sorted.
+		/// </remarks>
 		private void CollectFilters( Guid category )
 		{
 			object			comObj = null;

@@ -89,12 +89,13 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Reads bytes from this wave stream
+        /// Reads data from the source stream, converts it to 16-bit and writes it to the destination buffer.
         /// </summary>
-        /// <param name="destBuffer">Destination buffer</param>
-        /// <param name="offset">Offset into destination buffer</param>
-        /// <param name="numBytes"></param>
-        /// <returns>Number of bytes read.</returns>
+        /// <param name="destBuffer">The destination buffer where the converted data will be written.</param>
+        /// <param name="offset">The zero-based byte offset in <paramref name="destBuffer"/> at which to begin storing the data.</param>
+        /// <param name="numBytes">The maximum number of bytes to read from the source stream.</param>
+        /// <returns>The actual number of 16-bit words read into <paramref name="destBuffer"/>.</returns>
+        /// <exception cref="System.IO.IOException">An I/O error occurs while reading from the source stream.</exception>
         public override int Read(byte[] destBuffer, int offset, int numBytes)
         {
             lock (lockObject)
@@ -109,8 +110,17 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Conversion to 16 bit and clipping
+        /// Converts 32-bit audio samples to 16-bit audio samples and writes the result to the destination buffer.
         /// </summary>
+        /// <param name="destBuffer">The destination buffer to write the 16-bit audio samples to.</param>
+        /// <param name="offset">The offset in the destination buffer to start writing the samples.</param>
+        /// <param name="source">The source buffer containing the 32-bit audio samples.</param>
+        /// <param name="bytesRead">The number of bytes read from the source buffer.</param>
+        /// <remarks>
+        /// This method converts the 32-bit audio samples in the source buffer to 16-bit audio samples and writes the result to the destination buffer.
+        /// It also applies volume scaling and handles clipping if the sample value exceeds the range of a 16-bit integer.
+        /// The method uses unsafe code to work with pointers for better performance.
+        /// </remarks>
         private unsafe void Convert32To16(byte[] destBuffer, int offset, byte[] source, int bytesRead)
         {
             fixed (byte* pDestBuffer = &destBuffer[offset],
@@ -162,8 +172,14 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Disposes this WaveStream
+        /// Releases the unmanaged resources used by the <see cref="ClassName"/> and optionally releases the managed resources.
         /// </summary>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        /// <remarks>
+        /// This method releases the unmanaged resources used by the <see cref="ClassName"/> and optionally releases the managed resources.
+        /// If <paramref name="disposing"/> is true, this method releases all resources held by any managed objects that this <see cref="ClassName"/> references.
+        /// This method is called by the public <see cref="Dispose()"/> method and the <see cref="Finalize"/> method.
+        /// </remarks>
         protected override void Dispose(bool disposing)
         {
             if (disposing)

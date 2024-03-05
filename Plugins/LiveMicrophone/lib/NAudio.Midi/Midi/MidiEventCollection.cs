@@ -43,10 +43,10 @@ namespace NAudio.Midi
         public int DeltaTicksPerQuarterNote { get; }
 
         /// <summary>
-        /// Gets events on a specified track
+        /// Retrieves the MIDI events for the specified track number.
         /// </summary>
-        /// <param name="trackNumber">Track number</param>
-        /// <returns>The list of events</returns>
+        /// <param name="trackNumber">The number of the track for which MIDI events are to be retrieved.</param>
+        /// <returns>The list of MIDI events associated with the specified track number.</returns>
         public IList<MidiEvent> GetTrackEvents(int trackNumber)
         {
             return trackEvents[trackNumber];
@@ -60,9 +60,10 @@ namespace NAudio.Midi
         public IList<MidiEvent> this[int trackNumber] => trackEvents[trackNumber];
 
         /// <summary>
-        /// Adds a new track
+        /// Adds a list of MIDI events to the track and returns the combined list of events.
         /// </summary>
-        /// <returns>The new track event list</returns>
+        /// <param name="initialEvents">The initial list of MIDI events to be added to the track.</param>
+        /// <returns>The combined list of MIDI events after adding the initial events to the track.</returns>
         public IList<MidiEvent> AddTrack()
         {
             return AddTrack(null);
@@ -85,17 +86,23 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Removes a track
+        /// Removes the track at the specified index from the track events collection.
         /// </summary>
-        /// <param name="track">Track number to remove</param>
+        /// <param name="track">The index of the track to be removed.</param>
+        /// <remarks>
+        /// This method removes the track at the specified index from the track events collection.
+        /// </remarks>
         public void RemoveTrack(int track)
         {
             trackEvents.RemoveAt(track);
         }
 
         /// <summary>
-        /// Clears all events
+        /// Clears all the track events from the list.
         /// </summary>
+        /// <remarks>
+        /// This method removes all the track events from the list, effectively clearing it.
+        /// </remarks>
         public void Clear()
         {
             trackEvents.Clear();
@@ -127,15 +134,16 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Adds an event to the appropriate track depending on file type
+        /// Adds a MIDI event to the specified track.
         /// </summary>
-        /// <param name="midiEvent">The event to be added</param>
-        /// <param name="originalTrack">The original (or desired) track number</param>
-        /// <remarks>When adding events in type 0 mode, the originalTrack parameter
-        /// is ignored. If in type 1 mode, it will use the original track number to
-        /// store the new events. If the original track was 0 and this is a channel based
-        /// event, it will create new tracks if necessary and put it on the track corresponding
-        /// to its channel number</remarks>
+        /// <param name="midiEvent">The MIDI event to be added.</param>
+        /// <param name="originalTrack">The original track number of the MIDI event.</param>
+        /// <exception cref="InvalidOperationException">Thrown when the MIDI file type is not recognized.</exception>
+        /// <remarks>
+        /// This method adds the specified MIDI event to the appropriate track based on the MIDI file type and original track number.
+        /// If the MIDI file type is 0, the event is added to the first track.
+        /// If the MIDI file type is not 0, the event is added to a channel track based on its command code, or to the original track if specified.
+        /// </remarks>
         public void AddEvent(MidiEvent midiEvent, int originalTrack)
         {
             if (midiFileType == 0)
@@ -177,7 +185,14 @@ namespace NAudio.Midi
             }
         }
 
-
+        /// <summary>
+        /// Ensures that the number of tracks in the trackEvents list is at least <paramref name="count"/> by adding empty lists if necessary.
+        /// </summary>
+        /// <param name="count">The minimum number of tracks to be ensured in the trackEvents list.</param>
+        /// <remarks>
+        /// This method iterates through the trackEvents list and adds empty lists until the count of tracks reaches the specified <paramref name="count"/>.
+        /// If the count of tracks in the trackEvents list is already greater than or equal to <paramref name="count"/>, no action is taken.
+        /// </remarks>
         private void EnsureTracks(int count)
         {
             for (int n = trackEvents.Count; n < count; n++)
@@ -186,6 +201,13 @@ namespace NAudio.Midi
             }
         }
 
+        /// <summary>
+        /// Explodes the events of the first track into multiple tracks and prepares for export.
+        /// </summary>
+        /// <remarks>
+        /// This method retrieves the events from the first track, clears the existing tracks, and adds each event to a separate track.
+        /// After adding the events to the tracks, it prepares the tracks for export.
+        /// </remarks>
         private void ExplodeToManyTracks()
         {
             IList<MidiEvent> originalList = trackEvents[0];
@@ -197,6 +219,13 @@ namespace NAudio.Midi
             PrepareForExport();
         }
 
+        /// <summary>
+        /// Flattens the multiple tracks into a single track.
+        /// </summary>
+        /// <remarks>
+        /// This method iterates through each track in the <paramref name="trackEvents"/> and adds all non-end track MIDI events to the first track.
+        /// After flattening, it removes all tracks except the first one. If any events are added during the process, it prepares the flattened track for export.
+        /// </remarks>
         private void FlattenToOneTrack()
         {
             bool eventsAdded = false;
@@ -222,8 +251,14 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Sorts, removes empty tracks and adds end track markers
+        /// Prepares the MIDI data for export by performing the following steps:
+        /// 1. Sorts each track using the MergeSort algorithm with the provided comparer.
+        /// 2. Removes all but one End track event at the very end of each track.
+        /// 3. Removes empty tracks and adds missing End track events if necessary.
         /// </summary>
+        /// <remarks>
+        /// This method modifies the original MIDI data in place.
+        /// </remarks>
         public void PrepareForExport()
         {
             var comparer = new MidiEventComparer();
@@ -275,8 +310,9 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Gets an enumerator for the lists of track events
+        /// Returns an enumerator that iterates through the collection of track events.
         /// </summary>
+        /// <returns>An enumerator that can be used to iterate through the collection of track events.</returns>
         public IEnumerator<IList<MidiEvent>> GetEnumerator()
         {
             return trackEvents.GetEnumerator();

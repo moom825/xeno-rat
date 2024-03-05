@@ -90,9 +90,12 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Adds an item to the list
+        /// Adds a cue to the collection of cues.
         /// </summary>
-        /// <param name="cue">Cue</param>
+        /// <param name="cue">The cue to be added to the collection.</param>
+        /// <remarks>
+        /// This method adds the specified <paramref name="cue"/> to the collection of cues.
+        /// </remarks>
         public void Add(Cue cue)
         {
             cues.Add(cue);
@@ -172,9 +175,17 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Gets the cues as the concatenated cue and list RIFF chunks.
+        /// Gets the RIFF chunks for the current instance.
         /// </summary>
-        /// <returns>RIFF chunks containing the cue data</returns>
+        /// <returns>
+        /// The RIFF chunks as a byte array.
+        /// </returns>
+        /// <remarks>
+        /// This method calculates the RIFF chunks based on the current instance and returns them as a byte array.
+        /// It first calculates the cue chunk length and list chunk length based on the count of elements in the current instance.
+        /// Then, it iterates through each element to calculate the label chunk length and updates the list chunk length accordingly.
+        /// After initializing the necessary chunk identifiers, it uses a MemoryStream and BinaryWriter to construct the chunks and returns them as a byte array.
+        /// </remarks>
         internal byte[] GetRiffChunks()
         {
             if (Count == 0)
@@ -250,8 +261,10 @@ namespace NAudio.Wave
         public Cue this[int index] => cues[index];
 
         /// <summary>
-        /// Checks if the cue and list chunks exist and if so, creates a cue list
+        /// Creates a CueList object from the cue and list chunks of the provided WaveFileReader.
         /// </summary>
+        /// <param name="reader">The WaveFileReader containing the cue and list chunks.</param>
+        /// <returns>A CueList object created from the cue and list chunks of the WaveFileReader, or null if either cue or list chunk data is missing.</returns>
         internal static CueList FromChunks(WaveFileReader reader)
         {
             CueList cueList = null;

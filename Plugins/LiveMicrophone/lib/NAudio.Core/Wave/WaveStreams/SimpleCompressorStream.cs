@@ -112,14 +112,18 @@ namespace NAudio.Wave
         /// </summary>
         public WaveFormat WaveFormat => sourceStream.WaveFormat;
 
-
         /// <summary>
-        /// Reads bytes from this stream
+        /// Reads audio samples from the source stream into the specified array.
         /// </summary>
-        /// <param name="array">Buffer to read into</param>
-        /// <param name="offset">Offset in array to read into</param>
-        /// <param name="count">Number of bytes to read</param>
-        /// <returns>Number of bytes read</returns>
+        /// <param name="array">The array to store the read samples.</param>
+        /// <param name="offset">The zero-based byte offset in <paramref name="array"/> at which to begin storing the data read from the current stream.</param>
+        /// <param name="count">The maximum number of samples to read.</param>
+        /// <returns>The total number of samples read into the array.</returns>
+        /// <exception cref="System.IO.IOException">An I/O error occurs while reading from the source stream.</exception>
+        /// <remarks>
+        /// This method locks the <paramref name="lockObject"/> to ensure thread safety while reading from the source stream.
+        /// It reads audio samples from the source stream into the specified array, processes them using the simple compressor if enabled, and returns the total number of samples read.
+        /// </remarks>
         public int Read(float[] array, int offset, int count)
         {
             lock (lockObject)

@@ -111,8 +111,15 @@ namespace NAudio.Wave.SampleProviders
         public double SweepLengthSecs { get; set; }
 
         /// <summary>
-        /// Reads from this provider.
+        /// Reads audio samples into the buffer using the specified offset and count.
         /// </summary>
+        /// <param name="buffer">The buffer to store the audio samples.</param>
+        /// <param name="offset">The zero-based index in the buffer at which to begin storing the audio samples.</param>
+        /// <param name="count">The number of audio samples to read into the buffer.</param>
+        /// <returns>The total number of audio samples read into the buffer.</returns>
+        /// <remarks>
+        /// This method reads audio samples into the specified buffer using the given offset and count. It generates audio samples based on the specified signal type, frequency, and gain. The method supports various signal types including Sin, Square, Triangle, SawTooth, White Noise, Pink Noise, and Sweep. For each signal type, it calculates the sample value based on the current sample count, frequency, and gain. The method also handles phase reversal per channel and returns the total number of audio samples read into the buffer.
+        /// </remarks>
         public int Read(float[] buffer, int offset, int count)
         {
             int outIndex = offset;
@@ -234,9 +241,9 @@ namespace NAudio.Wave.SampleProviders
         }
 
         /// <summary>
-        /// Private :: Random for WhiteNoise &amp; Pink Noise (Value form -1 to 1)
+        /// Returns a random double value between -1 and 1.
         /// </summary>
-        /// <returns>Random value from -1 to +1</returns>
+        /// <returns>A random double value between -1 and 1.</returns>
         private double NextRandomTwo()
         {
             return 2*random.NextDouble() - 1;

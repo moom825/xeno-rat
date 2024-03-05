@@ -37,10 +37,13 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Calls base class export first, then exports the data 
-        /// specific to this event
-        /// <seealso cref="MidiEvent.Export">MidiEvent.Export</seealso>
+        /// Exports the aftertouch pressure value to a binary writer.
         /// </summary>
+        /// <param name="absoluteTime">The absolute time reference for the export operation.</param>
+        /// <param name="writer">The binary writer to which the aftertouch pressure value is exported.</param>
+        /// <remarks>
+        /// This method exports the aftertouch pressure value to the specified binary writer, modifying the writer in place.
+        /// </remarks>
         public override void Export(ref long absoluteTime, BinaryWriter writer)
         {
             base.Export(ref absoluteTime, writer);
@@ -64,16 +67,18 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// <see cref="MidiEvent.GetAsShortMessage" />
+        /// Returns the short message value with the addition of the after touch pressure shifted by 8 bits.
         /// </summary>
+        /// <returns>The short message value with the addition of the after touch pressure shifted by 8 bits.</returns>
         public override int GetAsShortMessage()
         {
             return base.GetAsShortMessage() + (afterTouchPressure << 8);
         }
 
         /// <summary>
-        /// Describes this channel after-touch event
+        /// Returns a string representation that includes the base class's string representation and the value of the 'afterTouchPressure' property.
         /// </summary>
+        /// <returns>A string that includes the base class's string representation and the value of the 'afterTouchPressure' property.</returns>
         public override string ToString()
         {
             return $"{base.ToString()} {afterTouchPressure}";

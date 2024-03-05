@@ -30,12 +30,13 @@ namespace NAudio.Mixer
         protected MixerFlags mixerHandleType;
 
         /// <summary>
-        /// Gets all the mixer controls
+        /// Retrieves the mixer controls associated with the specified mixer line.
         /// </summary>
-        /// <param name="mixerHandle">Mixer Handle</param>
-        /// <param name="mixerLine">Mixer Line</param>
-        /// <param name="mixerHandleType">Mixer Handle Type</param>
-        /// <returns></returns>
+        /// <param name="mixerHandle">The handle to the mixer device.</param>
+        /// <param name="mixerLine">The mixer line for which controls are to be retrieved.</param>
+        /// <param name="mixerHandleType">The type of handle to be retrieved.</param>
+        /// <returns>A list of mixer controls associated with the specified mixer line.</returns>
+        /// <exception cref="MmException">Thrown when an error occurs while retrieving the mixer controls.</exception>
         public static IList<MixerControl> GetMixerControls(IntPtr mixerHandle, MixerLine mixerLine,
                                                            MixerFlags mixerHandleType)
         {
@@ -79,14 +80,15 @@ namespace NAudio.Mixer
         }
 
         /// <summary>
-        /// Gets a specified Mixer Control
+        /// Retrieves the specified mixer control.
         /// </summary>
-        /// <param name="mixerHandle">Mixer Handle</param>
-        /// <param name="nLineId">Line ID</param>
-        /// <param name="controlId">Control ID</param>
-        /// <param name="nChannels">Number of Channels</param>
-        /// <param name="mixerFlags">Flags to use (indicates the meaning of mixerHandle)</param>
-        /// <returns></returns>
+        /// <param name="mixerHandle">The handle to the mixer device.</param>
+        /// <param name="nLineId">The line identifier.</param>
+        /// <param name="controlId">The control identifier.</param>
+        /// <param name="nChannels">The number of channels.</param>
+        /// <param name="mixerFlags">The mixer flags.</param>
+        /// <returns>The retrieved mixer control based on the specified parameters.</returns>
+        /// <exception cref="MmException">Thrown when an error occurs during the retrieval of the mixer control.</exception>
         public static MixerControl GetMixerControl(IntPtr mixerHandle, int nLineId, int controlId, int nChannels,
                                                    MixerFlags mixerFlags)
         {
@@ -143,8 +145,19 @@ namespace NAudio.Mixer
         }
 
         /// <summary>
-        /// Gets the control details
+        /// Retrieves details of the mixer control.
         /// </summary>
+        /// <remarks>
+        /// This method retrieves the details of the specified mixer control and populates the <paramref name="mixerControlDetails"/> structure with the retrieved information.
+        /// The method first sets the size of the <paramref name="mixerControlDetails"/> structure and assigns the control ID from the <paramref name="mixerControl"/>.
+        /// It then determines the number of channels for the control based on whether it is custom, uniform, or has a specific number of channels.
+        /// If the control is a multiple item control, it sets the owner window handle to the value of <paramref name="mixerControl.cMultipleItems"/>.
+        /// It then determines the size of the details based on the type of control (boolean, list text, signed, unsigned, or custom) and the number of channels.
+        /// After allocating memory for the details, it retrieves the control details using <see cref="MixerInterop.mixerGetControlDetails"/> and populates the details in the allocated buffer.
+        /// If successful, it calls the <see cref="GetDetails"/> method to process the retrieved details and then frees the allocated memory.
+        /// If an error occurs during the retrieval process, it throws a <see cref="MmException"/> with the error message "mixerGetControlDetails".
+        /// </remarks>
+        /// <exception cref="MmException">Thrown when an error occurs during the retrieval of mixer control details.</exception>
         protected void GetControlDetails()
         {
             mixerControlDetails.cbStruct = Marshal.SizeOf(mixerControlDetails);
@@ -222,9 +235,12 @@ namespace NAudio.Mixer
         }
 
         /// <summary>
-        /// Gets the control details
+        /// Retrieves the details using the provided pointer to details.
         /// </summary>
-        /// <param name="pDetails"></param>
+        /// <param name="pDetails">A pointer to the details.</param>
+        /// <remarks>
+        /// This method retrieves the details using the provided pointer to details and is intended to be implemented in derived classes.
+        /// </remarks>
         protected abstract void GetDetails(IntPtr pDetails);
 
         /// <summary>
@@ -238,9 +254,10 @@ namespace NAudio.Mixer
         public MixerControlType ControlType => mixerControl.dwControlType;
 
         /// <summary>
-        /// Returns true if this is a boolean control
+        /// Checks if the given MixerControlType is a boolean control type.
         /// </summary>
-        /// <param name="controlType">Control type</param>
+        /// <param name="controlType">The MixerControlType to be checked.</param>
+        /// <returns>True if the <paramref name="controlType"/> is a boolean control type; otherwise, false.</returns>
         private static bool IsControlBoolean(MixerControlType controlType)
         {
             switch (controlType)
@@ -269,8 +286,10 @@ namespace NAudio.Mixer
         public bool IsBoolean => IsControlBoolean(mixerControl.dwControlType);
 
         /// <summary>
-        /// Determines whether a specified mixer control type is a list text control
+        /// Checks if the given MixerControlType is a type of control list text.
         /// </summary>
+        /// <param name="controlType">The MixerControlType to be checked.</param>
+        /// <returns>True if the control type is Equalizer, Mixer, MultipleSelect, Mux, or SingleSelect; otherwise, false.</returns>
         private static bool IsControlListText(MixerControlType controlType)
         {
             switch (controlType)
@@ -291,6 +310,15 @@ namespace NAudio.Mixer
         /// </summary>
         public bool IsListText => IsControlListText(mixerControl.dwControlType);
 
+        /// <summary>
+        /// Checks if the given MixerControlType is signed.
+        /// </summary>
+        /// <param name="controlType">The type of mixer control to be checked.</param>
+        /// <returns>True if the <paramref name="controlType"/> is a signed control; otherwise, false.</returns>
+        /// <remarks>
+        /// This method checks if the specified <paramref name="controlType"/> is one of the signed mixer control types, such as PeakMeter, SignedMeter, Signed, Decibels, Pan, QSoundPan, or Slider.
+        /// If the <paramref name="controlType"/> matches any of the signed types, it returns true; otherwise, it returns false.
+        /// </remarks>
         private static bool IsControlSigned(MixerControlType controlType)
         {
             switch (controlType)
@@ -313,6 +341,11 @@ namespace NAudio.Mixer
         /// </summary>
         public bool IsSigned => IsControlSigned(mixerControl.dwControlType);
 
+        /// <summary>
+        /// Determines if the given MixerControlType is of an unsigned type.
+        /// </summary>
+        /// <param name="controlType">The MixerControlType to be checked.</param>
+        /// <returns>True if the <paramref name="controlType"/> is of an unsigned type; otherwise, false.</returns>
         private static bool IsControlUnsigned(MixerControlType controlType)
         {
             switch (controlType)
@@ -338,6 +371,11 @@ namespace NAudio.Mixer
         /// </summary>
         public bool IsUnsigned => IsControlUnsigned(mixerControl.dwControlType);
 
+        /// <summary>
+        /// Checks if the given MixerControlType is custom.
+        /// </summary>
+        /// <param name="controlType">The MixerControlType to be checked.</param>
+        /// <returns>True if the <paramref name="controlType"/> is custom; otherwise, false.</returns>
         private static bool IsControlCustom(MixerControlType controlType)
         {
             return controlType == MixerControlType.Custom;
@@ -349,8 +387,9 @@ namespace NAudio.Mixer
         public bool IsCustom => IsControlCustom(mixerControl.dwControlType);
 
         /// <summary>
-        /// String representation for debug purposes
+        /// Returns a string representation of the object, including the Name and ControlType properties.
         /// </summary>
+        /// <returns>A string containing the Name and ControlType properties of the object.</returns>
         public override string ToString() => $"{Name} {ControlType}";
     }
 }

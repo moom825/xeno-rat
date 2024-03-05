@@ -26,10 +26,16 @@ namespace NAudio.Wave
         public event EventHandler<StoppedEventArgs> PlaybackStopped;
 
         /// <summary>
-        /// Retrieves the capabilities of a waveOut device
+        /// Retrieves the capabilities of the specified audio output device.
         /// </summary>
-        /// <param name="devNumber">Device to test</param>
-        /// <returns>The WaveOut device capabilities</returns>
+        /// <param name="devNumber">The device number for which to retrieve the capabilities.</param>
+        /// <returns>The capabilities of the audio output device specified by <paramref name="devNumber"/>.</returns>
+        /// <exception cref="MmException">Thrown when an error occurs while retrieving the device capabilities.</exception>
+        /// <remarks>
+        /// This method retrieves the capabilities of the specified audio output device using the WaveOut API.
+        /// It initializes a new instance of <see cref="WaveOutCapabilities"/> and populates it with the capabilities of the specified device.
+        /// The method then returns the retrieved capabilities.
+        /// </remarks>
         public static WaveOutCapabilities GetCapabilities(int devNumber)
         {
             var caps = new WaveOutCapabilities();
@@ -101,9 +107,15 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Initialises the WaveOut device
+        /// Initializes the audio output with the specified wave provider.
         /// </summary>
-        /// <param name="waveProvider">WaveProvider to play</param>
+        /// <param name="waveProvider">The wave provider to be used for audio output.</param>
+        /// <exception cref="MmException">Thrown when an error occurs during the initialization process.</exception>
+        /// <remarks>
+        /// This method initializes the audio output with the provided wave provider and sets up the necessary buffers for playback.
+        /// It calculates the buffer size based on the desired latency and number of buffers, and then opens the wave output device.
+        /// After successful initialization, the audio output is ready for playback.
+        /// </remarks>
         public void Init(IWaveProvider waveProvider)
         {
             waveStream = waveProvider;
@@ -125,8 +137,12 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Start playing the audio from the WaveStream
+        /// Plays the audio if the playback state is stopped, or resumes playing if the state is paused.
         /// </summary>
+        /// <remarks>
+        /// If the <see cref="playbackState"/> is <see cref="PlaybackState.Stopped"/>, this method changes the state to <see cref="PlaybackState.Playing"/> and enqueues any available buffers for playback.
+        /// If the <see cref="playbackState"/> is <see cref="PlaybackState.Paused"/>, this method enqueues any available buffers for playback, resumes playback, and changes the state to <see cref="PlaybackState.Playing"/>.
+        /// </remarks>
         public void Play()
         {
             if (playbackState == PlaybackState.Stopped)
@@ -143,6 +159,14 @@ namespace NAudio.Wave
             }
         }
 
+        /// <summary>
+        /// Enqueues the available buffers for playback.
+        /// </summary>
+        /// <remarks>
+        /// This method iterates through the available buffers and enqueues them for playback if they are not already in the queue.
+        /// If a buffer is successfully enqueued, the count of queued buffers is incremented.
+        /// If a buffer's 'OnDone' method returns false, the playback state is set to 'Stopped' and the iteration is terminated.
+        /// </remarks>
         private void EnqueueBuffers()
         {
             for (int n = 0; n < NumberOfBuffers; n++)
@@ -168,8 +192,9 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Pause the audio
+        /// Pauses the playback if the current state is playing.
         /// </summary>
+        /// <exception cref="MmException">Thrown when an error occurs during the pause operation.</exception>
         public void Pause()
         {
             if (playbackState == PlaybackState.Playing)
@@ -188,8 +213,13 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Resume playing after a pause from the same position
+        /// Resumes playback of the audio.
         /// </summary>
+        /// <remarks>
+        /// If the playback state is paused, this method resumes the audio playback using the waveOutRestart function from the WaveInterop class.
+        /// If an error occurs during the resumption of playback, a MmException is thrown with the corresponding error message.
+        /// </remarks>
+        /// <exception cref="MmException">Thrown when an error occurs during the resumption of audio playback.</exception>
         public void Resume()
         {
             if (playbackState == PlaybackState.Paused)
@@ -208,8 +238,13 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Stop and reset the WaveOut device
+        /// Stops the audio playback.
         /// </summary>
+        /// <exception cref="MmException">Thrown when an error occurs during the audio playback stop operation.</exception>
+        /// <remarks>
+        /// If the current playback state is not already stopped, this method resets the audio output device and stops the playback.
+        /// This method also raises the <see cref="PlaybackStopped"/> event if the audio playback was stopped successfully.
+        /// </remarks>
         public void Stop()
         {
             if (playbackState != PlaybackState.Stopped)
@@ -240,11 +275,9 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Gets the current position in bytes from the wave output device.
-        /// (n.b. this is not the same thing as the position within your reader
-        /// stream - it calls directly into waveOutGetPosition)
+        /// Gets the current position in bytes of the audio playback.
         /// </summary>
-        /// <returns>Position in bytes</returns>
+        /// <returns>The current position in bytes of the audio playback.</returns>
         public long GetPosition() => WaveOutUtils.GetPositionBytes(hWaveOut, waveOutLock);
 
         /// <summary>
@@ -272,11 +305,14 @@ namespace NAudio.Wave
             }
         }
 
-        #region Dispose Pattern
-
         /// <summary>
-        /// Closes this WaveOut device
+        /// Releases the unmanaged resources used by the WaveOut device and optionally releases the managed resources.
         /// </summary>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        /// <remarks>
+        /// This method stops the playback of audio using the WaveOut device and releases the unmanaged resources associated with it.
+        /// If <paramref name="disposing"/> is true, it also releases the managed resources, such as audio buffers.
+        /// </remarks>
         public void Dispose()
         {
             GC.SuppressFinalize(this);
@@ -325,9 +361,20 @@ namespace NAudio.Wave
             Dispose(false);
         }
 
-        #endregion
-
-        // made non-static so that playing can be stopped here
+        /// <summary>
+        /// Callback method for the wave out function.
+        /// </summary>
+        /// <param name="hWaveOut">Handle to the waveform-audio output device associated with the callback.</param>
+        /// <param name="uMsg">The message sent to the callback function.</param>
+        /// <param name="dwInstance">User instance data specified with waveOutOpen.</param>
+        /// <param name="wavhdr">Pointer to a WaveHeader structure that identifies the header of the completed waveform-audio data block.</param>
+        /// <param name="dwReserved">Not used.</param>
+        /// <remarks>
+        /// This method is called when a waveform-audio output buffer is done.
+        /// It checks if the playback state is playing and then processes the buffer.
+        /// If an exception occurs during processing, it is caught and stored in the 'exception' variable.
+        /// After processing, it checks if all buffers have been played and raises the playback stopped event if so.
+        /// </remarks>
         private void Callback(IntPtr hWaveOut, WaveInterop.WaveMessage uMsg, IntPtr dwInstance, WaveHeader wavhdr, IntPtr dwReserved)
         {
             if (uMsg == WaveInterop.WaveMessage.WaveOutDone)
@@ -378,6 +425,13 @@ namespace NAudio.Wave
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="PlaybackStopped"/> event with the specified exception.
+        /// </summary>
+        /// <param name="e">The exception that caused the playback to stop.</param>
+        /// <remarks>
+        /// This method raises the <see cref="PlaybackStopped"/> event with the specified exception. If a synchronization context is available, the event is raised on the synchronization context; otherwise, it is raised on the current thread.
+        /// </remarks>
         private void RaisePlaybackStoppedEvent(Exception e)
         {
             var handler = PlaybackStopped;

@@ -25,6 +25,18 @@ namespace NAudio.FileFormats.Wav
             strictMode = false;
         }
 
+        /// <summary>
+        /// Reads the wave header from the provided stream and initializes the necessary fields.
+        /// </summary>
+        /// <param name="stream">The input stream containing the wave file data.</param>
+        /// <exception cref="FormatException">Thrown when the input stream does not contain a WAVE header.</exception>
+        /// <exception cref="InvalidDataException">Thrown when the format chunk length or riff chunk length is invalid.</exception>
+        /// <remarks>
+        /// This method reads the wave header from the provided stream and initializes the necessary fields such as dataChunkPosition, waveFormat, riffChunks, and dataChunkLength.
+        /// It first reads the RIFF header, then the file size, and checks for the WAVE header. If the file is in RF64 format, it reads the DS64 chunk.
+        /// It then iterates through the chunks in the stream, processing the data and format chunks accordingly.
+        /// The method also handles word alignment for all chunks and throws exceptions if the format or data chunk is not found in the input stream.
+        /// </remarks>
         public void ReadWaveHeader(Stream stream)
         {
             this.dataChunkPosition = -1;
@@ -117,8 +129,14 @@ namespace NAudio.FileFormats.Wav
         }
 
         /// <summary>
-        /// http://tech.ebu.ch/docs/tech/tech3306-2009.pdf
+        /// Reads the ds64 chunk from the binary reader and updates the relevant properties.
         /// </summary>
+        /// <param name="reader">The BinaryReader to read from.</param>
+        /// <exception cref="FormatException">Thrown when the ds64 chunk is not found, indicating an invalid RF64 WAV file.</exception>
+        /// <remarks>
+        /// This method reads the ds64 chunk from the provided BinaryReader and updates the <see cref="riffSize"/>, <see cref="dataChunkLength"/>, and <see cref="sampleCount"/> properties accordingly.
+        /// It also advances the reader to the end of the ds64 chunk.
+        /// </remarks>
         private void ReadDs64Chunk(BinaryReader reader)
         {
             int ds64ChunkId = ChunkIdentifier.ChunkIdentifierToInt32("ds64");
@@ -134,11 +152,24 @@ namespace NAudio.FileFormats.Wav
             reader.ReadBytes(chunkSize - 24); // get to the end of this chunk (should parse extra stuff later)
         }
 
+        /// <summary>
+        /// Creates a new RIFF chunk with the specified identifier, length, and position in the stream.
+        /// </summary>
+        /// <param name="stream">The input stream from which the RIFF chunk is being read.</param>
+        /// <param name="chunkIdentifier">The identifier of the RIFF chunk.</param>
+        /// <param name="chunkLength">The length of the RIFF chunk.</param>
+        /// <returns>A new <see cref="RiffChunk"/> object with the specified identifier, length, and position in the stream.</returns>
         private static RiffChunk GetRiffChunk(Stream stream, Int32 chunkIdentifier, Int32 chunkLength)
         {
             return new RiffChunk(chunkIdentifier, chunkLength, stream.Position);
         }
 
+        /// <summary>
+        /// Reads the RIFF header from the provided BinaryReader and sets the isRf64 flag if the header is "RF64".
+        /// Throws a FormatException if the header is not "RIFF".
+        /// </summary>
+        /// <param name="br">The BinaryReader used to read the RIFF header.</param>
+        /// <exception cref="FormatException">Thrown when the header is not "RIFF".</exception>
         private void ReadRiffHeader(BinaryReader br)
         {
             int header = br.ReadInt32();

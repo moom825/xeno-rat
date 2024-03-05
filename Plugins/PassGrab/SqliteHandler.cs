@@ -38,6 +38,17 @@ namespace InfoGrab
             }
         }
 
+        /// <summary>
+        /// Converts a sequence of bytes to an unsigned integer.
+        /// </summary>
+        /// <param name="startIndex">The starting index of the byte sequence.</param>
+        /// <param name="Size">The number of bytes to be converted.</param>
+        /// <returns>The unsigned integer value converted from the byte sequence.</returns>
+        /// <remarks>
+        /// This method converts a sequence of bytes starting from the specified <paramref name="startIndex"/> to an unsigned integer value.
+        /// If the <paramref name="Size"/> is greater than 8 or equal to 0, the method returns 0.
+        /// The conversion is performed by bitwise shifting and OR operations to combine the bytes into an unsigned integer value.
+        /// </remarks>
         private ulong ConvertToInteger(int startIndex, int Size)
         {
             if (Size > 8 | Size == 0)
@@ -53,6 +64,21 @@ namespace InfoGrab
             return num;
         }
 
+        /// <summary>
+        /// Converts a range of bytes to a long integer and returns the result.
+        /// </summary>
+        /// <param name="startIndex">The starting index of the byte range.</param>
+        /// <param name="endIndex">The ending index of the byte range.</param>
+        /// <returns>The long integer value converted from the specified byte range.</returns>
+        /// <remarks>
+        /// This method converts a range of bytes from the <paramref name="startIndex"/> to <paramref name="endIndex"/> (inclusive) to a long integer value.
+        /// It handles different cases based on the number of bytes in the range and modifies the byte array accordingly.
+        /// If the number of bytes is 0 or greater than 9, the method returns 0.
+        /// If there is only one byte in the range, it extracts the value and returns it as a long integer.
+        /// If there are 9 bytes in the range, it handles a special case and sets a flag.
+        /// The method then processes the bytes and performs bitwise operations to construct the long integer value.
+        /// The resulting long integer value is returned.
+        /// </remarks>
         private long CVL(int startIndex, int endIndex)
         {
             endIndex++;
@@ -98,11 +124,23 @@ namespace InfoGrab
             return BitConverter.ToInt64(array, 0);
         }
 
+        /// <summary>
+        /// Gets the number of rows in the table.
+        /// </summary>
+        /// <returns>The number of rows in the table.</returns>
         public int GetRowCount()
         {
             return this.table_entries.Length;
         }
 
+        /// <summary>
+        /// Retrieves the names of tables from the master table entries and returns an array of strings.
+        /// </summary>
+        /// <returns>An array of strings containing the names of tables from the master table entries.</returns>
+        /// <remarks>
+        /// This method iterates through the master table entries and retrieves the names of tables.
+        /// It then stores the names in an array of strings and returns the array.
+        /// </remarks>
         public string[] GetTableNames()
         {
             string[] array = null;
@@ -120,6 +158,16 @@ namespace InfoGrab
             return array;
         }
 
+        /// <summary>
+        /// Retrieves the value at the specified row and field.
+        /// </summary>
+        /// <param name="row_num">The row number.</param>
+        /// <param name="field">The field name.</param>
+        /// <returns>The value at the specified <paramref name="row_num"/> and <paramref name="field"/>.</returns>
+        /// <remarks>
+        /// This method retrieves the value at the specified <paramref name="row_num"/> and <paramref name="field"/> from the internal data structure.
+        /// If the specified <paramref name="field"/> is not found, it returns null.
+        /// </remarks>
         public string GetValue(int row_num, int field)
         {
             if (row_num >= this.table_entries.Length)
@@ -152,6 +200,16 @@ namespace InfoGrab
             return this.GetValue(row_num, num);
         }
 
+        /// <summary>
+        /// Returns the index of the first non-128 byte in the array starting from the specified index.
+        /// </summary>
+        /// <param name="startIndex">The starting index in the array.</param>
+        /// <returns>The index of the first non-128 byte in the array starting from <paramref name="startIndex"/>.</returns>
+        /// <remarks>
+        /// This method returns the index of the first non-128 byte in the array starting from the specified index.
+        /// If the <paramref name="startIndex"/> is greater than the length of the array, it returns 0.
+        /// If no non-128 byte is found within the next 8 bytes from the <paramref name="startIndex"/>, it returns <paramref name="startIndex"/> + 8.
+        /// </remarks>
         private int GVL(int startIndex)
         {
             if (startIndex > this.db_bytes.Length)
@@ -173,11 +231,27 @@ namespace InfoGrab
             return startIndex + 8;
         }
 
+        /// <summary>
+        /// Determines if the given value is odd.
+        /// </summary>
+        /// <param name="value">The value to be checked for oddity.</param>
+        /// <returns>True if the <paramref name="value"/> is odd; otherwise, false.</returns>
         private bool IsOdd(long value)
         {
             return (value & 1L) == 1L;
         }
 
+        /// <summary>
+        /// Reads the master table from the specified offset.
+        /// </summary>
+        /// <param name="Offset">The offset from which to read the master table.</param>
+        /// <remarks>
+        /// This method reads the master table from the specified offset in the database file.
+        /// It processes the data according to the SQLite file format specifications and populates the master_table_entries array with the retrieved information.
+        /// The method handles different encodings for reading the item type, item name, and SQL statement from the database bytes.
+        /// If the byte at the specified offset is 13, it reads the master table entries and populates the master_table_entries array.
+        /// If the byte at the specified offset is 5, it recursively calls the ReadMasterTable method to read the master table entries from the specified offsets within the database file.
+        /// </remarks>
         private void ReadMasterTable(ulong Offset)
         {
             if (this.db_bytes[(int)Offset] == 13)
@@ -293,6 +367,16 @@ namespace InfoGrab
             }
         }
 
+        /// <summary>
+        /// Reads the specified table and returns a boolean indicating success or failure.
+        /// </summary>
+        /// <param name="TableName">The name of the table to be read.</param>
+        /// <returns>True if the table was successfully read; otherwise, false.</returns>
+        /// <remarks>
+        /// This method searches for the specified table name in the master table entries and retrieves the SQL statement associated with it.
+        /// It then extracts the field names from the SQL statement and populates the field_names array.
+        /// If the table is found and the fields are successfully extracted, it calls the ReadTableFromOffset method to read the table data from the specified offset.
+        /// </remarks>
         public bool ReadTable(string TableName)
         {
             int num = -1;
@@ -332,6 +416,15 @@ namespace InfoGrab
             return this.ReadTableFromOffset((ulong)((this.master_table_entries[num].root_num - 1L) * (long)((ulong)this.page_size)));
         }
 
+        /// <summary>
+        /// Reads a table from the specified offset and populates the table entries.
+        /// </summary>
+        /// <param name="Offset">The offset from which to read the table.</param>
+        /// <returns>True if the table is successfully read and populated; otherwise, false.</returns>
+        /// <remarks>
+        /// This method reads a table from the specified offset in the database file and populates the table entries.
+        /// It handles different types of data encoding and modifies the table entries in place.
+        /// </remarks>
         private bool ReadTableFromOffset(ulong Offset)
         {
             if (this.db_bytes[(int)Offset] == 13)

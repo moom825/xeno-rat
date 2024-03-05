@@ -45,8 +45,9 @@ namespace NAudio.SoundFont
         public TransformEnum SourceTransform { get; set; }
 
         /// <summary>
-        /// <see cref="Object.ToString"/>
+        /// Returns a formatted string representing the Modulator object.
         /// </summary>
+        /// <returns>A string containing the source modulation data, destination generator, amount, source modulation amount, and source transform.</returns>
         public override string ToString()
         {
             return String.Format("Modulator {0} {1} {2} {3} {4}",

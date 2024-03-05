@@ -43,13 +43,14 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Ensures valid AIFF header and then finds data offset.
+        /// Reads the AIFF header from the provided stream and extracts the wave format, data chunk position, data chunk length, and optional additional chunks.
         /// </summary>
-        /// <param name="stream">The stream, positioned at the start of audio data</param>
-        /// <param name="format">The format found</param>
-        /// <param name="dataChunkPosition">The position of the data chunk</param>
-        /// <param name="dataChunkLength">The length of the data chunk</param>
-        /// <param name="chunks">Additional chunks found</param>
+        /// <param name="stream">The input stream containing the AIFF data.</param>
+        /// <param name="format">When this method returns, contains the wave format extracted from the AIFF header, if valid; otherwise, null.</param>
+        /// <param name="dataChunkPosition">When this method returns, contains the position of the data chunk within the stream, if found; otherwise, -1.</param>
+        /// <param name="dataChunkLength">When this method returns, contains the length of the data chunk, if found; otherwise, 0.</param>
+        /// <param name="chunks">An optional list to store additional AIFF chunks found in the header.</param>
+        /// <exception cref="FormatException">Thrown when the input stream does not contain a valid AIFF file or when specific required chunks are not found.</exception>
         public static void ReadAiffHeader(Stream stream, out WaveFormat format, out long dataChunkPosition, out int dataChunkLength, List<AiffChunk> chunks)
         {
             dataChunkPosition = -1;
@@ -127,8 +128,14 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Cleans up the resources associated with this AiffFileReader
+        /// Releases the unmanaged resources used by the AiffFileReader and optionally releases the managed resources.
         /// </summary>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        /// <remarks>
+        /// This method releases the unmanaged resources used by the AiffFileReader and optionally releases the managed resources.
+        /// If <paramref name="disposing"/> is true, this method releases all resources held by any managed objects that this AiffFileReader references.
+        /// This method is called by the public Dispose() method and the Finalize method.
+        /// </remarks>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -206,11 +213,22 @@ namespace NAudio.Wave
             }
         }
 
-
         /// <summary>
-        /// Reads bytes from the AIFF File
-        /// <see cref="Stream.Read"/>
+        /// Reads a sequence of bytes from the current stream and advances the position within the stream by the number of bytes read.
         /// </summary>
+        /// <param name="array">An array of bytes. When this method returns, the buffer contains the specified byte array with the values between offset and (offset + count - 1) replaced by the bytes read from the current source.</param>
+        /// <param name="offset">The zero-based byte offset in array at which to begin storing the data read from the current stream.</param>
+        /// <param name="count">The maximum number of bytes to be read from the current stream.</param>
+        /// <exception cref="ArgumentException">Thrown when count is not a multiple of waveFormat.BlockAlign.</exception>
+        /// <returns>The total number of bytes read into the buffer. This might be less than the number of bytes requested if that many bytes are not currently available, or zero if the end of the stream is reached.</returns>
+        /// <remarks>
+        /// This method reads a sequence of bytes from the current stream and advances the position within the stream by the number of bytes read. If the end of the stream is reached, it returns zero.
+        /// It first checks if count is a multiple of waveFormat.BlockAlign, and if not, it throws an ArgumentException.
+        /// It then locks the lockObject to ensure thread safety while reading from the stream.
+        /// It checks if there is more data at the end of the file past the data chunk, and adjusts the count accordingly.
+        /// It reads data from waveStream into a buffer and then performs endianness conversion based on the wave format's BitsPerSample.
+        /// Finally, it returns the total number of bytes read into the buffer.
+        /// </remarks>
         public override int Read(byte[] array, int offset, int count)
         {
             if (count % waveFormat.BlockAlign != 0)
@@ -262,13 +280,33 @@ namespace NAudio.Wave
             }
         }
 
-#region Endian Helpers
+        /// <summary>
+        /// Converts a byte array to an unsigned integer.
+        /// </summary>
+        /// <param name="buffer">The byte array to be converted.</param>
+        /// <exception cref="Exception">Thrown when the length of the buffer is not 4.</exception>
+        /// <returns>The unsigned integer value obtained from the byte array.</returns>
+        /// <remarks>
+        /// This method converts the input byte array <paramref name="buffer"/> to an unsigned integer by performing bitwise operations on the individual bytes.
+        /// It shifts the bytes to their respective positions and then performs a bitwise OR operation to combine them into a single integer value.
+        /// If the length of the input buffer is not 4, an exception is thrown indicating an incorrect length for the conversion.
+        /// </remarks>
         private static uint ConvertInt(byte[] buffer)
         {
             if (buffer.Length != 4) throw new Exception("Incorrect length for long.");
             return (uint)((buffer[0] << 24) | (buffer[1] << 16) | (buffer[2] << 8) | buffer[3]);
         }
 
+        /// <summary>
+        /// Converts a byte array to a short integer and returns the result.
+        /// </summary>
+        /// <param name="buffer">The byte array to be converted to a short integer.</param>
+        /// <returns>The short integer value obtained by converting the input byte array.</returns>
+        /// <exception cref="Exception">Thrown when the length of the input byte array is not 2.</exception>
+        /// <remarks>
+        /// This method converts the input byte array to a short integer by performing a bitwise left shift operation on the first byte and then performing a bitwise OR operation with the second byte.
+        /// The resulting short integer value is returned.
+        /// </remarks>
         private static short ConvertShort(byte[] buffer)
         {
             if (buffer.Length != 2) throw new Exception("Incorrect length for int.");
@@ -309,12 +347,22 @@ namespace NAudio.Wave
             }
         }
 
+        /// <summary>
+        /// Reads the header of a chunk from the provided BinaryReader and returns an AiffChunk object.
+        /// </summary>
+        /// <param name="br">The BinaryReader used to read the chunk header.</param>
+        /// <returns>An AiffChunk object representing the read chunk header.</returns>
         private static AiffChunk ReadChunkHeader(BinaryReader br)
         {
             var chunk = new AiffChunk((uint)br.BaseStream.Position, ReadChunkName(br), ConvertInt(br.ReadBytes(4)));
             return chunk;
         }
 
+        /// <summary>
+        /// Reads a chunk name from the provided BinaryReader and returns it as a string.
+        /// </summary>
+        /// <param name="br">The BinaryReader from which to read the chunk name.</param>
+        /// <returns>A string representing the chunk name read from the BinaryReader.</returns>
         private static string ReadChunkName(BinaryReader br)
         {
             return new string(br.ReadChars(4));

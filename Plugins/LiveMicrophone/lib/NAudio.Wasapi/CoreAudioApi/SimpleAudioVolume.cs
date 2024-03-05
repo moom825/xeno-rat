@@ -25,11 +25,12 @@ namespace NAudio.CoreAudioApi
             simpleAudioVolume = realSimpleVolume;
         }
 
-        #region IDisposable Members
-
         /// <summary>
-        /// Dispose
+        /// Releases the resources used by the current instance of the <see cref="ClassName"/> class.
         /// </summary>
+        /// <remarks>
+        /// This method releases the resources used by the current instance of the <see cref="ClassName"/> class and suppresses the finalization of the object.
+        /// </remarks>
         public void Dispose()
         {
             GC.SuppressFinalize(this);

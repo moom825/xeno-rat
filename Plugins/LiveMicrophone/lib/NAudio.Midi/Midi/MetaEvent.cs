@@ -44,15 +44,24 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Creates a deep clone of this MIDI event.
+        /// Clones the current MidiEvent and returns the cloned instance.
         /// </summary>
+        /// <returns>A new instance of MidiEvent that is a clone of the current instance.</returns>
         public override MidiEvent Clone() => new MetaEvent(metaEvent, metaDataLength, AbsoluteTime);
 
         /// <summary>
-        /// Reads a meta-event from a stream
+        /// Reads a meta event from the provided BinaryReader and returns the corresponding MetaEvent object.
         /// </summary>
-        /// <param name="br">A binary reader based on the stream of MIDI data</param>
-        /// <returns>A new MetaEvent object</returns>
+        /// <param name="br">The BinaryReader used to read the meta event.</param>
+        /// <returns>The MetaEvent object representing the meta event read from the BinaryReader.</returns>
+        /// <remarks>
+        /// This method reads a meta event from the provided BinaryReader and returns the corresponding MetaEvent object.
+        /// It first reads the MetaEventType from the BinaryReader, then reads the length of the meta event using the ReadVarInt method.
+        /// Based on the type of meta event, it creates and returns the corresponding MetaEvent object by instantiating the appropriate class.
+        /// If the meta event is of type EndTrack, it checks if the length is 0 and throws a FormatException if it's not.
+        /// If the meta event is of any other type, it reads the data for the meta event and returns a RawMetaEvent object with the meta event type, default long value, and the read data.
+        /// </remarks>
+        /// <exception cref="FormatException">Thrown when the end track length is not 0 or when failed to read metaevent's data fully.</exception>
         public static MetaEvent ReadMetaEvent(BinaryReader br) 
         {
             MetaEventType metaEvent = (MetaEventType) br.ReadByte();
@@ -112,16 +121,23 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        /// Describes this meta event
+        /// Returns a string representation of the object, combining the AbsoluteTime and metaEvent properties.
         /// </summary>
+        /// <returns>A string containing the AbsoluteTime and metaEvent properties.</returns>
         public override string ToString() 
         {
             return $"{AbsoluteTime} {metaEvent}";
         }
 
         /// <summary>
-        /// <see cref="MidiEvent.Export"/>
+        /// Exports the meta event and its associated data to a binary writer.
         /// </summary>
+        /// <param name="absoluteTime">The absolute time of the event.</param>
+        /// <param name="writer">The binary writer to which the event and its data will be exported.</param>
+        /// <remarks>
+        /// This method exports the meta event and its associated data to the specified binary writer.
+        /// It first calls the base class's Export method to export the absolute time, then writes the meta event as a byte, followed by writing the length of the meta data using variable-length encoding.
+        /// </remarks>
         public override void Export(ref long absoluteTime, BinaryWriter writer)
         {
             base.Export(ref absoluteTime, writer);
